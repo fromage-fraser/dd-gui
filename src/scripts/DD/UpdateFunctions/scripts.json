@@ -1,0 +1,37 @@
+[
+
+        {
+                "name": "update_vitals",
+                "eventHandlerList": [ 
+                        "gmcp.Char.Vitals"
+                ]
+        },
+        {
+                "name": "update_affects",
+                "eventHandlerList": [ 
+                        "gmcp.Char.Affect"
+                ]
+        },
+        {
+                "name": "update_inventory",
+                "eventHandlerList": [ 
+                        "gmcp.Char.Items"
+                ]
+        },
+        {
+                "name": "update_travel",
+                "eventHandlerList": [ 
+                        "gmcp.Room.Info"
+                ]
+        },
+        {
+                "name": "update_enemy",
+                "eventHandlerList": [ 
+                        "gmcp.Char.Enemies"
+                ]
+        },
+        {
+                "name": "bootstrap"
+        }   
+]
+      

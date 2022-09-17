@@ -1,0 +1,60 @@
+[
+  {
+        "name": "folder"
+  },
+  {
+        "name": "AffectsConsole"
+  },
+  {
+        "name": "BoxesDefinitions"
+  },
+  {
+        "name": "ChannelConsole"
+  },
+  {
+        "name": "CharsheetConsole"
+  },
+  {
+        "name": "compass.resize",
+        "eventHandlerList": [ 
+                "sysWindowResizeEvent"
+        ]
+  },
+  {
+        "name": "CreateBackground"
+  },
+  {
+        "name": "CSSMan"
+  },
+  {
+        "name": "DD_GUI.AffectsBox"
+  },
+  {
+        "name": "DD_GUI.ChannelBox"
+  },
+  {
+        "name": "DD_GUI.CharsheetBox"
+  },
+  {
+        "name": "DD_GUI.EnemyBox"
+  },
+  {
+        "name": "DD_GUI.GaugesBox"
+  },
+  {
+        "name": "DD_GUI.InventoryBox"
+  },
+  {
+        "name": "EnemyConsole"
+  },
+  {
+        "name": "InventoryConsole"
+  },
+  {
+        "name": "MainWindow"
+  },
+  {
+        "name": "SetBorders"
+  }
+
+]
