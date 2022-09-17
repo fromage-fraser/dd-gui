@@ -8,6 +8,7 @@ function file_exists(name)
         else 
                 return false 
         end
+        
 end
 
 -- get all lines from a file, returns an empty 
