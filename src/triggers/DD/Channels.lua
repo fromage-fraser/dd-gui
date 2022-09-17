@@ -1,0 +1,3 @@
+selectCurrentLine()
+copy()
+ChannelConsole:appendBuffer()

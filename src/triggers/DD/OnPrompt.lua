@@ -1,0 +1,5 @@
+update_affects()
+update_vitals()
+update_inventory()
+update_travel()
+update_enemy()
