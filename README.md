@@ -43,11 +43,11 @@ For smaller changes, you may wish to work in Mudlet's built-in text editor so yo
 ## Adding assets (primarily images at this point)
 Currently assets have this storage structure under your Mudlet Profile (which should have a path on Windows like `C:\Users\myusername\.config\mudlet\profiles\TestMudletGuy\`):
 
-`assets->avatars
+```assets->avatars
       |->compass
       |->custom_rooms
       |->environments
-      |->mobs`
+      |->mobs```
 
 Profile pictures for avatars are 160x200 pngs that have the following naming structure (all lowercase):
 `race_class_sex_number.png` e.g. the first image option for a female human mage would be named `human_mage_female_1.png`.
