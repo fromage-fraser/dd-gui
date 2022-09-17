@@ -2,7 +2,7 @@
 
 ## Mudlet GUI for Dragons Domain MUD
 
-This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by the (Dragons Domain MUD)[https://smihilist.com/dd4/web/main/frame.html]. It is instantiated as a [muddler](https://github.com/demonnic/muddler) project, meaning you can work on the Lua code (scripts, aliases, triggers etc) outside of the Mudlet client's editor, then compile it using muddler into an easily-portable package for Mudlet.
+This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by the [(]Dragons Domain MUD]([)https://smihilist.com/dd4/web/main/frame.html). It is instantiated as a [muddler](https://github.com/demonnic/muddler) project, meaning you can work on the Lua code (scripts, aliases, triggers etc) outside of the Mudlet client's editor, then compile it using muddler into an easily-portable package for Mudlet.
 
 
 ## Installation (players)
@@ -21,9 +21,9 @@ Custom assets (primarily images right now) will be autodownloaded when you conne
 ## Installation (devs)
 
 To do development work on the GUI locally, you will need:
-- The `muddler` build tool available (here)[https://github.com/demonnic/muddler].
-- The latest Java SDK available (here)[https://www.oracle.com/java/technologies/downloads/].
-- A text editor/IDE to work on it with (most of our devs use (Visual Studio Code)[https://code.visualstudio.com/download], but it really doesn't matter).
+- The `muddler` build tool available [here](https://github.com/demonnic/muddler).
+- The latest Java SDK available [here](https://www.oracle.com/java/technologies/downloads/).
+- A text editor/IDE to work on it with (most of our devs use [Visual Studio Code](https://code.visualstudio.com/download), but it really doesn't matter).
 
 After you have installed the JVM and muddle (in that order), you should be able to clone this repo into your muddle directory (e.g. `D:\muddle\` for me) and work from `$MUDDLE_DIR\dd-gui\` thereafter.  
 
