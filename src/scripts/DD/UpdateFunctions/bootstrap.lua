@@ -16,4 +16,5 @@ function bootstrap()
         build_enemy_box()
         build_enemy_console()
         build_compass()
+        get_custom_content()
 end

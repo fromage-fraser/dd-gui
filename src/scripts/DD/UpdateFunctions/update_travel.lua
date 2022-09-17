@@ -10,7 +10,7 @@ function update_travel()
                 EnemyHitpointsLabel:hide()
                 EnemyLabel:echo("Travel Info")
                 
-                local room_image = ms_path .. "/avatars/transp_placeholder.png"
+                local room_image = ms_path .. "/avatars/default_char.png"
                 local sector_name = "Unknown"
                 
                 --Room images based on sector types
@@ -68,9 +68,9 @@ function update_travel()
                 
                 --display(ri_filename)
                 
-                if (tonumber(gmcp.Room.Info.vnum) == 20695) then
-                        room_image = ms_path .. "/custom_rooms/20695_zeldas_cabin.png"
-                end
+                --if (tonumber(gmcp.Room.Info.vnum) == 20695) then
+                --        room_image = ms_path .. "/custom_rooms/20695_zeldas_cabin.png"
+                --end
                 
                 --display(room_image)
                 

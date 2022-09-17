@@ -28,12 +28,21 @@ function update_vitals()
   -- pfp_filename = my_custom_avatar_filename.png'
   
   resetBackgroundImage("CharsheetPFPConsole")
-  CharsheetPFPConsole:setBackgroundImage( [[
-    background-image: url(]] .. ms_path .. '/avatars/' .. pfp_filename .. [[);
-    background-position: top left;
-    background-repeat: no-repeat;
-  ]], 
-  "style")
+  local char_image = ms_path .. '/avatars/' .. pfp_filename
+  local def_image = ms_path .. '/avatars/' .. 'default_char.png'
+
+  if file_exists(char_image) then
+        CharsheetPFPConsole:setBackgroundImage(char_image,"border")
+  else
+        CharsheetPFPConsole:setBackgroundImage(def_image,"border")
+  end
+
+  --CharsheetPFPConsole:setBackgroundImage( [[
+  --  background-image: url(]] .. ms_path .. '/avatars/' .. pfp_filename .. [[);
+  --  background-position: top left;
+  --  background-repeat: no-repeat;
+  --]], 
+  --"style")
   
   CharsheetConsole:cecho(
     "<white>" 

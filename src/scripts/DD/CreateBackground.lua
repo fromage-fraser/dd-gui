@@ -1,6 +1,6 @@
 function create_background()
         DD_GUI.BackgroundCSS = CSSMan.new([[
-          background-color: rgb(90,0,0);
+          background-color: rgb(0,0,0);
         ]])
         
         DD_GUI.Right = Geyser.Label:new({

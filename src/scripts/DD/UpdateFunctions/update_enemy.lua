@@ -8,7 +8,8 @@ function update_enemy()
                 EnemyConsole:clear()
                 EnemyLabel:echo("Enemy Info")
                 EnemyInfoConsole:clear()
-                local enemy_image = ms_path .. "/mobs/20412_the_destroyer.png"
+                local enemy_image       = ms_path .. "/mobs/20412_the_destroyer.png"
+                local def_enemy_image   = ms_path .. "/mobs/0_default.png"
           
                 -- 0 if a PC, otherwise the VNUM of the mob
                 if (gmcp.Char.Enemies[1][1].isnpc ~= 0) then
@@ -22,11 +23,13 @@ function update_enemy()
           
                 --display(enemy_image)
                 EnemyTPConsoleTop:clear()
-                EnemyTPConsoleTop:setBackgroundImage([[ 
-                        background-image: url(]] .. enemy_image .. [[);
-                        background-position: top left; 
-                        background-repeat: no-repeat;]], 
-                "style")
+
+                if (file_exists(enemy_image)) then
+                        EnemyTPConsoleTop:setBackgroundImage(enemy_image,"border")
+                else
+                        EnemyTPConsoleTop:setBackgroundImage(def_enemy_image,"border")
+                end
+
                 for i, count in ipairs(gmcp.Char.Enemies) do
                         --display(i)
                         --display(count)

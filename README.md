@@ -13,29 +13,29 @@ To install and use the GUI, connect to the MUD through Mudlet at **dd4.webredire
 
 To uninstall the GUI, simply type:
 
-`lua uninstallPackage("DD_GUI")`
+`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager.
 
-As we add more media for rooms, mobs, objects, and characters, they will be autodownloaded when you connect to the MUD.  You should expect a delay the first time you connect (as your client will have to grab them all), but subsequent connections (for the same character) should only download new assets. Currently you will store a new set of code and assets for each profile, but we may try to figure out a way to share unchanging assets between character profiles in the future.
+Custom assets (primarily images right now) will be autodownloaded when you connect to the MUD.  You should expect a short delay the first time you connect, but subsequent connections (for the same character) will only download new assets. Currently characters store a new set of code and assets for each profile, but we may try to figure out a way to share unchanging assets between character profiles in the future.
 
 
 ## Installation (devs)
 
-To work on the GUI locally, you will need:
-- The `muddle` build tool available (here)[https://github.com/demonnic/muddler].
+To do development work on the GUI locally, you will need:
+- The `muddler` build tool available (here)[https://github.com/demonnic/muddler].
 - The latest Java SDK available (here)[https://www.oracle.com/java/technologies/downloads/].
 - A text editor/IDE to work on it with (most of our devs use (Visual Studio Code)[https://code.visualstudio.com/download], but it really doesn't matter).
 
-After you have installed the JVM and muddle (in that order), you should be able to clone this repo into your muddle directory (e.g. `D:\muddle\` for me) and work from `$MUDDLE_DIRECTORY_PATH\dd-gui\` thereafter.  
+After you have installed the JVM and muddle (in that order), you should be able to clone this repo into your muddle directory (e.g. `D:\muddle\` for me) and work from `$MUDDLE_DIR\dd-gui\` thereafter.  
 
 
 ## Workflow (devs)
 
 The basic GUI workflow is:
 
-- Make some changes to the GUI codebase in VSC or whatever you use.
-- Run `muddle` from the terminal in your `dd-gui` directory to build the Mudlet package.
-- Open your Dragons Domain Mudlet test account and install the `DD_GUI.mpackage` package from your `$MUDDLE_DIRECTORY_PATH\dd-gui\build` (don't login yet, do this from the login prompt--and uninstall any previous version first).
-- Upon logging in you should see the latest version of the GUI with any changes you made.
+- Make some changes to the GUI codebase.
+- Run `muddle` from the terminal in your `dd-gui` directory to build the Mudlet package in `build\`.
+- Open your Dragons Domain Mudlet test account and install the `DD_GUI.mpackage` package before logging in.
+- After login in you should see the latest version of the GUI with any changes you made.
 
 For smaller changes, you may wish to work in Mudlet's built-in text editor so you can quickly view the changes, then copy the code over to your local  `dd-gui` repo after you're satisfied with it before building the package.
 
@@ -50,20 +50,22 @@ Currently assets have this storage structure under your Mudlet Profile (which sh
       |->mobs`
 
 Profile pictures for avatars are 160x200 pngs that have the following naming structure (all lowercase):
-`race_class_sex_number.png` so, say the first image option for a female human mage would be named `human_mage_female_1.png`.
+`race_class_sex_number.png` e.g. the first image option for a female human mage would be named `human_mage_female_1.png`.
 
-If you want a custom avatar, put it in the directory and change the relevant code in `dd-gui\src\scripts\DD\UpdateFunctions\update_vitals.lua`.
+If you want a custom avatar (as a player), put it in the `avatars\` directory under your local profile and change the relevant code in `Scripts->DD->UpdateFunctions->update_vitals`.
 
 Compass images you can figure out yourself if you want to change them.  The relevant Lua file is `dd-gui\src\scripts\compass.resize.lua`.
 
 Custom room images are 560x300 pngs and have the naming structure (all lowercase):
-`vnum_name_of_room.png`, so the one for The Temple Altar in Midgaard, for example, is called `3054_by_the_temple_altar.png`.
+`vnum_name_of_room.png`, e.g. `3054_by_the_temple_altar.png`.
 
 Default sector-type based images are 560x300 pngs, are stored in `assets\environments\` and have the naming structure (all lowercase):
-`sectornumber_sect_nameofsectortype.png`, so the one for 'SECT_AIR', for example, is called `9_sect_air.png`.
+`sectornumber_sect_nameofsectortype.png`, e.g. `9_sect_air.png`.
 
 Custom mobile images are 560x300 pngs and have the naming structure (all lowercase):
-`vnum_name_of_mobile.png`, so the one for Puff, for example, is called `1_puff.png`.
+`vnum_name_of_mobile.png`, e.g. `1_puff.png`.
+
+Custom images are automatically downloaded from the relevant directories under `https://smihilist.com/dd4/web/main/gui/custom/`. To add new custom images, you will need FTP access to the webserver, talk to [nerble](https://github.com/nerble) about this.
 
 
 ## Usage

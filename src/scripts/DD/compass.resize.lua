@@ -90,21 +90,21 @@ end
 
 function compass.onEnter(name)
   compass[name]:setStyleSheet([[
-    border-image: url("]]..getMudletHomeDir()..[[/DD-GUI/compass/]]..name..[[hover.png");
+    border-image: url("]]..getMudletHomeDir()..[[/DD_GUI/compass/]]..name..[[hover.png");
     margin: 5px;
   ]])
 end
 
 function compass.onLeave(name)
   compass[name]:setStyleSheet([[
-    border-image: url("]]..getMudletHomeDir()..[[/DD-GUI/compass/]]..name..[[.png");
+    border-image: url("]]..getMudletHomeDir()..[[/DD_GUI/compass/]]..name..[[.png");
     margin: 5px;
   ]])
 end
 
 for k,v in pairs(compass.dirs) do
   compass[v]:setStyleSheet([[
-    border-image: url("]]..getMudletHomeDir()..[[/DD-GUI/compass/]]..v..[[.png");
+    border-image: url("]]..getMudletHomeDir()..[[/DD_GUI/compass/]]..v..[[.png");
     margin: 5px;
   ]])
   compass[v]:setClickCallback("compass.click",v)
