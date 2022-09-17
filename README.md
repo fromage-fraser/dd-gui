@@ -67,7 +67,6 @@ Custom mobile images are 560x300 pngs and have the naming structure (all lowerca
 
 Custom images are automatically downloaded from the relevant directories under `https://smihilist.com/dd4/web/main/gui/custom/`. To add new custom images, you will need FTP access to the webserver, talk to [nerble](https://github.com/nerble) about this.
 
-
 ## Usage
 
 GUI usage should be self-explanatory at this point, but will add information here as we introduce features that need explanation.
