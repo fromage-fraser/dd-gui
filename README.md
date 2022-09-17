@@ -2,7 +2,7 @@
 
 ## Mudlet GUI for Dragons Domain MUD
 
-This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by the [(]Dragons Domain MUD]([)https://smihilist.com/dd4/web/main/frame.html). It is instantiated as a [muddler](https://github.com/demonnic/muddler) project, meaning you can work on the Lua code (scripts, aliases, triggers etc) outside of the Mudlet client's editor, then compile it using muddler into an easily-portable package for Mudlet.
+This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by the [Dragons Domain MUD](https://smihilist.com/dd4/web/main/frame.html). It is instantiated as a [muddler](https://github.com/demonnic/muddler) project, meaning you can work on the Lua code (scripts, aliases, triggers etc) outside of the Mudlet client's editor, then compile it using muddler into an easily-portable package for Mudlet.
 
 
 ## Installation (players)
