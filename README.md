@@ -69,4 +69,3 @@ Custom mobile images are 560x300 pngs and have the naming structure (all lowerca
 ## Usage
 
 GUI usage should be self-explanatory at this point, but will add information here as we introduce features that need explanation.
-
