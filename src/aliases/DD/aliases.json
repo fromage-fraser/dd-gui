@@ -1,6 +1,6 @@
 [
-  {
-    "name": "DD_GUI",
-    "regex": "^DD_GUI$"
-  }
+        {
+                "name": "ugui",
+                "regex": "^ugui$"
+        }
 ]
