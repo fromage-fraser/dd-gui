@@ -7,13 +7,17 @@ function get_custom_content ()
         local filelist_url = 'https://smihilist.com/dd4/web/main/gui/custom/files.php'
 
         downloadFile(filelist, filelist_url)
-        cecho("\n<white>Downloading custom content list...\n")
-        cecho("<white>Downloading <green>"..filelist_url.."<white> to <green>"..filelist.."\n\n")
+        cecho("\n<white>Downloading custom content...\n")
+        --cecho("<white>Downloading <green>"..filelist_url.."<white> to <green>"..filelist.."\n\n")
+     
+end
 
+function get_filelist_files ()
+        local filelist = getMudletHomeDir() .. "/DD_GUI/custom_filelist.txt"
         if (file_exists(filelist)) then
                 local lines = {}
                 lines = lines_from(filelist)
-                cecho("\n<white>Updating custom content...\n")
+                --cecho("\n<white>Updating custom content...\n")
                 for k,v in pairs(lines) do
                         local saveto = getMudletHomeDir().."/DD_GUI/" .. v
                         local url = "https://smihilist.com/dd4/web/main/gui/custom/" .. v
@@ -22,10 +26,10 @@ function get_custom_content ()
                                 cecho("") 
                         else
                                 downloadFile(saveto, url)
-                                cecho("<white>Downloading <green>"..url.."\n\n")
+                                --cecho("<white>Downloading <green>"..url.."\n\n")
                         end
-                end        
+                end      
         end
-
-        
 end
+
+registerAnonymousEventHandler("sysDownloadDone", "get_filelist_files")
