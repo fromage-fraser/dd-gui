@@ -33,7 +33,6 @@ function build_charsheet_console()
         local pfp_filename = firstToLower(gmcp.Char.Base.race) .. '_' 
                            ..firstToLower(gmcp.Char.Base.class) .. '_' 
                            ..chsex_string .. '_1.png'
-
         --display(pfp_filename)
         
         -- Replace the below with your avatar filename and uncomment the below line if you want a custom avatar. Should
