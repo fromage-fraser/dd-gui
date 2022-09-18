@@ -26,6 +26,7 @@ To uninstall the GUI, you can simply type:
 ## Installation (devs)
 
 To do development work on the GUI locally, you will need:
+
 - The `muddler` build tool available [here](https://github.com/demonnic/muddler).
 - The latest Java SDK available [here](https://www.oracle.com/java/technologies/downloads/).
 - A text editor/IDE to work on it with (most of our devs use [Visual Studio Code](https://code.visualstudio.com/download), but it really doesn't matter).
@@ -46,6 +47,7 @@ For smaller changes, you may wish to work in Mudlet's built-in text editor so yo
 
 
 ## Customising images etc (players)
+
 Currently assets have this storage structure under your Mudlet Profile (which should have a path on Windows like `C:\Users\myusername\.config\mudlet\profiles\TestMudletGuy\`):
 
 ```
@@ -83,4 +85,5 @@ You can get a list of all current custom content by executing the php script [he
 ## Usage
 
 Usage of the GUI should be self-explanatory at this point, but we will add information here as and when we introduce features that require elaboration.
+
 
