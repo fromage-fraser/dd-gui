@@ -1,14 +1,11 @@
 function get_custom_content ()
-        -- just test to download a file and save it in our profile folder
-        -- C:\Users\goths\.config\mudlet\profiles\MuddleTest\DD_GUI\custom_rooms
-
-        -- This is a list of all custom content files: https://smihilist.com/dd4/web/main/gui/custom/files.php
+        local lfs = require "lfs"
+        -- This script generates a list of all custom content files: https://www.dragons-domain.org/main/gui/custom/files.php
         local filelist = getMudletHomeDir() .. "/DD_GUI/custom_filelist.txt"
-        local filelist_url = 'https://smihilist.com/dd4/web/main/gui/custom/files.php'
+        local filelist_url = 'https://www.dragons-domain.org/main/gui/custom/files.php'
 
         downloadFile(filelist, filelist_url)
-        cecho("\n<white>Downloading custom content...\n")
-        --cecho("<white>Downloading <green>"..filelist_url.."<white> to <green>"..filelist.."\n\n")
+        cecho("\n<white>Downloading any new custom content...\n")
      
 end
 
@@ -19,16 +16,26 @@ function get_filelist_files ()
                 lines = lines_from(filelist)
                 --cecho("\n<white>Updating custom content...\n")
                 for k,v in pairs(lines) do
-                        local saveto = getMudletHomeDir().."/DD_GUI/" .. v
-                        local url = "https://smihilist.com/dd4/web/main/gui/custom/" .. v
-
-                        if (file_exists(saveto)) then
-                                cecho("") 
-                        else
+                        local result = split_str(v, '|')
+                        --result[1] now holds the file size, result[2] holds the file name
+                        --display("Remote file size: " .. result[1] .. " for " .. result[2])
+                        local saveto = getMudletHomeDir().."/DD_GUI/" .. result[2]
+                        local filesize_v = lfs.attributes (saveto, "size")
+                        
+                        local url = "https://www.dragons-domain.org/main/gui/custom/" .. result[2]
+                        
+                        if (file_exists(saveto)) and (tonumber(result[1]) ~= tonumber(filesize_v)) then
+                            --cecho("File exists locally BUT IS DIFFERENT SIZE for " .. result[2] .. "\n")
                                 downloadFile(saveto, url)
-                                --cecho("<white>Downloading <green>"..url.."\n\n")
                         end
-                end      
+                        
+                        if (filesize_v == nil) then
+                          --cecho("File does not exist locally for " .. result[2] .. "\n")
+                                downloadFile(saveto, url)
+                        end
+                end
+        else
+          cecho("\n<white>Custom file filelist doesn't exist!<reset>\n")       
         end
 end
 
