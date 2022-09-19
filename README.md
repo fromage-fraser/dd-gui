@@ -2,7 +2,7 @@
 
 ## Mudlet GUI for Dragons Domain MUD
 
-This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by the [Dragons Domain MUD](https://smihilist.com/dd4/web/main/frame.html). It is instantiated as a [muddler](https://github.com/demonnic/muddler) project, meaning devs can work on the Lua code (scripts, aliases, triggers etc) outside of the Mudlet client's editor, then compile it using muddler into an easily-portable package.
+This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by the [Dragons Domain MUD](https://www.dragons-domain.org/). It is instantiated as a [muddler](https://github.com/demonnic/muddler) project, meaning devs can work on the Lua code (scripts, aliases, triggers etc) outside of the Mudlet client's editor, then compile it using muddler into an easily-portable package.
 
 
 ## Installation (players)
@@ -13,7 +13,7 @@ You should expect a short delay for the downloading the first time you connect, 
 
 If you have any issues with the automated installation and update system for the GUI, you can type the following at your Mudlet command prompt to install it manually:
 
-`lua installPackage("https://smihilist.com/dd4/web/main/gui/DD_GUI.mpackage")`
+`lua installPackage("https://www.dragons-domain.org/main/gui/DD_GUI.mpackage")`
 
 
 ## Uninstall (players)
@@ -77,13 +77,12 @@ Custom mobile images are 560x300 pngs and have the naming structure (all lowerca
 
 ## Customising images etc (devs)
 
-Custom images are automatically downloaded by Mudlet from the relevant subdirectories under `https://smihilist.com/dd4/web/main/gui/custom/`. To add new custom images (which would be available to all players), you will need FTP access to the webserver; talk to [nerble](https://github.com/nerble) about this.  
+Custom images are automatically downloaded by Mudlet from the relevant subdirectories under `https://www.dragons-domain.org/main/gui/custom/`. To add new custom images (which would be available to all players), you will need FTP access to the webserver; talk to [nerble](https://github.com/nerble) about this.  
 
-You can get a list of all current custom content by executing the php script [here](https://smihilist.com/dd4/web/main/gui/custom/files.php).
+You can get a list of all current custom content by executing the php script [here](https://www.dragons-domain.org/main/gui/custom/files.php).
 
 
 ## Usage
 
 Usage of the GUI should be self-explanatory at this point, but we will add information here as and when we introduce features that require elaboration.
-
 
