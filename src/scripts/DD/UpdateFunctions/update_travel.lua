@@ -47,6 +47,9 @@ function update_travel()
                 elseif (tonumber(gmcp.Room.Info.sector) == 10) then
                 room_image = ms_path .. "/environments/10_sect_desert.png"
                 sector_name = "Desert"
+                elseif (tonumber(gmcp.Room.Info.sector) == 11) then
+                room_image = ms_path .. "/environments/11_sect_swamp.png"
+                sector_name = "Swamp"
                 end
                 
                 -- Custom room images.  If a custom room image exists, use it.
