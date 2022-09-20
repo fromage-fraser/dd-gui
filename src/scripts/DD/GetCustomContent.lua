@@ -5,8 +5,7 @@ function get_custom_content ()
         local filelist_url = 'https://www.dragons-domain.org/main/gui/custom/files.php'
 
         downloadFile(filelist, filelist_url)
-        cecho("\n<white>Downloading any new custom content...\n")
-     
+        cecho("\n<white>Downloading any new custom content...\n")     
 end
 
 function get_filelist_files ()
