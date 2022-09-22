@@ -13,16 +13,20 @@ function update_vitals()
   local chsex_string = 'male'
   
   if (tonumber(gmcp.Char.Base.sex) == 0) then
-    chsex_string = 'neutral'
+    chsex_string = 'neuter'
   elseif (tonumber(gmcp.Char.Base.sex) == 2) then
     chsex_string = 'female'
   end
   
-  local pfp_filename = firstToLower(gmcp.Char.Base.race) .. '_' 
-                     ..firstToLower(gmcp.Char.Base.class) .. '_' 
-                     ..chsex_string .. '_1.png'
-  -- display(pfp_filename)
-  
+  local pfp_filename = gmcp.Char.Base.race:lower():gsub("-", "_") .. '_' 
+  ..chsex_string .. '_1.png'
+
+  --[[ 
+        Right now all pfp filenames end in _1; at some point make it so a random default number for them
+        can be chosen based on how many exist, and that this will persist across sessions for the profile.
+  ]]--
+
+  -- display(gmcp.Char.Base.race:lower():gsub("-", "_"))
   -- Replace the below with your avatar filename and uncomment the below line if you want a custom avatar. Should
   -- be a 160 x 200 px .png in the ms_path + /avatars/ directory
   -- pfp_filename = my_custom_avatar_filename.png'

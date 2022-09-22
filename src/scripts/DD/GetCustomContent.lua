@@ -5,7 +5,8 @@ function get_custom_content ()
         local filelist_url = 'https://www.dragons-domain.org/main/gui/custom/files.php'
 
         downloadFile(filelist, filelist_url)
-        cecho("\n<white>Downloading any new custom content...\n")     
+        cecho("\n<white>Downloading any new custom content...\n")
+     
 end
 
 function get_filelist_files ()
@@ -32,9 +33,7 @@ function get_filelist_files ()
                           --cecho("File does not exist locally for " .. result[2] .. "\n")
                                 downloadFile(saveto, url)
                         end
-                end
-        else
-          cecho("\n<white>Custom file filelist doesn't exist!<reset>\n")       
+                end      
         end
 end
 
