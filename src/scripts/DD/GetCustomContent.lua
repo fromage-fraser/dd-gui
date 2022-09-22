@@ -33,9 +33,7 @@ function get_filelist_files ()
                           --cecho("File does not exist locally for " .. result[2] .. "\n")
                                 downloadFile(saveto, url)
                         end
-                end
-        else
-          cecho("\n<white>Custom file filelist doesn't exist!<reset>\n")       
+                end      
         end
 end
 
