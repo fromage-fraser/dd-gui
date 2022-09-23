@@ -7,7 +7,8 @@ This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by
 
 ## Installation (players)
 
-To install and use the GUI, connect to the MUD through Mudlet at **dd4.webredirect.org** on port **8888**. The GUI should automatically install when you connect, and the extra custom content should automatically download after you log in. 
+
+To install and use the GUI, connect to the MUD through Mudlet at **dragons-domain.org** on port **8888**. The GUI should automatically install when you connect, and the extra custom content should automatically download after you log in. 
 
 You should expect a short delay for the downloading the first time you connect, but subsequent connections (for the same character) will only download new assets. Currently characters store a new set of code and assets for each profile, but we may try to figure out a way to share unchanging assets between character profiles in the future.
 
@@ -56,6 +57,7 @@ assets->avatars
       |->custom_rooms
       |->environments
       |->mobs
+      |->maps
 ```
 
 Profile pictures for avatars are 160x200 pngs that have the following naming structure (all lowercase):
@@ -74,10 +76,12 @@ Default sector-type based images are 560x300 pngs, are stored in `assets\environ
 Custom mobile images are 560x300 pngs and have the naming structure (all lowercase):
 `vnum_name_of_mobile.png`, e.g. `1_puff.png`.
 
+Maps should be in Mudlet `.dat` format and you will want to edit the `InitialiseMapper.lua` file to make sure they are loaded in for players.
 
-## Customising images etc (devs)
 
-Custom images are automatically downloaded by Mudlet from the relevant subdirectories under `https://www.dragons-domain.org/main/gui/custom/`. To add new custom images (which would be available to all players), you will need FTP access to the webserver; talk to [nerble](https://github.com/nerble) about this.  
+## Customising images, new maps etc (devs)
+
+Custom assets are automatically downloaded by Mudlet from the relevant subdirectories under `https://www.dragons-domain.org/main/gui/custom/`. To add new custom assets (which would be available to all players), you will need FTP access to the webserver; talk to [nerble](https://github.com/nerble) about this.  
 
 You can get a list of all current custom content by executing the php script [here](https://www.dragons-domain.org/main/gui/custom/files.php).
 

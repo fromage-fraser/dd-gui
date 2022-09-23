@@ -13,7 +13,7 @@
                 "name": "LoginBootstrap",
                 "patterns": [
                 {
-                        "pattern": "^Welcome to the Dragons Domain",
+                        "pattern": "Welcome to the Dragons Domain",
                         "type": "regex"
                 },
                 {
@@ -43,7 +43,7 @@
                         "type": "regex"
                 },
                 {
-                        "pattern": "^(?!Syntax)(?!Align:)(?!Vnum:)(?!Keywords:)(?!Fame:)(?!Thirst:)(?!Master:)(?!Sex:)(?!Level:)(?!Fighting:)(?!Inside:)(?!Platinum:)(?!Channels)(?!Name:)(?!Lvl:)(?!Hp:)(?!Hitroll:)(?!Saving)(?!Patron:)(?!Position:)(?!Inside:)(?!Age:)(?!Exp)(?!Class:)(?!Race:)(?!Area)(?!Coin:)(?!Note:)(?!Type:)(?!Description:)(?!Room:)(?!Characters)(?!Door:)(?!Keyword:)(?!Objects:)(?!or:)(?!Values:)(?!Password)(?!Str:)(?!Int:)(?!Wis:)(?!Dex:)(?!Autoexit:)(?!Autocoin)(?!Autosac:)(?!Con:)(?!Materials:)(?!Alignment:)(\\w+)\\:\\ ",
+                        "pattern": "^(?!Syntax)(?!throughout:)(?!Align:)(?!Vnum:)(?!Keywords:)(?!Fame:)(?!Thirst:)(?!Master:)(?!Sex:)(?!Level:)(?!Fighting:)(?!Inside:)(?!Platinum:)(?!Channels)(?!Name:)(?!Lvl:)(?!Hp:)(?!Hitroll:)(?!Saving)(?!Patron:)(?!Position:)(?!Inside:)(?!Age:)(?!Exp)(?!Class:)(?!Race:)(?!Area)(?!Coin:)(?!Note:)(?!Type:)(?!Description:)(?!Room:)(?!Characters)(?!Door:)(?!Keyword:)(?!Objects:)(?!or:)(?!Values:)(?!Password)(?!Str:)(?!Int:)(?!Wis:)(?!Dex:)(?!Autoexit:)(?!Autocoin)(?!Autosac:)(?!Con:)(?!Materials:)(?!Alignment:)(\\w+)\\:\\ ",
                         "type": "regex"
                 },
                 {

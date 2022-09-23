@@ -1,0 +1,6 @@
+[
+        {
+                "name": "ignores",
+                "regex": "^ignores$"
+        }
+]

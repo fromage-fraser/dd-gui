@@ -57,6 +57,9 @@
         "name": "MainWindow"
   },
   {
+        "name": "InitialiseMapper"
+  },
+  {
         "name": "SetBorders"
   }
 
