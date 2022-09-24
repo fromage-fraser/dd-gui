@@ -6,6 +6,7 @@ function get_custom_content ()
 
         downloadFile(filelist, filelist_url)
         cecho("\n\n<white>Downloading any new custom content...\n")
+
      
 end
 
