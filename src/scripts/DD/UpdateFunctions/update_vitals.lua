@@ -5,7 +5,7 @@ function update_vitals()
   DD_GUI.Hitpoints:setValue(((gmcp.Char.Vitals.hp * 1000) / gmcp.Char.Vitals.maxhp),1000)
   DD_GUI.Mana:setValue(((gmcp.Char.Vitals.mana * 1000) / gmcp.Char.Vitals.maxmana),1000)
   DD_GUI.Moves:setValue(((gmcp.Char.Vitals.move * 1000) / gmcp.Char.Vitals.maxmove),1000)
-  DD_GUI.Xp:setValue(((gmcp.Char.Worth.maxxp * 1000) / gmcp.Char.Worth.xp), 1000)
+  DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
   
   CharsheetConsole:clear()
   CharsheetConsole:resetAutoWrap()
