@@ -7,7 +7,6 @@ This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by
 
 ## Installation (players)
 
-
 To install and use the GUI, connect to the MUD through Mudlet at **dragons-domain.org** on port **8888**. The GUI should automatically install when you connect, and the extra custom content should automatically download after you log in. 
 
 You should expect a short delay for the downloading the first time you connect, but subsequent connections (for the same character) will only download new assets. Currently characters store a new set of code and assets for each profile, but we may try to figure out a way to share unchanging assets between character profiles in the future.
