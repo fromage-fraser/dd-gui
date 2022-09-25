@@ -2,90 +2,90 @@
         {
                 "name": "OnPrompt",
                 "patterns": [
-                {
-                        "pattern": "^",
-                        "type": "regex"
-                }
+                        {
+                                "pattern": "^",
+                                "type": "regex"
+                        }
                 ]
                 
         },
         {
                 "name": "LoginBootstrap",
                 "patterns": [
-                {
-                        "pattern": "Welcome to the Dragons Domain",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^Reconnecting\\.",
-                        "type": "regex"
-                }
+                        {
+                                "pattern": "Welcome to the Dragons Domain",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^Reconnecting\\.",
+                                "type": "regex"
+                        }
                 ]
                 
         },
         {
                 "name": "Channels",
                 "patterns": [
-                {
-                        "pattern": "^(\\w+) chat[s]?",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^You tell",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+)\\ tells\\ you",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+)\\ music[s]?",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(?!Syntax)(?!throughout:)(\\:\\ you\\ can\\'t\\ carry\\ that\\ many\\ items)(?!Align:)(?!Vnum:)(?!Keywords:)(?!Fame:)(?!Thirst:)(?!Master:)(?!Sex:)(?!Level:)(?!Fighting:)(?!Inside:)(?!Platinum:)(?!Channels)(?!Name:)(?!Lvl:)(?!Hp:)(?!Hitroll:)(?!Saving)(?!Patron:)(?!Position:)(?!Inside:)(?!Age:)(?!Exp)(?!Class:)(?!Race:)(?!Area)(?!Coin:)(?!Note:)(?!Type:)(?!Description:)(?!Room:)(?!Characters)(?!Door:)(?!Keyword:)(?!Objects:)(?!or:)(?!Values:)(?!Password)(?!Str:)(?!Int:)(?!Wis:)(?!Dex:)(?!Autoexit:)(?!Autocoin)(?!Autosac:)(?!Con:)(?!Materials:)(?!Alignment:)(\\w+)\\:\\ ",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+) say[s]?",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+)\\ exclaim[s]?",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+)\\ ask[s]?",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+) shout[s]?",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+)\\-\\|\\ ",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+) yell[s]?\\ ",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+) chat[s]?\\ ",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^The (\\w+) chat[s]?",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^A[n]? (\\w+) chat[s]?",
-                        "type": "regex"
-                },
-                {
-                        "pattern": "^(\\w+) clan-talk[s]?\\ ",
-                        "type": "regex"
-                }
+                        {
+                                "pattern": "^(\\w+) chat[s]?",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^You tell",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+)\\ tells\\ you",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+)\\ music[s]?",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(?!Syntax)(?!throughout:)(\\:\\ you\\ can\\'t\\ carry\\ that\\ many\\ items)(?!Align:)(?!Vnum:)(?!Keywords:)(?!Fame:)(?!Thirst:)(?!Master:)(?!Sex:)(?!Level:)(?!Fighting:)(?!Inside:)(?!Platinum:)(?!Channels)(?!Name:)(?!Lvl:)(?!Hp:)(?!Hitroll:)(?!Saving)(?!Patron:)(?!Position:)(?!Inside:)(?!Age:)(?!Exp)(?!Class:)(?!Race:)(?!Area)(?!Coin:)(?!Note:)(?!Type:)(?!Description:)(?!Room:)(?!Characters)(?!Door:)(?!Keyword:)(?!Objects:)(?!or:)(?!Values:)(?!Password)(?!Str:)(?!Int:)(?!Wis:)(?!Dex:)(?!Autoexit:)(?!Autocoin)(?!Autosac:)(?!Con:)(?!Materials:)(?!Alignment:)(\\w+)\\:\\ ",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+) say[s]?",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+)\\ exclaim[s]?",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+)\\ ask[s]?",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+) shout[s]?",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+)\\-\\|\\ ",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+) yell[s]?\\ ",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+) chat[s]?\\ ",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^The (\\w+) chat[s]?",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^A[n]? (\\w+) chat[s]?",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^(\\w+) clan-talk[s]?\\ ",
+                                "type": "regex"
+                        }
                 ]
                 
         }

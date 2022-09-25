@@ -2,5 +2,9 @@
         {
                 "name": "ignores",
                 "regex": "^ignores$"
+        },
+        {
+                "name": "ddmap",
+                "regex": "^ddmap (.+)$"
         }
 ]
