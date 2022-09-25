@@ -36,8 +36,8 @@ function load_dd_mapper ()
             [27]          = {id = 27,  r =  18, g = 116, b = 238},         -- ["WaterNoSwim"] 
             [28]          = {id = 28,  r =   2, g =  48, b = 107},         -- ["Underwater"]  
             [29]          = {id = 29,  r = 206, g = 206, b = 206},         -- ["Air"]         
-            [30]          = {id = 30, r = 208, g = 180, b =   5},         -- ["Desert"]      
-            [31]          = {id = 31, r =  54, g =  84, b =  60}          -- ["Swamp"]       
+            [30]          = {id = 30,  r = 208, g = 180, b =   5},         -- ["Desert"]      
+            [31]          = {id = 31,  r =  54, g =  84, b =  60}          -- ["Swamp"]       
         }
         
         -- list of possible movement directions and appropriate coordinate changes
@@ -52,6 +52,19 @@ function load_dd_mapper ()
             w = 'west',     s = 'south',        se = 'southeast',   sw = 'southwest',
             u = 'up',       d = 'down',         ["in"] = 'in',      out = 'out',
             l = 'look'
+        }
+        
+        local stubmap = {
+            north = 1,      northeast = 2,      northwest = 3,      east = 4,
+            west = 5,       south = 6,          southeast = 7,      southwest = 8,
+            up = 9,         down = 10,          ["in"] = 11,        out = 12,
+            northup = 13,   southdown = 14,     southup = 15,       northdown = 16,
+            eastup = 17,    westdown = 18,      westup = 19,        eastdown = 20,
+            [1] = "n",  [2] = "northeast",  [3] = "northwest",  [4] = "e",
+            [5] = "w",   [6] = "s",      [7] = "southeast",  [8] = "southwest",
+            [9] = "u",     [10] = "d",      [11] = "in",        [12] = "out",
+            [13] = "northup", [14] = "southdown", [15] = "southup", [16] = "northdown",
+            [17] = "eastup", [18] = "westdown", [19] = "westup",    [20] = "eastdown",
         }
         
         local short = {}
@@ -143,8 +156,10 @@ function load_dd_mapper ()
                 local stubs = getExitStubs1(info.vnum)
                         if stubs then
                   for _, n in ipairs(stubs) do
-                      local dir = exitmap[n]
+                      local dir = stubmap[n]
+                      --display("dir is " .. dir)
                       local id = info.exits[dir]
+                      --display("id is " .. id)
                       -- need to see how special exits are represented to handle those properly here
                       if id and getRoomName(id) then
                           setExit(info.vnum, id, dir)
