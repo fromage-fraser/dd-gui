@@ -1,0 +1,32 @@
+[
+        {
+                "name": "FailedMove",
+                "patterns": [
+                        {
+                                "pattern": "^You lack the key\\.$",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^You cannot proceed\\, as a wall blocks your way\\.",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^Ok\\.$",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^It\\'s not closed\\.$",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^It\\'s already open\\.$",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^It\\'s locked\\.$",
+                                "type": "regex"
+                        }
+                ]
+        
+        }
+]

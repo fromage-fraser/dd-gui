@@ -18,4 +18,5 @@ function bootstrap()
         build_compass()
         get_custom_content()
         initialise_mapper()
+        load_dd_mapper()
 end

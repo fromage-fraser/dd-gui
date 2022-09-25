@@ -51,6 +51,9 @@
         "name": "GetCustomContent"
   },
   {
+        "name": "GMCPMapper"
+  },
+  {
         "name": "InventoryConsole"
   },
   {
@@ -62,5 +65,4 @@
   {
         "name": "SetBorders"
   }
-
 ]
