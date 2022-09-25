@@ -1,6 +1,47 @@
 [
-  {
-    "name": "Clearscreen",
-    "keys": "ctrl+shift+alt+c"
-  }
+        {
+                "name": "Clearscreen",
+                "keys": "ctrl+shift+alt+c"
+        },
+        {
+                "name": "North",
+                "keys": "keypad+Up",
+                "command":"north"
+        },
+        {
+                "name": "South",
+                "keys": "keypad+Down",
+                "command":"south"
+        },
+        {
+                "name": "West",
+                "keys": "keypad+Left",
+                "command":"west"
+        },
+        {
+                "name": "East",
+                "keys": "keypad+Right",
+                "command":"east"
+        },
+        {
+                "name": "Up",
+                "keys": "keypad+pgup",
+                "command":"up"
+        },
+        {
+                "name": "Down",
+                "keys": "keypad+pgdn",
+                "command":"down"
+        },
+        {
+                "name": "Look",
+                "keys": "keypad+clear",
+                "command":"look"
+        },
+        {
+                "name": "Scan",
+                "keys": "keypad+ins",
+                "command":"scan"
+        }
+                
 ]
