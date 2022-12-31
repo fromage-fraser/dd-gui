@@ -27,8 +27,8 @@ To uninstall the GUI, you can simply type:
 
 To do development work on the GUI locally, you will need:
 
-- The `muddler` build tool available [here](https://github.com/demonnic/muddler).
 - The Java SDK version 8, 11, 17, or 18, available [here](https://www.oracle.com/java/technologies/downloads/).  I've been unable to get it working with version 19 as of 31/12/22, so I'd avoid that one.
+- The `muddler` build tool available [here](https://github.com/demonnic/muddler).  If you're working in Windows, by far the easiest method to get it working is [here](https://github.com/demonnic/muddler/wiki/Installation#basic-installation).
 - A text editor/IDE to work on it with (most of our devs use [Visual Studio Code](https://code.visualstudio.com/download), but it really doesn't matter).
 
 After you have installed the JVM and muddler (in that order), you should be able to clone this repo into your muddler directory (e.g. `D:\muddle\` for me) and work from `$MUDDLE_DIR\dd-gui\` thereafter.  
