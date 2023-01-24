@@ -1,5 +1,5 @@
 function update_travel()
-  
+
         if (tonumber(gmcp.Char.Vitals.position) ~= 6) then
 
                 EnemyConsole:clear()
@@ -9,10 +9,10 @@ function update_travel()
                 EnemyConsoleHitpoints:hide()
                 EnemyHitpointsLabel:hide()
                 EnemyLabel:echo("Travel Info")
-                
+
                 local room_image = ms_path .. "/avatars/default_char.png"
                 local sector_name = "Unknown"
-                
+
                 --Room images based on sector types
                 if (tonumber(gmcp.Room.Info.sector) == 0) then
                 room_image = ms_path .. "/environments/0_sect_inside.png"
@@ -51,45 +51,45 @@ function update_travel()
                 room_image = ms_path .. "/environments/11_sect_swamp.png"
                 sector_name = "Swamp"
                 end
-                
+
                 -- Custom room images.  If a custom room image exists, use it.
-                
+
                 local ri_filename
-                
+
                 if (tonumber(gmcp.Room.Info.vnum) ~= 0) then
-                        ri_filename = ms_path 
-                        .."/custom_rooms/" 
-                        ..tonumber(gmcp.Room.Info.vnum) 
-                        .."_" 
-                        ..string.lower(string.gsub(gmcp.Room.Info.name, " ", "_")) 
+                        ri_filename = ms_path
+                        .."/custom_rooms/"
+                        ..tonumber(gmcp.Room.Info.vnum)
+                        .."_"
+                        ..string.lower(string.gsub(gmcp.Room.Info.name, " ", "_"))
                         ..".png"
                 end
-                
+
                 if (file_exists(ri_filename)) then
                         room_image = ri_filename
                 end
-                
+
                 --display(ri_filename)
-                
+
                 --if (tonumber(gmcp.Room.Info.vnum) == 20695) then
                 --        room_image = ms_path .. "/custom_rooms/20695_zeldas_cabin.png"
                 --end
-                
+
                 --display(room_image)
-                
+
                 EnemyTPConsoleTop:clear()
-                --EnemyTPConsoleTop:setBackgroundImage([[ 
+                --EnemyTPConsoleTop:setBackgroundImage([[
                 --background-image: url(]] .. room_image .. [[);
                 --border: 4px solid;
-                --background-position: top left; 
-                --background-repeat: no-repeat;]], 
+                --background-position: top left;
+                --background-repeat: no-repeat;]],
                 --"style")
-                
+
                 EnemyTPConsoleTop:setBackgroundImage(room_image,"border")
-                
+
                 local stripped_room_name = string.gsub(gmcp.Room.Info.name, "\{[a-zA-Z]", "")
                 stripped_room_name = string.gsub(stripped_room_name, "\<%d+\>", "")
-                
+
                 if (#stripped_room_name) > 31 then
                         for i = #stripped_room_name, 32, -1 do
                                 stripped_room_name = replace_char(i, stripped_room_name, "")
@@ -97,7 +97,7 @@ function update_travel()
                         stripped_room_name = replace_char(31, stripped_room_name, '.')
                         stripped_room_name = replace_char(30, stripped_room_name, '.')
                 end
-                
+
                 trimmed_area_name = gmcp.Room.Info.area
 
                 if (#trimmed_area_name) > 14 then
@@ -107,29 +107,29 @@ function update_travel()
                         trimmed_area_name = replace_char(14, trimmed_area_name, '.')
                         trimmed_area_name = replace_char(13, trimmed_area_name, '.')
                 end
-                
+
                 EnemyInfoConsole:clear()
                 EnemyInfoConsole:cecho(
-                string.format("<white>Area: <ansi_white>%-15s", 
+                string.format("<white>Area: <ansi_white>%-15s",
                 trimmed_area_name)
-                ..string.format("<white>Type: <ansi_white>%-10s\n", 
-                sector_name) 
-                ..string.format("<white>Room: <ansi_white>%-30s\n", 
+                ..string.format("<white>Type: <ansi_white>%-10s\n",
+                sector_name)
+                ..string.format("<white>Room: <ansi_white>%-30s\n",
                 stripped_room_name)
                 )
-                
+
                 if (gmcp.Room.Info.flags ~= "") and not (string.find(gmcp.Room.Info.flags, "^no_mob$")) then
                         EnemyInfoConsole:cecho("<white>Room features: ")
-                
+
                         local rflags = split_str(gmcp.Room.Info.flags)
                         local last_flag_index = #rflags
-                
+
                         for index, value in ipairs(rflags) do
-                                if (value ~= "no_mob") then 
+                                if (value ~= "no_mob") then
                                         value = firstToUpper(value)
                                         value = string.gsub(value, "_", " ")
                                         EnemyInfoConsole:cecho(
-                                        string.format("<ansi_white>%s", 
+                                        string.format("<ansi_white>%s",
                                                 value)
                                         )
                                         if (last_flag_index ~= index) then
@@ -137,6 +137,6 @@ function update_travel()
                                         end
                                 end
                         end
-                end   
+                end
         end
 end
