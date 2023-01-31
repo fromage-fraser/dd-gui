@@ -1,5 +1,4 @@
 function build_enemy_console()
-
   EnemyConsole = Geyser.MiniConsole:new({
     name="EnemyConsole",
     x = "4%", y = "13%",
@@ -81,5 +80,4 @@ function build_enemy_console()
   EnemyHitpointsLabel:setColor(0,0,0,0)
   EnemyHitpointsLabel:setFgColor("Grey")
   EnemyHitpointsLabel:setFontSize(10)
-
 end
