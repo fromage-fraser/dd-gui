@@ -4,19 +4,19 @@ function load_dd_mapper ()
         -- based upon an MSDP script from the Mudlet forums in the generic mapper thread
         -- with pieces from the generic mapper script and the mmpkg mapper by breakone9r
         -- Customised for Dragons Domain MUD by Owl
-        
+
         map = map or {}
         map.room_info = map.room_info or {}
         map.prev_info = map.prev_info or {}
         map.aliases = map.aliases or {}
         map.configs = map.configs or {}
         map.configs.speedwalk_delay = 0
-        
+
         local defaults = {
             -- using Geyser to handle the mapper in this, since this is a totally new script
             mapper = {x = 0, y = 0, width = "100%", height = "100%"}
         }
-        
+
         local terrain_types = {
             -- used to make rooms of different terrain types have different colors
             -- add a new entry for each terrain type, and set the color with RGB values
@@ -25,55 +25,57 @@ function load_dd_mapper ()
             -- Numbers 1-16 and 257-272 are reserved by Mudlet. (don't use)
             -- 257-272 are the default colors the user can adjust in mapper settings (don't overwrite)
             -- We are using DD sector values +20 (so as not to conflict with reserved 1-16 range)
-            
-            [20]          = {id = 20,  r = 144, g = 144, b = 144},         -- ["Inside"]            
-            [21]          = {id = 21,  r = 100, g = 100, b = 100},         -- ["City"]        
-            [22]          = {id = 22,  r = 109, g = 241, b = 109},         -- ["Field"]       
-            [23]          = {id = 23,  r =   3, g =  72, b =   2},         -- ["Forest"]      
-            [24]          = {id = 24,  r = 125, g =  80, b =   0},         -- ["Hills"]       
-            [25]          = {id = 25,  r =  42, g =  32, b =   0},         -- ["Mountain"]    
-            [26]          = {id = 26,  r = 128, g = 180, b = 245},         -- ["WaterSwim"]   
-            [27]          = {id = 27,  r =  18, g = 116, b = 238},         -- ["WaterNoSwim"] 
-            [28]          = {id = 28,  r =   2, g =  48, b = 107},         -- ["Underwater"]  
-            [29]          = {id = 29,  r = 206, g = 206, b = 206},         -- ["Air"]         
-            [30]          = {id = 30,  r = 208, g = 180, b =   5},         -- ["Desert"]      
-            [31]          = {id = 31,  r =  54, g =  84, b =  60}          -- ["Swamp"]       
+            -- You can see the RGB colours using the converter at https://www.rgbtohex.net/
+
+            [20]          = {id = 20,  r = 144, g = 144, b = 144},         -- ["Inside"]
+            [21]          = {id = 21,  r = 100, g = 100, b = 100},         -- ["City"]
+            [22]          = {id = 22,  r = 109, g = 241, b = 109},         -- ["Field"]
+            [23]          = {id = 23,  r =   3, g =  72, b =   2},         -- ["Forest"]
+            [24]          = {id = 24,  r = 125, g =  80, b =   0},         -- ["Hills"]
+            [25]          = {id = 25,  r =  42, g =  32, b =   0},         -- ["Mountain"]
+            [26]          = {id = 26,  r = 128, g = 180, b = 245},         -- ["WaterSwim"]
+            [27]          = {id = 27,  r =  18, g = 116, b = 238},         -- ["WaterNoSwim"]
+            [28]          = {id = 28,  r =   2, g =  48, b = 107},         -- ["Underwater"]
+            [29]          = {id = 29,  r = 206, g = 206, b = 206},         -- ["Air"]
+            [30]          = {id = 30,  r = 208, g = 180, b =   5},         -- ["Desert"]
+            [31]          = {id = 31,  r =  54, g =  84, b =  60},         -- ["Swamp"]
+            [32]          = {id = 32,  r =  2,  g =  78, b =  107}         -- ["UnderwaterGround"]
         }
-        
+
         -- list of possible movement directions and appropriate coordinate changes
         local move_vectors = {
             n = {0,1,0}, s = {0,-1,0}, e = {1,0,0}, w = {-1,0,0},
             nw = {-1,1,0}, ne = {1,1,0}, sw = {-1,-1,0}, se = {1,-1,0},
             u = {0,0,1}, d = {0,0,-1}
         }
-        
+
         local exitmap = {
             n = 'north',    ne = 'northeast',   nw = 'northwest',   e = 'east',
             w = 'west',     s = 'south',        se = 'southeast',   sw = 'southwest',
             u = 'up',       d = 'down',         ["in"] = 'in',      out = 'out',
             l = 'look'
         }
-        
+
         local stubmap = {
-            north = 1,      northeast = 2,      northwest = 3,      east = 4,
-            west = 5,       south = 6,          southeast = 7,      southwest = 8,
-            up = 9,         down = 10,          ["in"] = 11,        out = 12,
-            northup = 13,   southdown = 14,     southup = 15,       northdown = 16,
-            eastup = 17,    westdown = 18,      westup = 19,        eastdown = 20,
-            [1] = "n",  [2] = "northeast",  [3] = "northwest",  [4] = "e",
-            [5] = "w",   [6] = "s",      [7] = "southeast",  [8] = "southwest",
-            [9] = "u",     [10] = "d",      [11] = "in",        [12] = "out",
-            [13] = "northup", [14] = "southdown", [15] = "southup", [16] = "northdown",
-            [17] = "eastup", [18] = "westdown", [19] = "westup",    [20] = "eastdown",
+            north = 1,          northeast = 2,      northwest = 3,      east = 4,
+            west = 5,           south = 6,          southeast = 7,      southwest = 8,
+            up = 9,             down = 10,          ["in"] = 11,        out = 12,
+            northup = 13,       southdown = 14,     southup = 15,       northdown = 16,
+            eastup = 17,        westdown = 18,      westup = 19,        eastdown = 20,
+            [1] = "n",          [2] = "northeast",  [3] = "northwest",  [4] = "e",
+            [5] = "w",          [6] = "s",          [7] = "southeast",  [8] = "southwest",
+            [9] = "u",          [10] = "d",         [11] = "in",        [12] = "out",
+            [13] = "northup",   [14] = "southdown", [15] = "southup",   [16] = "northdown",
+            [17] = "eastup",    [18] = "westdown",  [19] = "westup",    [20] = "eastdown",
         }
-        
+
         local short = {}
         for k,v in pairs(exitmap) do
             short[v] = k
         end
-        
-        
-        
+
+
+
         local function make_room()
             local info = map.room_info
             local coords = {0,0,0}
@@ -116,17 +118,17 @@ function load_dd_mapper ()
             --display("COORDS")
             --display(info.terrain)
             --display(terrain_types[tonumber(info.terrain)].id)
-            --display(terrain_types[tonumber(info.terrain)].r) 
-            --display(terrain_types[tonumber(info.terrain)].g) 
-            --display(terrain_types[tonumber(info.terrain)].b) 
+            --display(terrain_types[tonumber(info.terrain)].r)
+            --display(terrain_types[tonumber(info.terrain)].g)
+            --display(terrain_types[tonumber(info.terrain)].b)
             setRoomEnv(info.vnum, tonumber(terrain_types[tonumber(info.terrain)].id))
             setCustomEnvColor(
-              terrain_types[tonumber(info.terrain)].id, 
-              terrain_types[tonumber(info.terrain)].r, 
-              terrain_types[tonumber(info.terrain)].g, 
-              terrain_types[tonumber(info.terrain)].b, 
+              terrain_types[tonumber(info.terrain)].id,
+              terrain_types[tonumber(info.terrain)].r,
+              terrain_types[tonumber(info.terrain)].g,
+              terrain_types[tonumber(info.terrain)].b,
             255)
-            
+
             for dir, id in pairs(info.exits) do
                 -- need to see how special exits are represented to handle those properly here
                 if getRoomName(id) then
@@ -136,7 +138,7 @@ function load_dd_mapper ()
                 end
             end
         end
-        
+
         local function shift_room(dir)
             local ID = map.room_info.vnum
             local x,y,z = getRoomCoordinates(ID)
@@ -147,7 +149,7 @@ function load_dd_mapper ()
             setRoomCoordinates(ID,x,y,z)
             updateMap()
         end
-        
+
         local function handle_move()
             local info = map.room_info
             if not getRoomName(info.vnum) then
@@ -169,9 +171,9 @@ function load_dd_mapper ()
             end
             centerview(map.room_info.vnum)
         end
-        
+
         local function config()
-                        
+
             -- setting terrain colors
             for k,v in pairs(terrain_types) do
                 --display(v.id)
@@ -192,7 +194,7 @@ function load_dd_mapper ()
             table.insert(map.aliases,tempAlias([[^shift (\w+)$]],[[raiseEvent("shiftRoom",matches[2])]]))
                 table.insert(map.aliases,tempAlias([[^make_room$]],[[make_room()]]))
         end
-        
+
         local function check_doors(roomID,exits)
             -- looks to see if there are doors in designated directions
             -- used for room comparison, can also be used for pathing purposes
@@ -213,8 +215,8 @@ function load_dd_mapper ()
             end
             return statuses
         end
-        
-        
+
+
         local continue_walk, timerID
         continue_walk = function(new_room)
             if not walking then return end
@@ -241,7 +243,7 @@ function load_dd_mapper ()
                 timerID = tempTimer(wait, function() continue_walk() end)
             end
         end
-        
+
         function map.speedwalk(roomID, walkPath, walkDirs)
             roomID = roomID or speedWalkPath[#speedWalkPath]
             getPath(map.room_info.vnum, roomID)
@@ -292,7 +294,7 @@ function load_dd_mapper ()
                 walking = false
             end
         end
-        
+
         function doSpeedWalk()
             if #speedWalkPath ~= 0 then
                 map.speedwalk(nil, speedWalkPath, speedWalkDir)
@@ -300,8 +302,8 @@ function load_dd_mapper ()
                 map.echo("No path to chosen room found.",false,true)
             end
         end
-        
-        
+
+
         function map.eventHandler(event,...)
             if event == "gmcp.Room.Info" then
                 map.prev_info = map.room_info
@@ -329,7 +331,7 @@ function load_dd_mapper ()
                 config()
             end
         end
-        
+
         mapper_event_1 = registerAnonymousEventHandler("gmcp.Room.Info","map.eventHandler")
         mapper_event_2 = registerAnonymousEventHandler("shiftRoom","map.eventHandler")
         mapper_event_3 = registerAnonymousEventHandler("sysConnectionEvent", "map.eventHandler")

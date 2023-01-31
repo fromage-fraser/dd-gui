@@ -95,15 +95,67 @@ CharsheetConsole:cecho(
     ..string.format(" <white>Fame: <cyan>%s<reset>\n\n",
         gmcp.Char.Stats.fame)
 
-    ..string.format("<white>Alignment: <cyan>%s   <white>Save vs Magic: <cyan>%s\n",
-        gmcp.Char.Worth.alignment,
-        gmcp.Char.Stats.save_vs)
+    .."<reset>\n"
+)
 
-    ..string.format("<white>Hit roll: <red>%s<reset>  <white>Dam roll: <red>%s<reset>  <white>A/C: <red>%s<reset>\n\n",
-        gmcp.Char.Stats.hitroll,
-        gmcp.Char.Stats.damroll,
-        gmcp.Char.Stats.ac)
+if (tonumber(gmcp.Char.Worth.alignment) ~= 50000) then
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("<white>Alignment: <cyan>%s   <white>",
+            gmcp.Char.Worth.alignment)
+    )
+else
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("<white>Alignment: <cyan>??   <white>")
+    )
+end
 
+if (tonumber(gmcp.Char.Stats.save_vs) ~= 50000) then
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("Save vs Magic: <cyan>%s\n",
+            gmcp.Char.Stats.save_vs)
+        .."<reset>\n"
+    )
+else
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("Save vs Magic: <cyan>??\n")
+        .."<reset>\n"
+    )
+end
+
+
+if (tonumber(gmcp.Char.Stats.hitroll) ~= 50000) then
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("<white>Hit roll: <red>%s<reset>  <white>Dam roll: <red>%s<reset>",
+            gmcp.Char.Stats.hitroll,
+            gmcp.Char.Stats.damroll)
+    )
+else
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("<white>Hit roll: <red>??<reset>  <white>Dam roll: <red>??<reset>")
+    )
+end
+
+if (tonumber(gmcp.Char.Stats.ac) ~= 50000) then
+    CharsheetConsole:cecho(
+    "<white>"
+    ..string.format("  A/C: <red>%s<reset>\n\n",
+    gmcp.Char.Stats.ac)
+    )
+else
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("  A/C: <red>??<reset>\n\n")
+    )
+end
+
+CharsheetConsole:cecho(
+    "<white>"
     ..string.format("<white>P: <light_steel_blue>%d<white>  G: <yellow>%d<reset>  <white>S: <DimGrey>%d<reset>  <white>C: <ansi_yellow>%d<reset>\n",
         gmcp.Char.Worth.platinum,
         gmcp.Char.Worth.gold,
@@ -111,8 +163,8 @@ CharsheetConsole:cecho(
         gmcp.Char.Worth.copper)
 
     .."<reset>\n"
-
   )
+
   if (gmcp.Char.Base.class) == "Smithy"
   or (gmcp.Char.Base.class) == "Runesmith"
   or (gmcp.Char.Base.class) == "Engineer" then
