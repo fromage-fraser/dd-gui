@@ -21,7 +21,9 @@ function update_enemy()
                         ..".png"
                 end
 
+                enemy_image = string.gsub(enemy_image, "'", "_")
                 --display(enemy_image)
+
                 EnemyTPConsoleTop:clear()
 
                 if (file_exists(enemy_image)) then

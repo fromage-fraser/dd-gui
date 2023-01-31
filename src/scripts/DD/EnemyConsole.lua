@@ -9,7 +9,7 @@ function build_enemy_console()
     scrollBar = false,
     fontSize = 10,
   }, DD_GUI.EnemyBox)
-
+  
   EnemyTPConsoleTop = Geyser.MiniConsole:new({
     name="EnemyTPConsoleTop",
     x = "0%", y = "0%",
