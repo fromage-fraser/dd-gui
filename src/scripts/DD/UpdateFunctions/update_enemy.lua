@@ -35,7 +35,7 @@ function update_enemy()
                         --display(count)
                         if (gmcp.Char.Enemies[1][i].name) ~= nil then
                                 EnemyInfoConsole:cecho("<white>Enemy: <reset>"..string.format("%-22s", firstToUpper(gmcp.Char.Enemies[1][1].name)))
-                                EnemyInfoConsole:cecho("<white>Lvl: <reset>" ..string.format("%-3s", gmcp.Char.Enemies[1][1].level))
+                                EnemyInfoConsole:cecho("\n<white>Lvl: <reset>" ..string.format("%-3s", gmcp.Char.Enemies[1][1].level))
                                 EnemyConsoleHitpoints:setValue(((gmcp.Char.Enemies[1][1].hp * 1000) / gmcp.Char.Enemies[1][1].maxhp),1000)
                         end
                 end

@@ -2,5 +2,9 @@
         {
                 "name": "ugui",
                 "regex": "^ugui$"
+        },
+        {
+                "name": "gcc",
+                "regex": "^gcc$"
         }
 ]

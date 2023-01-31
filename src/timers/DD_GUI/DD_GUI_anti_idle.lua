@@ -1,3 +1,6 @@
 if not hasFocus() then
-  send("ql")
+  array={"ql","lfq"}
+  local randomIndex = math.random(1, #array) -- or short math.random(#array)
+  local randomElement = array[randomIndex]
+  send(randomElement)
 end
