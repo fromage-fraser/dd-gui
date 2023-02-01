@@ -68,11 +68,19 @@ function update_travel()
                         ..".png"
                 end
 
+                ri_filename = string.gsub(ri_filename, "'", "_")
+
                 if (file_exists(ri_filename)) then
                         room_image = ri_filename
                 end
 
                 --display(ri_filename)
+
+                --if (tonumber(gmcp.Room.Info.vnum) == 20695) then
+                --        room_image = ms_path .. "/custom_rooms/20695_zeldas_cabin.png"
+                --end
+
+                --display(room_image)
 
                 --if (tonumber(gmcp.Room.Info.vnum) == 20695) then
                 --        room_image = ms_path .. "/custom_rooms/20695_zeldas_cabin.png"
