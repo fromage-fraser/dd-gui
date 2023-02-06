@@ -1,4 +1,11 @@
+timerid = 1
+timerid2 = 1
+
 function get_custom_content()
+    killTimer(timerid)
+    killTimer(timerid2)
+    local timerid = nil
+    local timerid2 = nil
     local lfs = require "lfs"
     local filelist = getMudletHomeDir() .. "/DD_GUI/custom_filelist.txt"
     local filelist_url = 'https://www.dragons-domain.org/main/gui/custom/files.php'
@@ -6,7 +13,7 @@ function get_custom_content()
 
     cecho("\n\n<white>Checking for new custom content...\n")
     downloadFile(filelist, filelist_url)
-    tempTimer(3,
+    timerid = tempTimer(3,
       function()
         if (file_exists(filelist)) then
           lines = lines_from(filelist)
@@ -59,9 +66,14 @@ function get_custom_content()
             end
           end
         else
-          cecho("\n<white>No new custom content.\n")
+          cecho("\n<white>No new custom content to download.\n")
         end
 
+      end
+      )
+      timerid2 = tempTimer( 5,
+      function()
+        update_travel()
       end
       )
   end

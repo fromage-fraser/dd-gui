@@ -5,6 +5,8 @@ function load_dd_mapper ()
         -- with pieces from the generic mapper script and the mmpkg mapper by breakone9r
         -- Customised for Dragons Domain MUD by Owl
 
+        cecho("Loading Dragons Domain custom mapper.\n")
+
         map = map or {}
         map.room_info = map.room_info or {}
         map.prev_info = map.prev_info or {}
@@ -39,7 +41,7 @@ function load_dd_mapper ()
             [29]          = {id = 29,  r = 206, g = 206, b = 206},         -- ["Air"]
             [30]          = {id = 30,  r = 208, g = 180, b =   5},         -- ["Desert"]
             [31]          = {id = 31,  r =  54, g =  84, b =  60},         -- ["Swamp"]
-            [32]          = {id = 32,  r =  2,  g =  78, b =  107}         -- ["UnderwaterGround"]
+            [32]          = {id = 32,  r =  2,  g =  78, b = 107}         -- ["UnderwaterGround"]
         }
 
         -- list of possible movement directions and appropriate coordinate changes
@@ -73,8 +75,6 @@ function load_dd_mapper ()
         for k,v in pairs(exitmap) do
             short[v] = k
         end
-
-
 
         local function make_room()
             local info = map.room_info
