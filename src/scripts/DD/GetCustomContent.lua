@@ -68,7 +68,6 @@ function get_custom_content()
         else
           cecho("\n<white>No new custom content to download.\n")
         end
-
       end
       )
       timerid2 = tempTimer( 5,

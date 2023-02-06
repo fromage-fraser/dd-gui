@@ -254,7 +254,6 @@ CharsheetConsole:cecho(
           gmcp.Char.Worth.adamantite,
           gmcp.Char.Worth.electrum,
           gmcp.Char.Worth.starmetal)
-
         .."<reset>"
       )
   end

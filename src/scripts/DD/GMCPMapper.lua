@@ -41,7 +41,7 @@ function load_dd_mapper ()
             [29]          = {id = 29,  r = 206, g = 206, b = 206},         -- ["Air"]
             [30]          = {id = 30,  r = 208, g = 180, b =   5},         -- ["Desert"]
             [31]          = {id = 31,  r =  54, g =  84, b =  60},         -- ["Swamp"]
-            [32]          = {id = 32,  r =  2,  g =  78, b = 107}         -- ["UnderwaterGround"]
+            [32]          = {id = 32,  r =  2,  g =  78, b = 107}          -- ["UnderwaterGround"]
         }
 
         -- list of possible movement directions and appropriate coordinate changes
