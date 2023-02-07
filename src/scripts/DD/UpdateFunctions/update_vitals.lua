@@ -5,7 +5,8 @@ function update_vitals()
   DD_GUI.Hitpoints:setValue(((gmcp.Char.Vitals.hp * 1000) / gmcp.Char.Vitals.maxhp),1000)
   DD_GUI.Mana:setValue(((gmcp.Char.Vitals.mana * 1000) / gmcp.Char.Vitals.maxmana),1000)
   DD_GUI.Moves:setValue(((gmcp.Char.Vitals.move * 1000) / gmcp.Char.Vitals.maxmove),1000)
-  DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
+  --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
+  DD_GUI.Xp:setValue((((gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl) * 1000) / gmcp.Char.Worth.xplvl), 1000)
 
   CharsheetConsole:clear()
   CharsheetConsole:resetAutoWrap()
@@ -173,7 +174,7 @@ if (tonumber(gmcp.Char.Stats.swift) ~= 50000) then
         "<white>"
         ..string.format("Swiftness:     <cyan>%-4s\n",
             swift_w_perc)
-        .."<reset>\n"
+        .."<reset>"
     )
 
 else
