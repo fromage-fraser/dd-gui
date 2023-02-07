@@ -2,18 +2,20 @@ debug.setmetatable(nil, { __index=function () end })
 
 function update_inventory()
   local quantity_ordered = {}
-  
+
   for key, value in orderedPairs(gmcp.Char.Items[1]) do
-    quantity_ordered[key] = value.quan
+    if key ~= nil then
+        quantity_ordered[key] = value.quan
+    end
   end
-  
+
   --display(dump(quantity_ordered))
   local sorted_quan_keys = getKeysSortedByValue(quantity_ordered, function(a, b) return tonumber(a) > tonumber(b) end)
   --display(dump(sorted_quan_keys))
-  
+
   InventoryConsole:clear()
   InventoryConsole:resetAutoWrap ()
-  
+
   for i, count in ipairs(sorted_quan_keys) do
     --local has_mod = 0
     if (gmcp.Char.Items[1][count].quan) ~= nil then
@@ -33,6 +35,6 @@ function update_inventory()
         InventoryConsole:echo(string.format("%-28s", desc_string).."\n")
       end
     end
-    
+
   end
 end

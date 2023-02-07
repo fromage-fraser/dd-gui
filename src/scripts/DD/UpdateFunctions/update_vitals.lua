@@ -5,7 +5,8 @@ function update_vitals()
   DD_GUI.Hitpoints:setValue(((gmcp.Char.Vitals.hp * 1000) / gmcp.Char.Vitals.maxhp),1000)
   DD_GUI.Mana:setValue(((gmcp.Char.Vitals.mana * 1000) / gmcp.Char.Vitals.maxmana),1000)
   DD_GUI.Moves:setValue(((gmcp.Char.Vitals.move * 1000) / gmcp.Char.Vitals.maxmove),1000)
-  DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
+  --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
+  DD_GUI.Xp:setValue((((gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl) * 1000) / gmcp.Char.Worth.xplvl), 1000)
 
   CharsheetConsole:clear()
   CharsheetConsole:resetAutoWrap()
@@ -27,6 +28,7 @@ function update_vitals()
   ]]--
 
   -- display(gmcp.Char.Base.race:lower():gsub("-", "_"))
+  -- display(pfp_filename)
   -- Replace the below with your avatar filename and uncomment the below line if you want a custom avatar. Should
   -- be a 160 x 200 px .png in the ms_path + /avatars/ directory
   -- pfp_filename = my_custom_avatar_filename.png'
@@ -92,16 +94,40 @@ CharsheetConsole:cecho(
     ..string.format("              <white>Con: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
         gmcp.Char.Stats.con_mod,
         gmcp.Char.Stats.con)
-    ..string.format(" <white>Fame: <cyan>%s<reset>\n\n",
+    ..string.format(" <white>Fame: <cyan>%s<reset>\n",
         gmcp.Char.Stats.fame)
 
-    .."<reset>\n"
+    .."<reset>"
 )
+
+local made_return = false
+
+if (tonumber(gmcp.Char.Worth.alignment) == 50000) and
+   (tonumber(gmcp.Char.Stats.save_vs) == 50000) and
+   (made_return == false) then
+    made_return = true
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("\n")
+    )
+end
+
+if (gmcp.Char.Base.class) ~= "Smithy" and
+   (gmcp.Char.Base.subclass) ~= "Runesmith" and
+   (gmcp.Char.Base.subclass) ~= "Engineer" and
+   (made_return == false) then
+    made_return = true
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("\n")
+    )
+end
+
 
 if (tonumber(gmcp.Char.Worth.alignment) ~= 50000) then
     CharsheetConsole:cecho(
         "<white>"
-        ..string.format("<white>Alignment: <cyan>%s   <white>",
+        ..string.format("<white>Alignment: <cyan>%-7s<white>",
             gmcp.Char.Worth.alignment)
     )
 else
@@ -114,18 +140,51 @@ end
 if (tonumber(gmcp.Char.Stats.save_vs) ~= 50000) then
     CharsheetConsole:cecho(
         "<white>"
-        ..string.format("Save vs Magic: <cyan>%s\n",
+        ..string.format("Save vs Magic: <cyan>%-4s",
             gmcp.Char.Stats.save_vs)
         .."<reset>\n"
     )
 else
     CharsheetConsole:cecho(
         "<white>"
-        ..string.format("Save vs Magic: <cyan>??\n")
+        ..string.format("Save vs Magic: <cyan>??")
         .."<reset>\n"
     )
 end
 
+if (tonumber(gmcp.Char.Stats.crit) ~= 50000) then
+    local crit_w_perc = gmcp.Char.Stats.crit .. "%"
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("<white>Critical:  <cyan>%-7s<white>",
+            crit_w_perc)
+    )
+--[[
+else
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("<white>Critical:  <cyan>??  <white>")
+    )
+--]]
+end
+
+if (tonumber(gmcp.Char.Stats.swift) ~= 50000) then
+    local swift_w_perc = gmcp.Char.Stats.swift .. "%"
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("Swiftness:     <cyan>%-4s\n",
+            swift_w_perc)
+        .."<reset>"
+    )
+
+else
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("\n")
+        .."<reset>"
+    )
+
+end
 
 if (tonumber(gmcp.Char.Stats.hitroll) ~= 50000) then
     CharsheetConsole:cecho(
@@ -144,19 +203,40 @@ end
 if (tonumber(gmcp.Char.Stats.ac) ~= 50000) then
     CharsheetConsole:cecho(
     "<white>"
-    ..string.format("  A/C: <red>%s<reset>\n\n",
+    ..string.format("  A/C: <red>%s<reset>\n",
     gmcp.Char.Stats.ac)
     )
 else
     CharsheetConsole:cecho(
         "<white>"
-        ..string.format("  A/C: <red>??<reset>\n\n")
+        ..string.format("  A/C: <red>??<reset>\n")
+    )
+end
+
+if (tonumber(gmcp.Char.Stats.r_acid) ~= 50000) then
+
+    local acid_w_perc  = gmcp.Char.Stats.r_acid .. "%"
+    local light_w_perc = gmcp.Char.Stats.r_lightning .. "%"
+    local heat_w_perc  = gmcp.Char.Stats.r_heat .. "%"
+    local cold_w_perc  = gmcp.Char.Stats.r_cold .. "%"
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("Res: A: <green>%-4s <white>L: <cyan>%-4s <white>H: <orange>%-4s <white>C: <SkyBlue>%-4s<reset>\n",
+          acid_w_perc,
+          light_w_perc,
+          heat_w_perc,
+          cold_w_perc)
+    )
+else
+    CharsheetConsole:cecho(
+        "<white>"
+        ..string.format("\n")
     )
 end
 
 CharsheetConsole:cecho(
     "<white>"
-    ..string.format("<white>P: <light_steel_blue>%d<white>  G: <yellow>%d<reset>  <white>S: <DimGrey>%d<reset>  <white>C: <ansi_yellow>%d<reset>\n",
+    ..string.format("[<green>$<white>]: <white>P: <light_steel_blue>%-4d<white> G: <yellow>%-4d<reset> <white>S: <DimGrey>%-4d<reset> <white>C: <ansi_yellow>%-4d<reset>\n",
         gmcp.Char.Worth.platinum,
         gmcp.Char.Worth.gold,
         gmcp.Char.Worth.silver,
@@ -166,17 +246,16 @@ CharsheetConsole:cecho(
   )
 
   if (gmcp.Char.Base.class) == "Smithy"
-  or (gmcp.Char.Base.class) == "Runesmith"
-  or (gmcp.Char.Base.class) == "Engineer" then
+  or (gmcp.Char.Base.subclass) == "Runesmith"
+  or (gmcp.Char.Base.subclass) == "Engineer" then
       CharsheetConsole:cecho(
-        string.format("<white>St: <light_steel_blue>%d<white>  Ti: <ansi_yellow>%d<reset>  <white>Ad: <yellow>%d<reset>  <white>El: <white>%d<reset>  <white>Sm: <red>%d<reset>\n",
+        string.format("Mat: <white>S: <light_steel_blue>%-3d<white> T: <ansi_yellow>%-3d<white>A: <yellow>%-3d<white>E: <white>%-3d<white>S: <red>%-3d",
           gmcp.Char.Worth.steel,
           gmcp.Char.Worth.titanium,
           gmcp.Char.Worth.adamantite,
           gmcp.Char.Worth.electrum,
           gmcp.Char.Worth.starmetal)
-
-        .."<reset>\n"
+        .."<reset>"
       )
   end
 end
