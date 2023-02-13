@@ -14,7 +14,7 @@ function build_enemy_console()
   EnemyTPConsoleTop = Geyser.MiniConsole:new({
     name="EnemyTPConsoleTop",
     x = "0%", y = "0%",
-    width="100%",
+    width="300px",
     height="69%",
     autoWrap = true,
     color = "black",
