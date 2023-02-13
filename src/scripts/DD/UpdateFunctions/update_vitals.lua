@@ -1,6 +1,42 @@
 debug.setmetatable(nil, { __index=function () end })
 
 function update_vitals()
+    if not hasFocus() then
+        lost_focus = true
+      end
+
+    if lost_focus == true then
+    if hasFocus() then
+        set_borders()
+        ui_container()
+        create_background()
+        define_boxes()
+        build_gauges()
+        build_affects_box()
+        build_affects_console()
+        build_inventory_box()
+        build_inventory_console()
+        build_channel_box()
+        build_channel_console()
+        build_charsheet_box()
+        build_charsheet_console()
+        build_enemy_box()
+        build_enemy_console()
+        build_compass()
+        lost_focus = false
+    end
+  end
+
+  if (gmcp.Char.Vitals.hp > gmcp.Char.Vitals.maxhp) then
+      gmcp.Char.Vitals.maxhp = gmcp.Char.Vitals.hp
+  end
+  if (gmcp.Char.Vitals.mana > gmcp.Char.Vitals.maxmana) then
+      gmcp.Char.Vitals.maxmana = gmcp.Char.Vitals.mana
+  end
+  if (gmcp.Char.Vitals.move > gmcp.Char.Vitals.maxmove) then
+      gmcp.Char.Vitals.maxmove = gmcp.Char.Vitals.move
+  end
+
   --GUI.Hitpoints:setValue((100/tonumber(gmcp.Char.Vitals.maxhp))*tonumber(gmcp.Char.Vitals.hp),100,tonumber(gmcp.Char.Vitals.hp))
   DD_GUI.Hitpoints:setValue(((gmcp.Char.Vitals.hp * 1000) / gmcp.Char.Vitals.maxhp),1000)
   DD_GUI.Mana:setValue(((gmcp.Char.Vitals.mana * 1000) / gmcp.Char.Vitals.maxmana),1000)
@@ -189,14 +225,14 @@ end
 if (tonumber(gmcp.Char.Stats.hitroll) ~= 50000) then
     CharsheetConsole:cecho(
         "<white>"
-        ..string.format("<white>Hit roll: <red>%s<reset>  <white>Dam roll: <red>%s<reset>",
+        ..string.format("<white>Hitroll: <red>%s<reset>  <white>Damroll: <red>%s<reset>",
             gmcp.Char.Stats.hitroll,
             gmcp.Char.Stats.damroll)
     )
 else
     CharsheetConsole:cecho(
         "<white>"
-        ..string.format("<white>Hit roll: <red>??<reset>  <white>Dam roll: <red>??<reset>")
+        ..string.format("<white>Hitroll: <red>??<reset>  <white>Damroll: <red>??<reset>")
     )
 end
 

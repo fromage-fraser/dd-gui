@@ -14,8 +14,8 @@ function build_charsheet_console()
     CharsheetPFPConsole = Geyser.MiniConsole:new({
       name="CharsheetPFPConsole",
       x = "0%", y = "0%",
-      width="35%",
-      height="45%",
+      width="99px",
+      height="124px",
       autoWrap = true,
       color = "black",
       scrollBar = false,
