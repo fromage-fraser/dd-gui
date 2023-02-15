@@ -27,20 +27,26 @@ function update_vitals()
     end
   end
 
+  local hp      = gmcp.Char.Vitals.hp
+  local maxhp   = gmcp.Char.Vitals.maxhp
+  local mana    = gmcp.Char.Vitals.mana
+  local maxmana = gmcp.Char.Vitals.maxmana
+  local move    = gmcp.Char.Vitals.move
+  local maxmove = gmcp.Char.Vitals.maxmove
+
   if (gmcp.Char.Vitals.hp > gmcp.Char.Vitals.maxhp) then
-      gmcp.Char.Vitals.maxhp = gmcp.Char.Vitals.hp
+      hp = maxhp
   end
   if (gmcp.Char.Vitals.mana > gmcp.Char.Vitals.maxmana) then
-      gmcp.Char.Vitals.maxmana = gmcp.Char.Vitals.mana
+      mana = maxmana
   end
   if (gmcp.Char.Vitals.move > gmcp.Char.Vitals.maxmove) then
-      gmcp.Char.Vitals.maxmove = gmcp.Char.Vitals.move
+      move = maxmove
   end
-
   --GUI.Hitpoints:setValue((100/tonumber(gmcp.Char.Vitals.maxhp))*tonumber(gmcp.Char.Vitals.hp),100,tonumber(gmcp.Char.Vitals.hp))
-  DD_GUI.Hitpoints:setValue(((gmcp.Char.Vitals.hp * 1000) / gmcp.Char.Vitals.maxhp),1000)
-  DD_GUI.Mana:setValue(((gmcp.Char.Vitals.mana * 1000) / gmcp.Char.Vitals.maxmana),1000)
-  DD_GUI.Moves:setValue(((gmcp.Char.Vitals.move * 1000) / gmcp.Char.Vitals.maxmove),1000)
+  DD_GUI.Hitpoints:setValue(((hp * 1000) / maxhp),1000)
+  DD_GUI.Mana:setValue(((mana * 1000) / maxmana),1000)
+  DD_GUI.Moves:setValue(((move * 1000) / maxmove),1000)
   --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
   DD_GUI.Xp:setValue((((gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl) * 1000) / gmcp.Char.Worth.xplvl), 1000)
 
@@ -67,7 +73,7 @@ function update_vitals()
   -- display(pfp_filename)
   -- Replace the below with your avatar filename and uncomment the below line if you want a custom avatar. Should
   -- be a 160 x 200 px .png in the ms_path + /avatars/ directory
-  -- pfp_filename = my_custom_avatar_filename.png'
+  -- pfp_filename = 'abbadon.png'
 
   resetBackgroundImage("CharsheetPFPConsole")
   local char_image = ms_path .. '/avatars/' .. pfp_filename

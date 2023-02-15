@@ -17,10 +17,6 @@
                                 "type": "regex"
                         },
                         {
-                                "pattern": "^Dragons Domain version",
-                                "type": "regex"
-                        },
-                        {
                             "pattern": "^Welcome to the Dragons Domain... tread carefully, adventurer!",
                             "type": "regex"
                         }

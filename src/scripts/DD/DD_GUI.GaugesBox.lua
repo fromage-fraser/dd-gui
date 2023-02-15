@@ -1,4 +1,10 @@
 function build_gauges()
+    local hp      = gmcp.Char.Vitals.hp
+    local maxhp   = gmcp.Char.Vitals.maxhp
+    local mana    = gmcp.Char.Vitals.mana
+    local maxmana = gmcp.Char.Vitals.maxmana
+    local move    = gmcp.Char.Vitals.move
+    local maxmove = gmcp.Char.Vitals.maxmove
 
     DD_GUI.Footer = Geyser.HBox:new({
       name = "DD_GUI.Footer",
@@ -55,9 +61,9 @@ function build_gauges()
     DD_GUI.Hitpoints.back:setStyleSheet(DD_GUI.HitpointsGaugeBackCSS:getCSS())
     DD_GUI.Hitpoints.front:setStyleSheet(DD_GUI.HitpointsGaugeFrontCSS:getCSS())
     if (gmcp.Char.Vitals.hp > gmcp.Char.Vitals.maxhp) then
-      gmcp.Char.Vitals.maxhp = gmcp.Char.Vitals.hp
+      hp = maxhp
     end
-    DD_GUI.Hitpoints:setValue(((gmcp.Char.Vitals.hp * 1000) / gmcp.Char.Vitals.maxhp),1000)
+    DD_GUI.Hitpoints:setValue(((hp * 1000) / maxhp),1000)
 
     HitpointsLabel = Geyser.Label:new({
       name = "HitpointsLabel",
@@ -94,9 +100,9 @@ function build_gauges()
     DD_GUI.Mana.back:setStyleSheet(DD_GUI.ManaGaugeBackCSS:getCSS())
     DD_GUI.Mana.front:setStyleSheet(DD_GUI.ManaGaugeFrontCSS:getCSS())
     if (gmcp.Char.Vitals.mana > gmcp.Char.Vitals.maxmana) then
-      gmcp.Char.Vitals.maxmana = gmcp.Char.Vitals.mana
+      mana = maxmana
     end
-    DD_GUI.Mana:setValue(((gmcp.Char.Vitals.mana * 1000) / gmcp.Char.Vitals.maxmana),1000)
+    DD_GUI.Mana:setValue(((mana * 1000) / maxmana),1000)
 
     ManaLabel = Geyser.Label:new({
       name = "ManaLabel",
@@ -170,9 +176,9 @@ function build_gauges()
     DD_GUI.Moves.back:setStyleSheet(DD_GUI.MovesGaugeBackCSS:getCSS())
     DD_GUI.Moves.front:setStyleSheet(DD_GUI.MovesGaugeFrontCSS:getCSS())
     if (gmcp.Char.Vitals.move > gmcp.Char.Vitals.maxmove) then
-      gmcp.Char.Vitals.maxmove = gmcp.Char.Vitals.move
+      move = maxmove
     end
-    DD_GUI.Moves:setValue(((gmcp.Char.Vitals.move * 1000) / gmcp.Char.Vitals.maxmove),1000)
+    DD_GUI.Moves:setValue(((move * 1000) / maxmove),1000)
 
     MovesLabel = Geyser.Label:new({
       name = "MovesLabel",

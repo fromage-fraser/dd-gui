@@ -73,6 +73,7 @@ function get_custom_content()
       timerid2 = tempTimer( 5,
       function()
         update_travel()
+        installPackage("https://github.com/demonnic/EMCO/releases/latest/download/EMCOChat.mpackage")
       end
       )
   end
