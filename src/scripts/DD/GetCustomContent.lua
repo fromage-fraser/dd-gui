@@ -11,14 +11,14 @@ function get_custom_content()
     local filelist_url = 'https://www.dragons-domain.org/main/gui/custom/files.php'
     local lines = {}
 
-    cecho("\n\n<white>Checking for new custom content...\n")
+    cecho("\n\n<white>Checking for new custom media...\n")
     downloadFile(filelist, filelist_url)
     timerid = tempTimer(3,
       function()
         if (file_exists(filelist)) then
           lines = lines_from(filelist)
         else
-          cecho("\n<white>Custom content unable to be checked.\n")
+          cecho("\n<white>Custom media unable to be checked.\n")
           return
         end
 
@@ -58,22 +58,21 @@ function get_custom_content()
         end
 
         if (tonumber(dl_count) > 0) then
-          cecho("\n<white>Found new custom content to download.\n")
+          cecho("\n<white>Downloaded new custom media.\n")
           for i, result in pairs(results) do
-            if (result.success == true) then
-              local message = string.format("<white>Downloaded:<red> %s\n", result.url)
+            --[[if (result.success == true) then
+              local message = string.format(".")
               cecho("" .. message)
-            end
+            end--]]
           end
         else
-          cecho("\n<white>No new custom content to download.\n")
+          cecho("\n<white>No new custom media to download.\n")
         end
       end
       )
       timerid2 = tempTimer( 5,
       function()
         update_travel()
-        installPackage("https://github.com/demonnic/EMCO/releases/latest/download/EMCOChat.mpackage")
       end
       )
   end

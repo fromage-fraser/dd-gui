@@ -5,14 +5,17 @@ function update_affects()
   for key, value in orderedPairs(gmcp.Char.Affect[1]) do
     duration_ordered[key] = value.duration
   end
-  
+
   --display(dump(duration_ordered))
-  local sorted_dur_keys = getKeysSortedByValue(duration_ordered, function(a, b) return tonumber(a) < tonumber(b) end)
+  local sorted_dur_keys = getKeysSortedByValue(duration_ordered, function(a, b) return tonumber(b) < tonumber(a) end)
   --display(dump(sorted_dur_keys))
-  
+
   AffectsConsole:clear()
   AffectsConsole:resetAutoWrap ()
-  
+  if next(sorted_dur_keys) == nil then
+    AffectsConsole:cecho("Nothing.<reset>")
+  end
+
   for i, count in ipairs(sorted_dur_keys) do
     local has_mod = 0
     --display(name)
