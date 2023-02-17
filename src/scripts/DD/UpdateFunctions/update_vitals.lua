@@ -75,6 +75,58 @@ function update_vitals()
   -- be a 160 x 200 px .png in the ms_path + /avatars/ directory
   -- pfp_filename = 'abbadon.png'
 
+  -- Shifter stuff
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "hawk") then
+    pfp_filename = 'hawk_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "chameleon") then
+    pfp_filename = 'chameleon_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "cat") then
+    pfp_filename = 'cat_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "snake") then
+    pfp_filename = 'snake_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "scorpion") then
+    pfp_filename = 'scorpion_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "spider") then
+    pfp_filename = 'spider_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "bear") then
+    pfp_filename = 'bear_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "tiger") then
+    pfp_filename = 'tiger_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "hydra") then
+    pfp_filename = 'hydra_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "phoenix") then
+    pfp_filename = 'phoenix_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "demon") then
+    pfp_filename = 'demon_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "dragon") then
+    pfp_filename = 'dragon_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "fly") then
+    pfp_filename = 'fly_form.png'
+  end
+  if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "griffin") then
+    pfp_filename = 'griffin_form.png'
+  end
+
+  --Werewolf stuff
+  if (gmcp.Char.Base.subclass == "Werewolf") and (gmcp.Char.Vitals.form == "wolf") then
+    pfp_filename = 'wolf_form.png'
+  end
+  if (gmcp.Char.Base.subclass == "Werewolf") and (gmcp.Char.Vitals.form == "direwolf") then
+    pfp_filename = 'direwolf_form.png'
+  end
+
   resetBackgroundImage("CharsheetPFPConsole")
   local char_image = ms_path .. '/avatars/' .. pfp_filename
   local def_image = ms_path .. '/avatars/' .. 'default_char.png'
@@ -119,9 +171,32 @@ end
 
 CharsheetConsole:cecho(
     "<white>"
-    ..string.format("              <white>Level: <ansi_white>%d <white>Sex: <ansi_white>%s\n\n",
+    ..string.format("              <white>Level: <ansi_white>%d <white>Sex: <ansi_white>%s\n",
         gmcp.Char.Worth.level, firstToUpper(chsex_string))
-    ..string.format("              <white>Str: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
+    .."<reset>"
+)
+
+if (gmcp.Char.Base.class == "Shape Shifter") or (gmcp.Char.Base.subclass == "Werewolf") then
+  CharsheetConsole:cecho(
+    "<white>"
+    ..string.format("              <white>Form:  <ansi_white>%s\n",
+        firstToUpper(gmcp.Char.Vitals.form))
+    .."<reset>"
+  )
+
+end
+if (gmcp.Char.Base.subclass == "Werewolf") or (gmcp.Char.Base.subclass == "Vampire") then
+  CharsheetConsole:cecho(
+    "<white>"
+    ..string.format("              <white>Rage:  <red>%s<reset>/<red>%s<reset>\n",
+        gmcp.Char.Vitals.rage,
+        gmcp.Char.Vitals.maxrage)
+    .."<reset>"
+  )
+end
+
+CharsheetConsole:cecho(""
+    ..string.format("\n              <white>Str: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
         gmcp.Char.Stats.str_mod,
         gmcp.Char.Stats.str)
     ..string.format(" <white>Int: <cyan>%s<reset>(<ansi_cyan>%s<reset>)\n",
