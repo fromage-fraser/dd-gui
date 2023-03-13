@@ -139,11 +139,13 @@ function build_gauges()
     DD_GUI.Xp.back:setStyleSheet(DD_GUI.XpGaugeBackCSS:getCSS())
     DD_GUI.Xp.front:setStyleSheet(DD_GUI.XpGaugeFrontCSS:getCSS())
     --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xplvl * 1000) / (gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl)), 1000)
+
     if (tonumber(gmcp.Char.Worth.xptnl) > 0 ) then
       DD_GUI.Xp:setValue((((gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl) * 1000) / gmcp.Char.Worth.xplvl), 1000)
     else
       DD_GUI.Xp:setValue(1000, 1000)
     end
+
     XpLabel = Geyser.Label:new({
       name = "XpLabel",
       x = 0, y = "15%",
