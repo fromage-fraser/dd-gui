@@ -48,8 +48,11 @@ function update_vitals()
   DD_GUI.Mana:setValue(((mana * 1000) / maxmana),1000)
   DD_GUI.Moves:setValue(((move * 1000) / maxmove),1000)
   --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
-  DD_GUI.Xp:setValue((((gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl) * 1000) / gmcp.Char.Worth.xplvl), 1000)
-
+  if (tonumber(gmcp.Char.Worth.xptnl) > 0 ) then
+      DD_GUI.Xp:setValue((((gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl) * 1000) / gmcp.Char.Worth.xplvl), 1000)
+  else
+      DD_GUI.Xp:setValue(1000, 1000)
+  end
   CharsheetConsole:clear()
   CharsheetConsole:resetAutoWrap()
 
