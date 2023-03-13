@@ -1,11 +1,11 @@
-timerid = 1
-timerid2 = 1
+local timerid = 1
+local timerid2 = 1
 
 function get_custom_content()
     killTimer(timerid)
     killTimer(timerid2)
-    local timerid = nil
-    local timerid2 = nil
+    timerid = nil
+    timerid2 = nil
     local lfs = require "lfs"
     local filelist = getMudletHomeDir() .. "/DD_GUI/custom_filelist.txt"
     local filelist_url = 'https://www.dragons-domain.org/main/gui/custom/files.php'

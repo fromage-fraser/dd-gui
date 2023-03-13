@@ -44,7 +44,7 @@ function build_enemy_console()
 
     EnemyConsoleHitpointsContainer = Geyser.VBox:new({
       name = "EnemyConsoleHitpointsContainer",
-      x = "0%", y = "45%",
+      x = "0%", y = "50%",
       width = "100%", height = "35%",
     },EnemyInfoConsole)
 
