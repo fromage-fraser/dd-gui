@@ -1,80 +1,81 @@
-local timerid = 1
-local timerid2 = 1
+-- Global download queue
+downloadQueue = {}
+isDownloadingFileList = false
 
+-- Event handler for download completion
+function onDownloadDone(_, filename)
+    if isDownloadingFileList == true and filename == filelist then
+        -- This was the file list download completion, so do nothing here.
+        -- The actual processing and starting of the queue downloads are handled elsewhere.
+        isDownloadingFileList = false -- Reset the flag
+    else
+        --cecho("\n<white>Download completed for: " .. filename .. "\n")
+        start_next_download() -- Start next download from the queue
+    end
+end
+
+-- Event handler for download errors
+function onDownloadError(_, reason)
+    cecho("\n<white>Download failed: " .. reason .. "\n")
+    start_next_download() -- Attempt to start next download even if one fails
+end
+
+-- Assuming these are defined at a higher level
 function get_custom_content()
-    killTimer(timerid)
-    killTimer(timerid2)
-    timerid = nil
-    timerid2 = nil
     local lfs = require "lfs"
     local filelist = getMudletHomeDir() .. "/DD_GUI/custom_filelist.txt"
     local filelist_url = 'https://www.dragons-domain.org/main/gui/custom/files.php'
-    local lines = {}
 
-    cecho("\n\n<white>Checking for new custom media...\n")
+    cecho("\n\n<white>Downloading any new custom media...\n")
     downloadFile(filelist, filelist_url)
-    timerid = tempTimer(3,
-      function()
-        if (file_exists(filelist)) then
-          lines = lines_from(filelist)
-        else
-          cecho("\n<white>Custom media unable to be checked.\n")
-          return
+
+    function onFileListDownloadDone(_, filename)
+        if filename == filelist then -- Check if the downloaded file is the file list
+            process_file_list() -- A new function to process the downloaded file list
+        end
+    end
+
+    -- New function to process the downloaded file list and populate the download queue
+    function process_file_list()
+        if not file_exists(filelist) then
+            cecho("\n<white>Custom media unable to be checked.\n")
+            return
         end
 
-        -- A table to store the results of each download
-        local results = {}
-        local dl_count = 0
+        local lines = lines_from(filelist)
+        -- Reset the download queue for fresh population
+        downloadQueue = {}
 
-        for k,v in pairs(lines) do
-          --display("k: " .. k .. " v: " .. v)
-          local result = split_str(v, '|')
-          --result[1] now holds the file size, result[2] holds the file name
-          --display("Remote file size: " .. result[1] .. " for " .. result[2] .. "\n")
-          local saveto = getMudletHomeDir().."/DD_GUI/" .. result[2]
-          local filesize_v = lfs.attributes (saveto, "size")
-          local url = "https://www.dragons-domain.org/main/gui/custom/" .. result[2]
+        for _, v in ipairs(lines) do
+            local result = split_str(v, '|')
+            local saveto = getMudletHomeDir().."/DD_GUI/" .. result[2]
+            local filesize_v = lfs.attributes(saveto, "size")
+            local url = "https://www.dragons-domain.org/main/gui/custom/" .. result[2]
 
-          if (file_exists(saveto)) and (tonumber(result[1]) ~= tonumber(filesize_v)) then
-              --cecho("File exists locally BUT IS DIFFERENT SIZE for " .. result[2] .. "\n")
-              --cecho("Downloading: " .. saveto .. "\n")
-              local success = downloadFile(saveto, url)
-              dl_count = dl_count + 1
-              results[k] = { url = url, path = saveto, success = success }
-          end
-
-          if (filesize_v == nil) then
-              --cecho("File does not exist locally for " .. result[2] .. "\n")
-              --cecho("Downloading: " .. saveto .. "\n")
-              local success = downloadFile(saveto, url)
-              dl_count = dl_count + 1
-              results[k] = { url = url, path = saveto, success = success }
-          end
+            if (file_exists(saveto) and tonumber(result[1]) ~= tonumber(filesize_v)) or (filesize_v == nil) then
+                -- Add to download queue instead of downloading immediately
+                table.insert(downloadQueue, {url = url, saveto = saveto})
+            end
         end
+        --display(downloadQueue)
+        -- Start the first download
+        start_next_download()
+    end
+end
 
-        -- Print the results of each download
-        if (dl_count == nil) then
-          dl_count = 0
-        end
+function start_next_download()
+    if #downloadQueue == 0 and isDownloadingFileList == false then
+        --cecho("\n<white>All downloads completed.\n")
+        -- Trigger any post-download actions here
+        return
+    end
 
-        if (tonumber(dl_count) > 0) then
-          cecho("\n<white>Downloaded new custom media.\n")
-          for i, result in pairs(results) do
-            --[[if (result.success == true) then
-              local message = string.format(".")
-              cecho("" .. message)
-            end--]]
-          end
-        else
-          cecho("\n<white>No new custom media to download.\n")
-        end
-      end
-      )
-      timerid2 = tempTimer( 5,
-      function()
-        update_travel()
-      end
-      )
-  end
+    local nextDownload = table.remove(downloadQueue, 1) -- Get the next download
+    downloadFile(nextDownload.saveto, nextDownload.url)
+end
 
---registerAnonymousEventHandler("sysDownloadDone", "get_filelist_files")
+-- Register the event handlers
+registerAnonymousEventHandler("sysDownloadDone", "onDownloadDone")
+registerAnonymousEventHandler("sysDownloadDone", "onFileListDownloadDone")
+registerAnonymousEventHandler("sysDownloadError", "onDownloadError")
+
