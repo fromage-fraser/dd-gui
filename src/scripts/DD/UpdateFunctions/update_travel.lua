@@ -71,6 +71,8 @@ function update_travel()
             end
 
             ri_filename = string.gsub(ri_filename, "'", "_")
+            ri_filename = string.gsub(ri_filename, "<", "_")
+            ri_filename = string.gsub(ri_filename, ">", "_")
 
             if (file_exists(ri_filename)) then
                     room_image = ri_filename
