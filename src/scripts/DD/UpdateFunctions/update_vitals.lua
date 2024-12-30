@@ -130,6 +130,11 @@ function update_vitals()
     pfp_filename = 'direwolf_form.png'
   end
 
+  --Vampire stuff
+  if (gmcp.Char.Base.subclass == "Vampire") and (gmcp.Char.Vitals.form == "bat") then
+    pfp_filename = 'bat_form.png'
+  end
+
   resetBackgroundImage("CharsheetPFPConsole")
   local char_image = ms_path .. '/avatars/' .. pfp_filename
   local def_image = ms_path .. '/avatars/' .. 'default_char.png'
