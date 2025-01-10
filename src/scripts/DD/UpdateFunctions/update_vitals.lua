@@ -135,6 +135,10 @@ function update_vitals()
     pfp_filename = 'bat_form.png'
   end
 
+  if (gmcp.Char.Affect[1][1].name == "mist walk") then
+    pfp_filename = 'mist_form.png'
+  end
+
   resetBackgroundImage("CharsheetPFPConsole")
   local char_image = ms_path .. '/avatars/' .. pfp_filename
   local def_image = ms_path .. '/avatars/' .. 'default_char.png'
@@ -185,14 +189,24 @@ CharsheetConsole:cecho(
 )
 
 if (gmcp.Char.Base.class == "Shape Shifter") or (gmcp.Char.Base.subclass == "Werewolf") then
-  CharsheetConsole:cecho(
-    "<white>"
-    ..string.format("              <white>Form:  <ansi_white>%s\n",
-        firstToUpper(gmcp.Char.Vitals.form))
-    .."<reset>"
-  )
-
+    if (gmcp.Char.Affect[1][1].name ~= "mist walk") then
+    CharsheetConsole:cecho(
+      "<white>"
+      ..string.format("              <white>Form:  <ansi_white>%s\n",
+          firstToUpper(gmcp.Char.Vitals.form))
+      .."<reset>"
+    )
+    end
 end
+
+if (gmcp.Char.Affect[1][1].name =="mist walk")  then
+    CharsheetConsole:cecho(
+      "<white>"
+      ..string.format("              <white>Form:  <ansi_white>Mist\n")
+      .."<reset>"
+    )
+end
+
 if (gmcp.Char.Base.subclass == "Werewolf") or (gmcp.Char.Base.subclass == "Vampire") then
   CharsheetConsole:cecho(
     "<white>"
