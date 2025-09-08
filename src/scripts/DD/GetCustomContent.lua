@@ -1,81 +1,93 @@
--- Global download queue
-downloadQueue = {}
+-- Globals / constants
+local lfs = require "lfs"
+
+downloadQueue = downloadQueue or {}
 isDownloadingFileList = false
 
--- Event handler for download completion
+-- Make the file list path/URL visible to all handlers
+FILELIST_LOCAL = getMudletHomeDir() .. "/DD_GUI/custom_filelist.txt"
+FILELIST_URL   = "https://www.dragons-domain.org/main/gui/custom/files.php"
+CONTENT_BASE   = "https://www.dragons-domain.org/main/gui/custom/"
+
+-- Ensure all parent directories for a path exist (cross-platform)
+local function ensure_dir_for(path)
+  local norm = path:gsub("\\", "/")
+  local dir = norm:match("^(.*)/[^/]+$") or ""
+  local build = dir:sub(1,1) == "/" and "/" or ""
+
+  for part in dir:gmatch("([^/]+)") do
+    if part ~= "" and part ~= "." then
+      build = (build == "" or build == "/") and (build .. part) or (build .. "/" .. part)
+      -- ignore mkdir errors (already exists)
+      pcall(lfs.mkdir, build)
+    end
+  end
+end
+
+-- Event handlers
 function onDownloadDone(_, filename)
-    if isDownloadingFileList == true and filename == filelist then
-        -- This was the file list download completion, so do nothing here.
-        -- The actual processing and starting of the queue downloads are handled elsewhere.
-        isDownloadingFileList = false -- Reset the flag
-    else
-        --cecho("\n<white>Download completed for: " .. filename .. "\n")
-        start_next_download() -- Start next download from the queue
-    end
+  -- Was it the file list?
+  if isDownloadingFileList and filename == FILELIST_LOCAL then
+    isDownloadingFileList = false
+    process_file_list()
+    return
+  end
+  -- Otherwise proceed with the queue
+  start_next_download()
 end
 
--- Event handler for download errors
-function onDownloadError(_, reason)
-    cecho("\n<white>Download failed: " .. reason .. "\n")
-    start_next_download() -- Attempt to start next download even if one fails
+function onDownloadError(badFile, reason)
+  cecho(string.format("\n<white>Download failed for %s: %s\n", badFile or "<unknown>", reason or ""))
+  start_next_download()
 end
 
--- Assuming these are defined at a higher level
+-- Kick-off
 function get_custom_content()
-    local lfs = require "lfs"
-    local filelist = getMudletHomeDir() .. "/DD_GUI/custom_filelist.txt"
-    local filelist_url = 'https://www.dragons-domain.org/main/gui/custom/files.php'
+  cecho("\n\n<white>Downloading any new custom media...\n")
+  isDownloadingFileList = true
+  ensure_dir_for(FILELIST_LOCAL)
+  downloadFile(FILELIST_LOCAL, FILELIST_URL)
+end
 
-    cecho("\n\n<white>Downloading any new custom media...\n")
-    downloadFile(filelist, filelist_url)
+-- Read, queue, and start
+function process_file_list()
+  if not file_exists(FILELIST_LOCAL) then
+    cecho("\n<white>Custom media unable to be checked.\n")
+    return
+  end
 
-    function onFileListDownloadDone(_, filename)
-        if filename == filelist then -- Check if the downloaded file is the file list
-            process_file_list() -- A new function to process the downloaded file list
-        end
+  downloadQueue = {}
+  local lines = lines_from(FILELIST_LOCAL)
+
+  for _, v in ipairs(lines) do
+    local result = split_str(v, '|')
+    local sizeStr = (result[1] or ""):gsub("%s+$", "")
+    local relPath = (result[2] or ""):gsub("\r", ""):gsub("^%s+", ""):gsub("%s+$", "")
+
+    if relPath ~= "" then
+      local saveto = getMudletHomeDir() .. "/DD_GUI/" .. relPath
+      local url    = CONTENT_BASE .. relPath
+      local existing = lfs.attributes(saveto, "size")
+
+      if (file_exists(saveto) and tonumber(sizeStr) ~= tonumber(existing)) or (existing == nil) then
+        table.insert(downloadQueue, { url = url, saveto = saveto })
+      end
     end
+  end
 
-    -- New function to process the downloaded file list and populate the download queue
-    function process_file_list()
-        if not file_exists(filelist) then
-            cecho("\n<white>Custom media unable to be checked.\n")
-            return
-        end
-
-        local lines = lines_from(filelist)
-        -- Reset the download queue for fresh population
-        downloadQueue = {}
-
-        for _, v in ipairs(lines) do
-            local result = split_str(v, '|')
-            local saveto = getMudletHomeDir().."/DD_GUI/" .. result[2]
-            local filesize_v = lfs.attributes(saveto, "size")
-            local url = "https://www.dragons-domain.org/main/gui/custom/" .. result[2]
-
-            if (file_exists(saveto) and tonumber(result[1]) ~= tonumber(filesize_v)) or (filesize_v == nil) then
-                -- Add to download queue instead of downloading immediately
-                table.insert(downloadQueue, {url = url, saveto = saveto})
-            end
-        end
-        --display(downloadQueue)
-        -- Start the first download
-        start_next_download()
-    end
+  start_next_download()
 end
 
 function start_next_download()
-    if #downloadQueue == 0 and isDownloadingFileList == false then
-        --cecho("\n<white>All downloads completed.\n")
-        -- Trigger any post-download actions here
-        return
-    end
-
-    local nextDownload = table.remove(downloadQueue, 1) -- Get the next download
-    downloadFile(nextDownload.saveto, nextDownload.url)
+  if #downloadQueue == 0 then
+    --cecho("\n<white>All downloads completed.\n")
+    return
+  end
+  local nextDownload = table.remove(downloadQueue, 1)
+  ensure_dir_for(nextDownload.saveto)           -- <-- create DD_GUI/audio/ etc.
+  downloadFile(nextDownload.saveto, nextDownload.url)
 end
 
--- Register the event handlers
-registerAnonymousEventHandler("sysDownloadDone", "onDownloadDone")
-registerAnonymousEventHandler("sysDownloadDone", "onFileListDownloadDone")
+-- Register (safe to call once at load time)
+registerAnonymousEventHandler("sysDownloadDone",  "onDownloadDone")
 registerAnonymousEventHandler("sysDownloadError", "onDownloadError")
-
