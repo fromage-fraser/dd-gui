@@ -1,3 +1,8 @@
+local function looks_like_file(relPath)
+  -- has a basename with a dot extension and does not end with '/'
+  return relPath:match("[^/]+%.[^/]+$") ~= nil
+end
+
 -- Globals / constants
 local lfs = require "lfs"
 
@@ -60,18 +65,20 @@ function process_file_list()
   local lines = lines_from(FILELIST_LOCAL)
 
   for _, v in ipairs(lines) do
-    local result = split_str(v, '|')
+    local result  = split_str(v, '|')
     local sizeStr = (result[1] or ""):gsub("%s+$", "")
     local relPath = (result[2] or ""):gsub("\r", ""):gsub("^%s+", ""):gsub("%s+$", "")
 
-    if relPath ~= "" then
-      local saveto = getMudletHomeDir() .. "/DD_GUI/" .. relPath
-      local url    = CONTENT_BASE .. relPath
+    -- NEW: ignore blank lines and *directory* entries
+    if relPath ~= "" and looks_like_file(relPath) then
+      local saveto   = getMudletHomeDir() .. "/DD_GUI/" .. relPath
+      local url      = CONTENT_BASE .. relPath
       local existing = lfs.attributes(saveto, "size")
 
       if (file_exists(saveto) and tonumber(sizeStr) ~= tonumber(existing)) or (existing == nil) then
         table.insert(downloadQueue, { url = url, saveto = saveto })
       end
+    -- else: it's a directory or bad line — skip it
     end
   end
 
