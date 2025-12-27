@@ -236,7 +236,7 @@ CharsheetConsole:cecho(""
     ..string.format(" <white>Fame: <cyan>%s<reset>\n",
         gmcp.Char.Stats.fame)
 
-    .."<reset>"
+    .."<reset>\n"
 )
 
 local made_return = false
@@ -381,14 +381,14 @@ CharsheetConsole:cecho(
         gmcp.Char.Worth.silver,
         gmcp.Char.Worth.copper)
 
-    .."<reset>\n"
+    .."<reset>"
   )
 
   if (gmcp.Char.Base.class) == "Smithy"
   or (gmcp.Char.Base.subclass) == "Runesmith"
   or (gmcp.Char.Base.subclass) == "Engineer" then
       CharsheetConsole:cecho(
-        string.format("Mat: <white>S: <light_steel_blue>%-3d<white> T: <ansi_yellow>%-3d<white>A: <yellow>%-3d<white>E: <white>%-3d<white>S: <red>%-3d",
+        string.format("Mat: <white>S: <light_steel_blue>%-3d<white> T: <ansi_yellow>%-3d<white> A: <yellow>%-3d<white> E: <white>%-3d<white> S: <red>%-3d",
           gmcp.Char.Worth.steel,
           gmcp.Char.Worth.titanium,
           gmcp.Char.Worth.adamantite,
