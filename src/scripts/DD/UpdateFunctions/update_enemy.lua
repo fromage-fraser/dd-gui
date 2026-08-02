@@ -6,7 +6,6 @@ function update_enemy()
                 EnemyConsoleHitpoints:show()
                 EnemyHitpointsLabel:show()
                 EnemyConsole:clear()
-                EnemyLabel:echo("Enemy Info")
                 EnemyInfoConsole:clear()
                 local enemy_image       = ms_path .. "/mobs/20412_the_destroyer.png"
                 local def_enemy_image   = ms_path .. "/mobs/0_default.png"
