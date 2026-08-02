@@ -28,6 +28,7 @@ function build_inventory_console()
       autoWrap = true,
       color = "black",
       scrollBar = true,
+      horizontalScrollBar = false,
       fontSize = 10,
     }, DD_GUI.Inventory.content_stack)
 
