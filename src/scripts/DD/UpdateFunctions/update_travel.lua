@@ -135,7 +135,7 @@ function update_travel()
             )
 
             if (gmcp.Room.Info.flags ~= "") and not (string.find(gmcp.Room.Info.flags, "^no_mob$")) then
-                    EnemyInfoConsole:cecho("<white>Room features: ")
+                    EnemyInfoConsole:cecho("<white>Room flags: ")
 
                     local rflags = split_str(gmcp.Room.Info.flags)
                     local last_flag_index = #rflags
