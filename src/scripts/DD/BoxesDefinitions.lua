@@ -1,3 +1,10 @@
+local function transparent_surface_css(css)
+        return (css or ""):gsub(
+                "background%-color%s*:%s*[^;]+;",
+                "background-color: rgba(0,0,0,0);"
+        )
+end
+
 local function new_info_box(cons, parent)
         if Adjustable and Adjustable.Container then
                 cons.padding = 4
@@ -8,10 +15,10 @@ local function new_info_box(cons, parent)
                 cons.titleText = ""
                 cons.titleTxtColor = "black"
                 cons.adjLabelstyle = [[
-                  background-color: rgba(0,0,0,0%);
+                  background-color: rgba(0,0,0,0);
                   border-style: solid;
                   border-width: 0px;
-                  border-color: rgba(0,0,0,0%);
+                  border-color: rgba(0,0,0,0);
                   margin: 0px;
                 ]]
 
@@ -20,7 +27,7 @@ local function new_info_box(cons, parent)
                 box.exitLabel:hide()
                 box.minimizeLabel:hide()
                 box.setStyleSheet = function(self, css)
-                        self.adjLabel:setStyleSheet(css)
+                        self.adjLabel:setStyleSheet(transparent_surface_css(css))
                 end
                 return box
         end
