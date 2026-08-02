@@ -1,12 +1,37 @@
 function build_inventory_console()
+    if InventoryConsole and InventoryConsole.hide then
+      InventoryConsole:hide()
+    end
+
+    if EquippedConsole and EquippedConsole.hide then
+      EquippedConsole:hide()
+    end
+
+    DD_GUI.Inventory.consoles = {}
+
     InventoryConsole = Geyser.MiniConsole:new({
       name="InventoryConsole",
-      x = "4%", y = "13%",
-      width="92%",
-      height="83%",
+      x = "0%", y = "0%",
+      width="100%",
+      height="100%",
       autoWrap = true,
       color = "black",
       scrollBar = true,
       fontSize = 10,
-    }, DD_GUI.InventoryBox)
+    }, DD_GUI.Inventory.content_stack)
+
+    EquippedConsole = Geyser.MiniConsole:new({
+      name="EquippedConsole",
+      x = "0%", y = "0%",
+      width="100%",
+      height="100%",
+      autoWrap = true,
+      color = "black",
+      scrollBar = true,
+      fontSize = 10,
+    }, DD_GUI.Inventory.content_stack)
+
+    DD_GUI.Inventory.consoles.inventory = InventoryConsole
+    DD_GUI.Inventory.consoles.equipped = EquippedConsole
+    DD_GUI.Inventory:switch_tab(DD_GUI.Inventory.current_tab or "inventory")
 end
