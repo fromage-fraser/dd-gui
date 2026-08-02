@@ -1,24 +1,41 @@
 debug.setmetatable(nil, { __index=function () end })
 
+local function is_inventory_entry(value)
+  return type(value) == "table"
+      and value.quan ~= nil
+      and (value.short_desc ~= nil or value.name ~= nil)
+end
+
+local function collect_inventory_entries(value, entries, visited)
+  if type(value) ~= "table" or visited[value] then
+    return
+  end
+
+  visited[value] = true
+
+  if is_inventory_entry(value) then
+    table.insert(entries, value)
+    return
+  end
+
+  for _, child in pairs(value) do
+    collect_inventory_entries(child, entries, visited)
+  end
+end
+
 local function inventory_entries()
   if not gmcp or not gmcp.Char or type(gmcp.Char.Items) ~= "table" then
     return {}
   end
 
-  local items = gmcp.Char.Items
-  local first = items[1]
-  if type(first) == "table"
-      and first.quan == nil
-      and first.short_desc == nil
-      and first.name == nil then
-    return first
-  end
-
-  return items
+  local entries = {}
+  collect_inventory_entries(gmcp.Char.Items, entries, {})
+  return entries
 end
 
 local function compact_inventory_name(value)
-  local name = ansi2string(tostring(value or ""))
+  local name = tostring(value or "")
+  name = string.gsub(name, "\27%[[0-9;]*m", "")
   name = string.gsub(name, "%b()", "")
   name = string.gsub(name, "^%s+", "")
   name = string.gsub(name, "%b[]", "")
@@ -29,9 +46,7 @@ end
 
 local function fit_inventory_name(name, width)
   if #name > width then
-    name = replace_char(width, name, ".")
-    name = replace_char(width - 1, name, ".")
-    return string.format("%." .. width .. "s", name)
+    return string.sub(name, 1, width - 2) .. ".."
   end
 
   return string.format("%-" .. width .. "s", name)
