@@ -7,7 +7,10 @@ local function inventory_entries()
 
   local items = gmcp.Char.Items
   local first = items[1]
-  if type(first) == "table" and first.quan == nil and first.short_desc == nil then
+  if type(first) == "table"
+      and first.quan == nil
+      and first.short_desc == nil
+      and first.name == nil then
     return first
   end
 
@@ -18,8 +21,9 @@ local function compact_inventory_name(value)
   local name = ansi2string(tostring(value or ""))
   name = string.gsub(name, "%b()", "")
   name = string.gsub(name, "^%s+", "")
-  name = string.gsub(name, "%[.+%]", "")
+  name = string.gsub(name, "%b[]", "")
   name = string.gsub(name, "^%s+", "")
+  name = string.gsub(name, "%s+$", "")
   return name
 end
 
@@ -39,7 +43,7 @@ function update_inventory()
   end
 
   local entries = {}
-  for _, item in pairs(inventory_entries()) do
+  for _, item in ipairs(inventory_entries()) do
     if type(item) == "table" and item.quan ~= nil then
       table.insert(entries, item)
     end
