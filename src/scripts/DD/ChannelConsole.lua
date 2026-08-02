@@ -297,18 +297,18 @@ function DD_GUI.Comms:build()
         self.tab_rail = Geyser.Label:new({
                 name = "DD_GUI.Comms.TabRail",
                 x = "3%",
-                y = "12%",
+                y = "3%",
                 width = "24%",
-                height = "84%",
+                height = "94%",
         }, DD_GUI.ChannelBox)
         self.tab_rail:setColor(0, 0, 0, 0)
 
         self.console_stack = Geyser.Label:new({
                 name = "DD_GUI.Comms.ConsoleStack",
                 x = "29%",
-                y = "12%",
+                y = "3%",
                 width = "67%",
-                height = "84%",
+                height = "94%",
         }, DD_GUI.ChannelBox)
         self.console_stack:setColor(0, 0, 0, 255)
 
@@ -366,6 +366,43 @@ function DD_GUI.Comms:reorder(source, target)
         table.insert(self.order, target_index, source)
         self:layout_tabs()
         self:save_order()
+end
+
+function DD_GUI.Comms:tab_at(global_x, global_y)
+        global_x = tonumber(global_x)
+        global_y = tonumber(global_y)
+        if not global_x or not global_y or not self.order then
+                return nil
+        end
+
+        for _, key in ipairs(self.order) do
+                local tab = self.tab_buttons and self.tab_buttons[key]
+                if tab and tab.get_x and tab.get_y and tab.get_width and tab.get_height then
+                        local x = tab:get_x()
+                        local y = tab:get_y()
+                        local width = tab:get_width()
+                        local height = tab:get_height()
+
+                        if global_x >= x and global_x <= x + width and
+                           global_y >= y and global_y <= y + height then
+                                return key
+                        end
+                end
+        end
+
+        return nil
+end
+
+function DD_GUI.Comms:update_drag_target(global_x, global_y, fallback)
+        if not self.drag_source then
+                return
+        end
+
+        local target = self:tab_at(global_x, global_y) or fallback
+        if target ~= self.drag_target then
+                self.drag_target = target
+                self:style_tabs()
+        end
 end
 
 function DD_GUI.Comms:resolve_channel(channel)
@@ -438,32 +475,34 @@ function DD_GUI.Comms:handle_gmcp()
         self:handle_comm(gmcp.Comm.Channel.Text)
 end
 
-function dd_comms_tab_click(key)
+function dd_comms_tab_click(key, event)
         if not DD_GUI or not DD_GUI.Comms then
                 return
         end
 
+        if event and event.button and event.button ~= "LeftButton" then
+                return
+        end
+
         DD_GUI.Comms.drag_source = key
-        DD_GUI.Comms.drag_target = nil
+        DD_GUI.Comms.drag_target = key
         DD_GUI.Comms:switch_tab(key)
 end
 
-function dd_comms_tab_move(key)
+function dd_comms_tab_move(key, event)
         if not DD_GUI or not DD_GUI.Comms or not DD_GUI.Comms.drag_source then
                 return
         end
 
-        DD_GUI.Comms.drag_target = key
-        DD_GUI.Comms:style_tabs()
+        DD_GUI.Comms:update_drag_target(event and event.globalX, event and event.globalY, key)
 end
 
-function dd_comms_tab_enter(key)
+function dd_comms_tab_enter(key, event)
         if not DD_GUI or not DD_GUI.Comms or not DD_GUI.Comms.drag_source then
                 return
         end
 
-        DD_GUI.Comms.drag_target = key
-        DD_GUI.Comms:style_tabs()
+        DD_GUI.Comms:update_drag_target(event and event.globalX, event and event.globalY, key)
 end
 
 function dd_comms_tab_leave(key)
@@ -474,13 +513,15 @@ function dd_comms_tab_leave(key)
         DD_GUI.Comms:style_tab(key)
 end
 
-function dd_comms_tab_release(key)
+function dd_comms_tab_release(key, event)
         if not DD_GUI or not DD_GUI.Comms then
                 return
         end
 
         local source = DD_GUI.Comms.drag_source
-        local target = DD_GUI.Comms.drag_target or key
+        local target = DD_GUI.Comms:tab_at(event and event.globalX, event and event.globalY)
+                or DD_GUI.Comms.drag_target
+                or key
 
         if source and source ~= target then
                 DD_GUI.Comms:reorder(source, target)
