@@ -1,3 +1,4 @@
 build/
 .output
 custom/
+/.dd-gui-ftp.netrc

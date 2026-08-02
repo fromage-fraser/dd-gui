@@ -148,12 +148,17 @@ function load_dd_mapper ()
             z = z + z1
             setRoomCoordinates(ID,x,y,z)
             updateMap()
+            if save_dd_mapper then
+                save_dd_mapper()
+            end
         end
 
         local function handle_move()
             local info = map.room_info
+            local map_changed = false
             if not getRoomName(info.vnum) then
                 make_room()
+                map_changed = true
             else
                 local stubs = getExitStubs1(info.vnum)
                         if stubs then
@@ -165,11 +170,13 @@ function load_dd_mapper ()
                       -- need to see how special exits are represented to handle those properly here
                       if id and getRoomName(id) then
                           setExit(info.vnum, id, dir)
+                          map_changed = true
                       end
                   end
                         end
             end
             centerview(map.room_info.vnum)
+            return map_changed
         end
 
         local function config()
@@ -319,7 +326,9 @@ function load_dd_mapper ()
                 for k,v in pairs(map.room_info.exits) do
                     map.room_info.exits[k] = tonumber(v)
                 end
-                handle_move()
+                if handle_move() and save_dd_mapper then
+                    save_dd_mapper()
+                end
             elseif event == "shiftRoom" then
                 local dir = exitmap[arg[1]] or arg[1]
                 if not table.contains(exits, dir) then
