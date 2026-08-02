@@ -103,6 +103,7 @@ function DD_GUI.Inventory:switch_tab(key)
         for tab_key, console in pairs(self.consoles or {}) do
                 if tab_key == key then
                         console:show()
+                        raiseWindow(console.name)
                 else
                         console:hide()
                 end
