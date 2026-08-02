@@ -30,6 +30,10 @@ function dd_comms_tab_order_path()
         return string.gsub(getMudletHomeDir() .. "/dragons_domain_comms_tabs.txt", "\\", "/")
 end
 
+function dd_comms_history_path()
+        return string.gsub(getMudletHomeDir() .. "/dragons_domain_comms.log", "\\", "/")
+end
+
 local function dd_comms_trim(value)
         return string.gsub(tostring(value or ""), "^%s*(.-)%s*$", "%1")
 end
@@ -41,6 +45,33 @@ local function dd_comms_title(value)
         end
 
         return string.upper(string.sub(value, 1, 1)) .. string.sub(value, 2)
+end
+
+local function dd_comms_boolean(value)
+        return value == true or value == 1 or value == "1" or value == "true"
+end
+
+local function dd_comms_escape(value)
+        value = tostring(value or "")
+        value = string.gsub(value, "\\", "\\\\")
+        value = string.gsub(value, "\r", "\\r")
+        value = string.gsub(value, "\n", "\\n")
+        value = string.gsub(value, "\t", "\\t")
+        return value
+end
+
+local function dd_comms_unescape(value)
+        return string.gsub(value or "", "\\(.)", function(character)
+                if character == "n" then
+                        return "\n"
+                elseif character == "r" then
+                        return "\r"
+                elseif character == "t" then
+                        return "\t"
+                end
+
+                return character
+        end)
 end
 
 function DD_GUI.Comms:build_lookup()
@@ -55,17 +86,51 @@ function DD_GUI.Comms:build_lookup()
         end
 end
 
+function DD_GUI.Comms:ensure_channel_definition(key)
+        key = self:normalise_channel_key(key)
+        if key == "" or self.tab_lookup[key] then
+                return key
+        end
+
+        local definition = {
+                key = key,
+                label = dd_comms_title(key),
+                colour = { 255, 255, 255 },
+        }
+
+        self.tab_lookup[key] = definition
+        self.tab_labels_by_key[key] = definition.label
+        table.insert(self.default_order, key)
+
+        if self.preferred_order then
+                local already_preferred = false
+                for _, preferred_key in ipairs(self.preferred_order) do
+                        if preferred_key == key then
+                                already_preferred = true
+                                break
+                        end
+                end
+
+                if not already_preferred then
+                        table.insert(self.preferred_order, key)
+                end
+        end
+
+        return key
+end
+
 function DD_GUI.Comms:load_order()
         self:build_lookup()
 
-        local order = {}
+        local order = { "all" }
         local seen = {}
+        seen.all = true
         local file = io.open(dd_comms_tab_order_path(), "r")
 
         if file then
                 for line in file:lines() do
                         local key = dd_comms_trim(line):lower()
-                        if self.tab_lookup[key] and not seen[key] then
+                        if key ~= "all" and self.tab_lookup[key] and not seen[key] then
                                 table.insert(order, key)
                                 seen[key] = true
                         end
@@ -79,11 +144,12 @@ function DD_GUI.Comms:load_order()
                 end
         end
 
-        self.order = order
+        self.preferred_order = order
+        self.order = { "all" }
 end
 
 function DD_GUI.Comms:save_order()
-        if not self.order then
+        if not self.preferred_order then
                 return
         end
 
@@ -92,11 +158,179 @@ function DD_GUI.Comms:save_order()
                 return
         end
 
-        for _, key in ipairs(self.order) do
+        for _, key in ipairs(self.preferred_order) do
                 file:write(key .. "\n")
         end
 
         file:close()
+end
+
+function DD_GUI.Comms:load_history()
+        self.history = {}
+        local file = io.open(dd_comms_history_path(), "r")
+
+        if not file then
+                return
+        end
+
+        for line in file:lines() do
+                local key, raw_channel, speaker, text = string.match(line, "^(.-)\t(.-)\t(.-)\t(.*)$")
+                if key and raw_channel and speaker and text then
+                        table.insert(self.history, {
+                                key = self:normalise_channel_key(dd_comms_unescape(key)),
+                                raw_channel = dd_comms_unescape(raw_channel),
+                                speaker = dd_comms_unescape(speaker),
+                                text = dd_comms_unescape(text),
+                        })
+                end
+        end
+
+        file:close()
+end
+
+function DD_GUI.Comms:save_history_entry(key, raw_channel, speaker, text)
+        local entry = {
+                key = self:normalise_channel_key(key),
+                raw_channel = tostring(raw_channel or key or ""),
+                speaker = tostring(speaker or ""),
+                text = tostring(text or ""),
+        }
+
+        self.history = self.history or {}
+        table.insert(self.history, entry)
+
+        local file = io.open(dd_comms_history_path(), "a")
+        if not file then
+                return
+        end
+
+        file:write(
+                dd_comms_escape(entry.key), "\t",
+                dd_comms_escape(entry.raw_channel), "\t",
+                dd_comms_escape(entry.speaker), "\t",
+                dd_comms_escape(entry.text), "\n")
+        file:close()
+end
+
+function DD_GUI.Comms:is_channel_visible(key)
+        if key == "all" then
+                return true
+        end
+
+        local state = self.channel_state and self.channel_state[key]
+        return state and state.access and state.enabled
+end
+
+function DD_GUI.Comms:visible_order()
+        local order = { "all" }
+        local seen = { all = true }
+        local preferred_order = self.preferred_order or self.default_order or {}
+
+        for _, key in ipairs(preferred_order) do
+                if not seen[key] and self:is_channel_visible(key) then
+                        table.insert(order, key)
+                        seen[key] = true
+                end
+        end
+
+        return order
+end
+
+function DD_GUI.Comms:ensure_channel_widget(key)
+        if not self.tab_buttons or not self.tab_rail or not self.console_stack then
+                return
+        end
+
+        if not self.tab_buttons[key] then
+                self:create_tab_button(key)
+        end
+
+        if not self.consoles[key] then
+                self:create_console(key)
+        end
+end
+
+function DD_GUI.Comms:refresh_tabs()
+        if not self.tab_buttons then
+                return
+        end
+
+        self.order = self:visible_order()
+        local visible = {}
+        for _, key in ipairs(self.order) do
+                visible[key] = true
+        end
+
+        for key, tab in pairs(self.tab_buttons) do
+                if visible[key] then
+                        tab:show()
+                else
+                        tab:hide()
+                end
+        end
+
+        if self.drag_source and not visible[self.drag_source] then
+                self.drag_source = nil
+                self.drag_target = nil
+                self.drag_before_target = nil
+                self.dragging = nil
+        end
+
+        self:layout_tabs()
+
+        if self.current_tab and not visible[self.current_tab] then
+                self:switch_tab("all")
+        else
+                self:style_tabs()
+        end
+end
+
+function DD_GUI.Comms:handle_channel_state(state)
+        if type(state) ~= "table" then
+                return
+        end
+
+        local channels = state.channels or state
+        if type(channels) ~= "table" then
+                return
+        end
+
+        self.channel_state = {}
+
+        for _, channel in pairs(channels) do
+                if type(channel) == "table" then
+                        local key = self:ensure_channel_definition(channel.name or channel.channel)
+                        if key ~= "" then
+                                self.channel_state[key] = {
+                                        access = dd_comms_boolean(channel.access),
+                                        enabled = dd_comms_boolean(channel.enabled),
+                                        receiving = dd_comms_boolean(channel.receiving),
+                                }
+                                self:ensure_channel_widget(key)
+                        end
+                end
+        end
+
+        self:refresh_tabs()
+end
+
+function DD_GUI.Comms:restore_history()
+        if not self.history or not self.consoles then
+                return
+        end
+
+        for _, entry in ipairs(self.history) do
+                local key = self:ensure_channel_definition(entry.key)
+                self:ensure_channel_widget(key)
+                local raw_channel = entry.raw_channel or key
+                local display_channel = self:display_channel(key, raw_channel)
+                local message = self:format_message(display_channel, entry.speaker, entry.text)
+
+                self:echo_message(self.consoles.all, key, message)
+                if key ~= "all" and self.consoles[key] then
+                        self:echo_message(self.consoles[key], key, message)
+                end
+        end
 end
 
 function DD_GUI.Comms:tab_label(key)
@@ -277,6 +511,14 @@ function DD_GUI.Comms:create_console(key)
                 fontSize = 8,
         }, self.console_stack)
 
+        if console.setBufferSize then
+                console:setBufferSize(100000, 1000)
+        end
+
+        if console.clear then
+                console:clear()
+        end
+
         console:enableCommandLine()
         console:hide()
         self.consoles[key] = console
@@ -294,6 +536,7 @@ function DD_GUI.Comms:build()
         self:load_order()
         self.tab_buttons = {}
         self.consoles = {}
+        self.channel_state = {}
         self.drag_source = nil
         self.drag_target = nil
         self.drag_before_target = nil
@@ -324,13 +567,20 @@ function DD_GUI.Comms:build()
                 self:create_console(key)
         end
 
+        self:load_history()
+        self:restore_history()
+        self:refresh_tabs()
         self:layout_tabs()
         self:switch_tab("all")
         ChannelConsole = self.consoles.all
+
+        if gmcp and gmcp.Char and gmcp.Char.Channels then
+                self:handle_channel_state(gmcp.Char.Channels)
+        end
 end
 
 function DD_GUI.Comms:switch_tab(key)
-        if not self.consoles or not self.consoles[key] then
+        if not self.consoles or not self.consoles[key] or not self:is_channel_visible(key) then
                 key = "all"
         end
 
@@ -345,7 +595,7 @@ function DD_GUI.Comms:switch_tab(key)
 end
 
 function DD_GUI.Comms:reorder(source, target, before_target)
-        if source == target or not self.order then
+        if source == target or source == "all" or target == "all" or not self.order then
                 return
         end
 
@@ -375,6 +625,30 @@ function DD_GUI.Comms:reorder(source, target, before_target)
         end
 
         table.insert(self.order, target_index, source)
+
+        local preferred_source_index
+        local preferred_target_index
+        for index, key in ipairs(self.preferred_order or {}) do
+                if key == source then
+                        preferred_source_index = index
+                elseif key == target then
+                        preferred_target_index = index
+                end
+        end
+
+        if preferred_source_index and preferred_target_index then
+                table.remove(self.preferred_order, preferred_source_index)
+                if preferred_source_index < preferred_target_index then
+                        preferred_target_index = preferred_target_index - 1
+                end
+
+                if not before_target then
+                        preferred_target_index = preferred_target_index + 1
+                end
+
+                table.insert(self.preferred_order, preferred_target_index, source)
+        end
+
         self:layout_tabs()
         self:save_order()
 end
@@ -497,6 +771,9 @@ function DD_GUI.Comms:handle_comm(comm)
         local display_channel = self:display_channel(key, display_raw_channel)
         local message = self:format_message(display_channel, speaker, text)
 
+        self:ensure_channel_definition(key)
+        self:ensure_channel_widget(key)
+        self:save_history_entry(key, display_raw_channel, speaker, text)
         self:echo_message(self.consoles.all, key, message)
 
         if key ~= "all" and self.consoles[key] then
