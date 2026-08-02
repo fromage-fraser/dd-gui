@@ -39,11 +39,16 @@ function build_charsheet_console()
     -- be a 160 x 200 px .png in the ms_path + /avatars/ directory
     -- pfp_filename = mycustomavatar.png'
 
-    resetBackgroundImage("CharsheetPFPConsole")
-    CharsheetPFPConsole:setBackgroundImage( [[
-      background-image: url(]] .. ms_path .. '/avatars/' .. pfp_filename .. [[);
-      background-position: top left;
-      background-repeat: no-repeat;
-    ]],
-    "style")
+    local pfp_path = ms_path .. '/avatars/' .. pfp_filename
+    local default_path = ms_path .. '/avatars/default_char.png'
+    if not file_exists(pfp_path) then
+      pfp_path = default_path
+    end
+
+    DD_GUI.ImageFit:set(
+      CharsheetPFPConsole,
+      CharsheetConsole,
+      pfp_path,
+      { fallback = { width = 160, height = 200 } }
+    )
 end

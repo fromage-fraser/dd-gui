@@ -139,14 +139,23 @@ function update_vitals()
     pfp_filename = 'mist_form.png'
   end
 
-  resetBackgroundImage("CharsheetPFPConsole")
   local char_image = ms_path .. '/avatars/' .. pfp_filename
   local def_image = ms_path .. '/avatars/' .. 'default_char.png'
 
   if file_exists(char_image) then
-        CharsheetPFPConsole:setBackgroundImage(char_image,"border")
+        DD_GUI.ImageFit:set(
+          CharsheetPFPConsole,
+          CharsheetConsole,
+          char_image,
+          { fallback = { width = 160, height = 200 } }
+        )
   else
-        CharsheetPFPConsole:setBackgroundImage(def_image,"border")
+        DD_GUI.ImageFit:set(
+          CharsheetPFPConsole,
+          CharsheetConsole,
+          def_image,
+          { fallback = { width = 160, height = 200 } }
+        )
   end
 
   --CharsheetPFPConsole:setBackgroundImage( [[

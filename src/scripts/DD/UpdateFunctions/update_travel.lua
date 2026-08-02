@@ -99,7 +99,12 @@ function update_travel()
             --background-repeat: no-repeat;]],
             --"style")
 
-            EnemyTPConsoleTop:setBackgroundImage(room_image,"border")
+            DD_GUI.ImageFit:set(
+                    EnemyTPConsoleTop,
+                    EnemyConsole,
+                    room_image,
+                    { fallback = { width = 560, height = 300 } }
+            )
 
             local stripped_room_name = string.gsub(gmcp.Room.Info.name, "\{[a-zA-Z]", "")
             stripped_room_name = string.gsub(stripped_room_name, "\<%d+\>", "")
