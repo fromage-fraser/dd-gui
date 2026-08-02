@@ -1,7 +1,10 @@
 DD_GUI = DD_GUI or {}
 DD_GUI.Comms = DD_GUI.Comms or {}
 
-DD_GUI.Comms.tab_columns = 2
+-- Keep the top rail readable in the narrow channel box while allowing it to
+-- grow to a second row when more channels are available.
+DD_GUI.Comms.tab_columns = 8
+DD_GUI.Comms.tab_row_height = 8
 DD_GUI.Comms.drag_threshold = 5
 
 -- DD4 ANSI reset defaults, converted from its xterm 256-colour indices.
@@ -437,10 +440,23 @@ function DD_GUI.Comms:layout_tabs()
         end
 
         local tab_count = #self.order
-        local tab_columns = math.max(1, self.tab_columns or 1)
+        local tab_columns = math.min(math.max(1, self.tab_columns or 1), tab_count)
         local tab_rows = math.ceil(tab_count / tab_columns)
         local tab_width = 100 / tab_columns
         local tab_height = 100 / tab_rows
+
+        -- The tabs now occupy the top of the box. Resize the console below
+        -- them so a changing channel list never overlaps either view.
+        if self.tab_rail and self.console_stack then
+                local tab_rail_height = math.max(10, tab_rows * (self.tab_row_height or 8))
+                local console_y = 3 + tab_rail_height + 2
+                local console_height = math.max(20, 100 - console_y - 3)
+
+                self.tab_rail:move("3%", "3%")
+                self.tab_rail:resize("94%", tostring(tab_rail_height) .. "%")
+                self.console_stack:move("3%", tostring(console_y) .. "%")
+                self.console_stack:resize("94%", tostring(console_height) .. "%")
+        end
 
         for index, key in ipairs(self.order) do
                 local tab = self.tab_buttons[key]
@@ -548,17 +564,17 @@ function DD_GUI.Comms:build()
                 name = "DD_GUI.Comms.TabRail",
                 x = "3%",
                 y = "3%",
-                width = "24%",
-                height = "94%",
+                width = "94%",
+                height = "10%",
         }, DD_GUI.ChannelBox)
         self.tab_rail:setColor(0, 0, 0, 0)
 
         self.console_stack = Geyser.Label:new({
                 name = "DD_GUI.Comms.ConsoleStack",
-                x = "29%",
-                y = "3%",
-                width = "67%",
-                height = "94%",
+                x = "3%",
+                y = "15%",
+                width = "94%",
+                height = "82%",
         }, DD_GUI.ChannelBox)
         self.console_stack:setColor(0, 0, 0, 255)
 
