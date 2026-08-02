@@ -1,25 +1,28 @@
 DD_GUI = DD_GUI or {}
 DD_GUI.Comms = DD_GUI.Comms or {}
 
+DD_GUI.Comms.tab_columns = 2
+
+-- DD4 ANSI reset defaults, converted from its xterm 256-colour indices.
 DD_GUI.Comms.tab_definitions = {
-        { key = "all",      label = "All" },
-        { key = "auction",  label = "Auction" },
-        { key = "chat",     label = "Chat" },
-        { key = "server",   label = "Server" },
-        { key = "immtalk",  label = "Imm" },
-        { key = "music",    label = "Music" },
-        { key = "question", label = "Question" },
-        { key = "shout",    label = "Shout" },
-        { key = "yell",     label = "Yell" },
-        { key = "info",     label = "Info" },
-        { key = "clan",     label = "Clan" },
-        { key = "dirtalk",  label = "Dir" },
-        { key = "arena",    label = "Arena" },
-        { key = "newbie",   label = "Newbie" },
-        { key = "say",      label = "Say" },
-        { key = "tell",     label = "Tell" },
-        { key = "group",    label = "Group" },
-        { key = "unknown",  label = "Other" },
+        { key = "all",      label = "All",   colour = { 255, 255, 255 } },
+        { key = "auction",  label = "Auc",   colour = { 255, 0, 255 } },
+        { key = "chat",     label = "Chat",  colour = { 255, 255, 0 } },
+        { key = "server",   label = "Serv",  colour = { 0, 128, 128 } },
+        { key = "immtalk",  label = "Imm",   colour = { 0, 0, 255 } },
+        { key = "music",    label = "Music", colour = { 255, 0, 255 } },
+        { key = "question", label = "Quest", colour = { 255, 0, 255 } },
+        { key = "shout",    label = "Shout", colour = { 255, 0, 0 } },
+        { key = "yell",     label = "Yell",  colour = { 255, 0, 0 } },
+        { key = "info",     label = "Info",  colour = { 255, 0, 255 } },
+        { key = "clan",     label = "Clan",  colour = { 192, 192, 192 } },
+        { key = "dirtalk",  label = "Dir",   colour = { 0, 95, 175 } },
+        { key = "arena",    label = "Arena", colour = { 255, 0, 255 } },
+        { key = "newbie",   label = "Newb",  colour = { 0, 255, 255 } },
+        { key = "say",      label = "Say",   colour = { 255, 255, 255 } },
+        { key = "tell",     label = "Tell",  colour = { 0, 255, 0 } },
+        { key = "group",    label = "Group", colour = { 0, 255, 0 } },
+        { key = "unknown",  label = "Other", colour = { 255, 255, 255 } },
 }
 
 function dd_comms_tab_order_path()
@@ -99,6 +102,46 @@ function DD_GUI.Comms:tab_label(key)
         return self.tab_labels_by_key[key] or dd_comms_title(key)
 end
 
+function DD_GUI.Comms:tab_colour(key)
+        local definition = self.tab_lookup and self.tab_lookup[key]
+
+        if definition and definition.colour then
+                return definition.colour
+        end
+
+        return { 255, 255, 255 }
+end
+
+function DD_GUI.Comms:rgb_string(key)
+        local colour = self:tab_colour(key)
+        return string.format("%d,%d,%d", colour[1], colour[2], colour[3])
+end
+
+function DD_GUI.Comms:normalise_channel_key(raw_channel)
+        local key = dd_comms_trim(raw_channel):lower()
+
+        key = string.gsub(key, "^notify%.channel%.", "")
+        key = string.gsub(key, "^notify%.", "")
+
+        return key
+end
+
+function DD_GUI.Comms:comm_channel(comm)
+        local channel = comm.channel
+        local notify_channel = comm.notify_channel or comm.notifyChannel or comm.notify
+
+        if not channel or dd_comms_trim(channel) == "" then
+                return notify_channel or "unknown"
+        end
+
+        local key = self:normalise_channel_key(channel)
+        if key == "comm" or key == "communication" or key == "communications" then
+                return notify_channel or channel
+        end
+
+        return channel
+end
+
 function DD_GUI.Comms:tab_css(key)
         if key == self.current_tab then
                 return [[
@@ -136,7 +179,11 @@ function DD_GUI.Comms:style_tab(key)
         end
 
         label:setStyleSheet(self:tab_css(key))
-        label:setFgColor(key == self.current_tab and "white" or "cyan")
+        if key == self.current_tab then
+                label:echo(self:tab_label(key), "white", "c")
+        else
+                label:echo(self:tab_label(key), "<" .. self:rgb_string(key) .. ">", "c")
+        end
 end
 
 function DD_GUI.Comms:style_tabs()
@@ -155,15 +202,20 @@ function DD_GUI.Comms:layout_tabs()
         end
 
         local tab_count = #self.order
-        local tab_height = 100 / tab_count
+        local tab_columns = math.max(1, self.tab_columns or 1)
+        local tab_rows = math.ceil(tab_count / tab_columns)
+        local tab_width = 100 / tab_columns
+        local tab_height = 100 / tab_rows
 
         for index, key in ipairs(self.order) do
                 local tab = self.tab_buttons[key]
                 if tab then
-                        tab:move("0%", tostring((index - 1) * tab_height) .. "%")
-                        tab:resize("100%", tostring(tab_height) .. "%")
-                        tab:echo(self:tab_label(key))
-                        tab:setAlignment("center")
+                        local tab_index = index - 1
+                        local tab_column = tab_index % tab_columns
+                        local tab_row = math.floor(tab_index / tab_columns)
+
+                        tab:move(tostring(tab_column * tab_width) .. "%", tostring(tab_row * tab_height) .. "%")
+                        tab:resize(tostring(tab_width) .. "%", tostring(tab_height) .. "%")
                         self:style_tab(key)
                 end
         end
@@ -174,18 +226,41 @@ function DD_GUI.Comms:create_tab_button(key)
                 name = "DD_GUI.Comms.Tab." .. key,
                 x = "0%",
                 y = "0%",
-                width = "100%",
-                height = "5%",
+                width = "50%",
+                height = "10%",
         }, self.tab_rail)
 
-        tab:setFontSize(7)
+        tab:setFontSize(8)
         tab:setBold(1)
         tab:setClickCallback("dd_comms_tab_click", key)
         tab:setReleaseCallback("dd_comms_tab_release", key)
         tab:setMoveCallback("dd_comms_tab_move", key)
-        tab:setOnLeave("dd_comms_tab_leave", key)
+
+        if type(setLabelOnEnter) == "function" then
+                setLabelOnEnter(tab.name, "dd_comms_tab_enter", key)
+        end
+
+        if type(setLabelOnLeave) == "function" then
+                setLabelOnLeave(tab.name, "dd_comms_tab_leave", key)
+        else
+                tab:setOnLeave("dd_comms_tab_leave", key)
+        end
 
         self.tab_buttons[key] = tab
+end
+
+function DD_GUI.Comms:echo_message(console, key, message)
+        if not console or not message then
+                return
+        end
+
+        local colour = self:tab_colour(key)
+
+        if type(setFgColor) == "function" and console.name then
+                setFgColor(console.name, colour[1], colour[2], colour[3])
+        end
+
+        console:echo(message)
 end
 
 function DD_GUI.Comms:create_console(key)
@@ -221,19 +296,19 @@ function DD_GUI.Comms:build()
 
         self.tab_rail = Geyser.Label:new({
                 name = "DD_GUI.Comms.TabRail",
-                x = "4%",
-                y = "13%",
-                width = "29%",
-                height = "83%",
+                x = "3%",
+                y = "12%",
+                width = "24%",
+                height = "84%",
         }, DD_GUI.ChannelBox)
         self.tab_rail:setColor(0, 0, 0, 0)
 
         self.console_stack = Geyser.Label:new({
                 name = "DD_GUI.Comms.ConsoleStack",
-                x = "35%",
-                y = "13%",
-                width = "61%",
-                height = "83%",
+                x = "29%",
+                y = "12%",
+                width = "67%",
+                height = "84%",
         }, DD_GUI.ChannelBox)
         self.console_stack:setColor(0, 0, 0, 255)
 
@@ -295,7 +370,7 @@ end
 
 function DD_GUI.Comms:resolve_channel(channel)
         local raw_channel = dd_comms_trim(channel)
-        local key = raw_channel:lower()
+        local key = self:normalise_channel_key(raw_channel)
 
         if key == "" then
                 return "unknown", "unknown"
@@ -342,16 +417,16 @@ function DD_GUI.Comms:handle_comm(comm)
                 return
         end
 
-        local raw_channel = comm.channel or comm.notify_channel or comm.notifyChannel or comm.notify or "unknown"
+        local raw_channel = self:comm_channel(comm)
         local key, display_raw_channel = self:resolve_channel(raw_channel)
         local speaker = comm.speaker or comm.talker or comm.sender or ""
         local display_channel = self:display_channel(key, display_raw_channel)
         local message = self:format_message(display_channel, speaker, text)
 
-        self.consoles.all:echo(message)
+        self:echo_message(self.consoles.all, key, message)
 
         if key ~= "all" and self.consoles[key] then
-                self.consoles[key]:echo(message)
+                self:echo_message(self.consoles[key], key, message)
         end
 end
 
@@ -382,15 +457,21 @@ function dd_comms_tab_move(key)
         DD_GUI.Comms:style_tabs()
 end
 
+function dd_comms_tab_enter(key)
+        if not DD_GUI or not DD_GUI.Comms or not DD_GUI.Comms.drag_source then
+                return
+        end
+
+        DD_GUI.Comms.drag_target = key
+        DD_GUI.Comms:style_tabs()
+end
+
 function dd_comms_tab_leave(key)
         if not DD_GUI or not DD_GUI.Comms then
                 return
         end
 
-        if DD_GUI.Comms.drag_target == key then
-                DD_GUI.Comms.drag_target = nil
-                DD_GUI.Comms:style_tab(key)
-        end
+        DD_GUI.Comms:style_tab(key)
 end
 
 function dd_comms_tab_release(key)
