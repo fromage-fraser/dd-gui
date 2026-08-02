@@ -1,18 +1,12 @@
 function build_enemy_box()
-  DD_GUI.EnemyTopRow = Geyser.HBox:new({
-    name = "DD_GUI.EnemyTopRow",
-    x = "4%", y = "3%",
-    width = "92%", height = "10%",
-  },DD_GUI.EnemyBox )
+  if DD_GUI.EnemyTopRow and DD_GUI.EnemyTopRow.hide then
+    DD_GUI.EnemyTopRow:hide()
+  end
 
-  EnemyLabel = Geyser.Label:new({
-    name = "EnemyLabel",
-    x = 0, y = "5%",
-    width = "50%", height = "70%",
-    message = [[Enemy Info]]
-  }, DD_GUI.EnemyTopRow )
-  EnemyLabel:setColor(0,0,0,0)
-  EnemyLabel:setFgColor("Cyan")
-  EnemyLabel:setFontSize(10)
-  EnemyLabel:setBold(1)
+  if EnemyLabel and EnemyLabel.hide then
+    EnemyLabel:hide()
+  end
+
+  DD_GUI.EnemyTopRow = nil
+  EnemyLabel = nil
 end

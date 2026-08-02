@@ -8,8 +8,6 @@ function update_travel()
             EnemyConsoleHitpointsContainer:hide()
             EnemyConsoleHitpoints:hide()
             EnemyHitpointsLabel:hide()
-            EnemyLabel:echo("Travel Info")
-
             local room_image = ms_path .. "/avatars/default_char.png"
             local sector_name = "Unknown"
 
