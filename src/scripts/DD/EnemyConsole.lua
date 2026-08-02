@@ -2,9 +2,9 @@ function build_enemy_console()
 
     EnemyConsole = Geyser.MiniConsole:new({
       name="EnemyConsole",
-      x = "4%", y = "0%",
+      x = "4%", y = "3%",
       width="92%",
-      height="100%",
+      height="94%",
       autoWrap = false,
       color = "black",
       scrollBar = false,
