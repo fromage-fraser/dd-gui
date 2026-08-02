@@ -37,6 +37,12 @@
                 ]
         },
         {
+                "name": "update_channel_status",
+                "eventHandlerList": [
+                        "gmcp.Char.Channels"
+                ]
+        },
+        {
                 "name": "bootstrap"
         }   
 ]
