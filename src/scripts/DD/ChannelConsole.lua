@@ -2,6 +2,7 @@ DD_GUI = DD_GUI or {}
 DD_GUI.Comms = DD_GUI.Comms or {}
 
 DD_GUI.Comms.tab_columns = 2
+DD_GUI.Comms.drag_threshold = 5
 
 -- DD4 ANSI reset defaults, converted from its xterm 256-colour indices.
 DD_GUI.Comms.tab_definitions = {
@@ -293,6 +294,12 @@ function DD_GUI.Comms:build()
         self:load_order()
         self.tab_buttons = {}
         self.consoles = {}
+        self.drag_source = nil
+        self.drag_target = nil
+        self.drag_before_target = nil
+        self.drag_press_x = nil
+        self.drag_press_y = nil
+        self.dragging = nil
 
         self.tab_rail = Geyser.Label:new({
                 name = "DD_GUI.Comms.TabRail",
@@ -337,7 +344,7 @@ function DD_GUI.Comms:switch_tab(key)
         self:style_tabs()
 end
 
-function DD_GUI.Comms:reorder(source, target)
+function DD_GUI.Comms:reorder(source, target, before_target)
         if source == target or not self.order then
                 return
         end
@@ -363,29 +370,54 @@ function DD_GUI.Comms:reorder(source, target)
                 target_index = target_index - 1
         end
 
+        if not before_target then
+                target_index = target_index + 1
+        end
+
         table.insert(self.order, target_index, source)
         self:layout_tabs()
         self:save_order()
 end
 
-function DD_GUI.Comms:tab_at(global_x, global_y)
-        global_x = tonumber(global_x)
-        global_y = tonumber(global_y)
-        if not global_x or not global_y or not self.order then
+function DD_GUI.Comms:tab_event_position(key, event)
+        if not event or event.x == nil or event.y == nil then
+                return nil, nil
+        end
+
+        local tab = self.tab_buttons and self.tab_buttons[key]
+        if not tab or not tab.get_x or not tab.get_y then
+                return nil, nil
+        end
+
+        local local_x = tonumber(event.x)
+        local local_y = tonumber(event.y)
+        if not local_x or not local_y then
+                return nil, nil
+        end
+
+        -- Mudlet's globalX/globalY are screen coordinates, while Geyser's
+        -- get_x/get_y values are relative to the Mudlet window.
+        return tab:get_x() + local_x, tab:get_y() + local_y
+end
+
+function DD_GUI.Comms:drop_location(x, y)
+        x = tonumber(x)
+        y = tonumber(y)
+        if not x or not y or not self.order then
                 return nil
         end
 
         for _, key in ipairs(self.order) do
                 local tab = self.tab_buttons and self.tab_buttons[key]
                 if tab and tab.get_x and tab.get_y and tab.get_width and tab.get_height then
-                        local x = tab:get_x()
-                        local y = tab:get_y()
+                        local tab_x = tab:get_x()
+                        local tab_y = tab:get_y()
                         local width = tab:get_width()
                         local height = tab:get_height()
 
-                        if global_x >= x and global_x <= x + width and
-                           global_y >= y and global_y <= y + height then
-                                return key
+                        if x >= tab_x and x <= tab_x + width and
+                           y >= tab_y and y <= tab_y + height then
+                                return key, x < tab_x + (width / 2)
                         end
                 end
         end
@@ -393,14 +425,19 @@ function DD_GUI.Comms:tab_at(global_x, global_y)
         return nil
 end
 
-function DD_GUI.Comms:update_drag_target(global_x, global_y, fallback)
-        if not self.drag_source then
+function DD_GUI.Comms:update_drag_target(key, event, fallback)
+        if not self.drag_source or not self.dragging then
                 return
         end
 
-        local target = self:tab_at(global_x, global_y) or fallback
-        if target ~= self.drag_target then
+        local x, y = self:tab_event_position(key, event)
+        local target, before_target = self:drop_location(x, y)
+        target = target or fallback
+        before_target = before_target == nil and true or before_target
+
+        if target ~= self.drag_target or before_target ~= self.drag_before_target then
                 self.drag_target = target
+                self.drag_before_target = before_target
                 self:style_tabs()
         end
 end
@@ -486,6 +523,10 @@ function dd_comms_tab_click(key, event)
 
         DD_GUI.Comms.drag_source = key
         DD_GUI.Comms.drag_target = key
+        DD_GUI.Comms.drag_before_target = true
+        DD_GUI.Comms.dragging = false
+        DD_GUI.Comms.drag_press_x, DD_GUI.Comms.drag_press_y =
+                DD_GUI.Comms:tab_event_position(key, event)
         DD_GUI.Comms:switch_tab(key)
 end
 
@@ -494,15 +535,31 @@ function dd_comms_tab_move(key, event)
                 return
         end
 
-        DD_GUI.Comms:update_drag_target(event and event.globalX, event and event.globalY, key)
-end
-
-function dd_comms_tab_enter(key, event)
-        if not DD_GUI or not DD_GUI.Comms or not DD_GUI.Comms.drag_source then
+        if not event or not event.buttons or not table.contains(event.buttons, "LeftButton") then
                 return
         end
 
-        DD_GUI.Comms:update_drag_target(event and event.globalX, event and event.globalY, key)
+        local source = DD_GUI.Comms.drag_source
+        local x, y = DD_GUI.Comms:tab_event_position(source, event)
+        if not DD_GUI.Comms.dragging then
+                local distance_x = math.abs((x or 0) - (DD_GUI.Comms.drag_press_x or x or 0))
+                local distance_y = math.abs((y or 0) - (DD_GUI.Comms.drag_press_y or y or 0))
+                if math.max(distance_x, distance_y) < DD_GUI.Comms.drag_threshold then
+                        return
+                end
+
+                DD_GUI.Comms.dragging = true
+        end
+
+        DD_GUI.Comms:update_drag_target(source, event, key)
+end
+
+function dd_comms_tab_enter(key, event)
+        if not DD_GUI or not DD_GUI.Comms or not DD_GUI.Comms.dragging then
+                return
+        end
+
+        DD_GUI.Comms:update_drag_target(key, event, key)
 end
 
 function dd_comms_tab_leave(key)
@@ -519,19 +576,28 @@ function dd_comms_tab_release(key, event)
         end
 
         local source = DD_GUI.Comms.drag_source
-        local target = DD_GUI.Comms:tab_at(event and event.globalX, event and event.globalY)
-                or DD_GUI.Comms.drag_target
-                or key
+        local target = DD_GUI.Comms.drag_target or key
+        local before_target = DD_GUI.Comms.drag_before_target
+        if source and DD_GUI.Comms.dragging then
+                local x, y = DD_GUI.Comms:tab_event_position(source, event)
+                local event_target, event_before_target = DD_GUI.Comms:drop_location(x, y)
+                target = event_target or target
+                before_target = event_before_target == nil and before_target or event_before_target
+        end
 
-        if source and source ~= target then
-                DD_GUI.Comms:reorder(source, target)
+        if source and DD_GUI.Comms.dragging and source ~= target then
+                DD_GUI.Comms:reorder(source, target, before_target)
                 DD_GUI.Comms:switch_tab(source)
         else
-                DD_GUI.Comms:switch_tab(key)
+                DD_GUI.Comms:switch_tab(source or key)
         end
 
         DD_GUI.Comms.drag_source = nil
         DD_GUI.Comms.drag_target = nil
+        DD_GUI.Comms.drag_before_target = nil
+        DD_GUI.Comms.drag_press_x = nil
+        DD_GUI.Comms.drag_press_y = nil
+        DD_GUI.Comms.dragging = nil
         DD_GUI.Comms:style_tabs()
 end
 
