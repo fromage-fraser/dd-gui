@@ -14,8 +14,14 @@
         },
         {
                 "name": "update_inventory",
-                "eventHandlerList": [ 
+                "eventHandlerList": [
                         "gmcp.Char.Items"
+                ]
+        },
+        {
+                "name": "update_equipped",
+                "eventHandlerList": [
+                        "gmcp.Char.Worn"
                 ]
         },
         {
