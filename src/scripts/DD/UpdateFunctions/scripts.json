@@ -31,7 +31,12 @@
                 ]
         },
         {
+                "name": "update_comms",
+                "eventHandlerList": [
+                        "gmcp.Comm.Channel.Text"
+                ]
+        },
+        {
                 "name": "bootstrap"
         }   
 ]
-      
