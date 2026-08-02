@@ -26,9 +26,19 @@ function update_enemy()
                 EnemyTPConsoleTop:clear()
 
                 if (file_exists(enemy_image)) then
-                        EnemyTPConsoleTop:setBackgroundImage(enemy_image,"border")
+                        DD_GUI.ImageFit:set(
+                                EnemyTPConsoleTop,
+                                EnemyConsole,
+                                enemy_image,
+                                { fallback = { width = 560, height = 300 } }
+                        )
                 else
-                        EnemyTPConsoleTop:setBackgroundImage(def_enemy_image,"border")
+                        DD_GUI.ImageFit:set(
+                                EnemyTPConsoleTop,
+                                EnemyConsole,
+                                def_enemy_image,
+                                { fallback = { width = 560, height = 300 } }
+                        )
                 end
 
                 for i, count in ipairs(gmcp.Char.Enemies) do
