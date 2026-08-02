@@ -21,7 +21,9 @@
         {
                 "name": "update_equipped",
                 "eventHandlerList": [
-                        "gmcp.Char.Worn"
+                        "gmcp.Char.Worn",
+                        "gmcp.Char.Base",
+                        "gmcp.Char.Vitals"
                 ]
         },
         {
