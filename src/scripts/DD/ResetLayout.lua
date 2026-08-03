@@ -22,6 +22,9 @@ local function reset_adjustable_box(box, x, y, width, height)
         if type(box.show) == "function" then
                 box:show()
         end
+        if DD_GUI.hide_adjustable_controls then
+                DD_GUI.hide_adjustable_controls(box)
+        end
 
         box:move(x, y)
         box:resize(width, height)

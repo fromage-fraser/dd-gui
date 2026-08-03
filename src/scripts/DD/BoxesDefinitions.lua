@@ -27,6 +27,21 @@ end
 
 DD_GUI.set_adjustable_drag_outline = set_adjustable_drag_outline
 
+local function hide_adjustable_controls(box)
+        if not box then
+                return
+        end
+
+        if box.exitLabel and box.exitLabel.hide then
+                box.exitLabel:hide()
+        end
+        if box.minimizeLabel and box.minimizeLabel.hide then
+                box.minimizeLabel:hide()
+        end
+end
+
+DD_GUI.hide_adjustable_controls = hide_adjustable_controls
+
 local function register_adjustable_outline_handlers()
         if DD_GUI.adjustable_outline_handlers_registered then
                 return
@@ -180,8 +195,7 @@ function DD_GUI.new_adjustable_container(cons, parent, options)
                 local box = Adjustable.Container:new(cons, parent)
                 box.adjLabel:echo("")
                 box._dd_gui_base_style = box.adjLabelstyle or ""
-                box.exitLabel:hide()
-                box.minimizeLabel:hide()
+                hide_adjustable_controls(box)
                 box.setStyleSheet = function(self, css)
                         self._dd_gui_base_style = transparent_surface_css(css)
                         set_adjustable_drag_outline(self, self._dd_gui_dragging)
