@@ -5,6 +5,55 @@ local function transparent_surface_css(css)
         )
 end
 
+local adjustable_drag_outline_css = [[
+        border-style: solid;
+        border-width: 2px;
+        border-color: rgba(255,255,255,220);
+]]
+
+local function set_adjustable_drag_outline(box, active)
+        if not box or not box.adjLabel then
+                return
+        end
+
+        box._dd_gui_dragging = active == true
+        local base_style = box._dd_gui_base_style or ""
+        if box._dd_gui_dragging then
+                box.adjLabel:setStyleSheet(base_style .. adjustable_drag_outline_css)
+        else
+                box.adjLabel:setStyleSheet(base_style)
+        end
+end
+
+DD_GUI.set_adjustable_drag_outline = set_adjustable_drag_outline
+
+local function register_adjustable_outline_handlers()
+        if DD_GUI.adjustable_outline_handlers_registered then
+                return
+        end
+
+        registerAnonymousEventHandler("AdjustableContainerReposition", function(
+                _, name, _, _, _, _, is_mouse_action)
+                if not is_mouse_action or not Adjustable or
+                   not Adjustable.Container or not Adjustable.Container.all then
+                        return
+                end
+
+                set_adjustable_drag_outline(
+                        Adjustable.Container.all[name], true)
+        end)
+
+        registerAnonymousEventHandler("AdjustableContainerRepositionFinish", function(
+                _, name)
+                if Adjustable and Adjustable.Container and Adjustable.Container.all then
+                        set_adjustable_drag_outline(
+                                Adjustable.Container.all[name], false)
+                end
+        end)
+
+        DD_GUI.adjustable_outline_handlers_registered = true
+end
+
 local function raise_children(container)
         if not container or not container.windows or not container.windowList then
                 return
@@ -16,6 +65,27 @@ local function raise_children(container)
                         child:raiseAll()
                 elseif child and child.raise then
                         child:raise()
+                end
+        end
+end
+
+local function raise_tab_rails()
+        local rails = {}
+        if DD_GUI.Comms and DD_GUI.Comms.tab_rail then
+                table.insert(rails, DD_GUI.Comms.tab_rail)
+        end
+        if DD_GUI.Inventory and DD_GUI.Inventory.tab_rail then
+                table.insert(rails, DD_GUI.Inventory.tab_rail)
+        end
+        if DD_GUI.Affects and DD_GUI.Affects.tab_rail then
+                table.insert(rails, DD_GUI.Affects.tab_rail)
+        end
+
+        for _, rail in ipairs(rails) do
+                if rail and rail.raiseAll then
+                        rail:raiseAll()
+                elseif rail and rail.raise then
+                        rail:raise()
                 end
         end
 end
@@ -42,6 +112,10 @@ function DD_GUI.raise_info_box_contents()
                         end
                 end
 
+                -- Console widgets can be raised during bootstrap and GMCP
+                -- refreshes. Put the tab controls back on top afterwards.
+                raise_tab_rails()
+
                 -- Gauge columns use the adjustable container directly so
                 -- their short row height does not get consumed by nested
                 -- Inside containers.
@@ -59,6 +133,9 @@ function DD_GUI.raise_info_box_contents()
                         elseif compass.box.raise then
                                 compass.box:raise()
                         end
+                end
+                if compass and compass.handle and compass.handle.raise then
+                        compass.handle:raise()
                 end
                 return
         end
@@ -83,6 +160,7 @@ end
 
 function DD_GUI.new_adjustable_container(cons, parent, options)
         if Adjustable and Adjustable.Container then
+                register_adjustable_outline_handlers()
                 cons = cons or {}
                 cons.padding = cons.padding or 4
                 cons.autoLoad = true
@@ -101,10 +179,12 @@ function DD_GUI.new_adjustable_container(cons, parent, options)
 
                 local box = Adjustable.Container:new(cons, parent)
                 box.adjLabel:echo("")
+                box._dd_gui_base_style = box.adjLabelstyle or ""
                 box.exitLabel:hide()
                 box.minimizeLabel:hide()
                 box.setStyleSheet = function(self, css)
-                        self.adjLabel:setStyleSheet(transparent_surface_css(css))
+                        self._dd_gui_base_style = transparent_surface_css(css)
+                        set_adjustable_drag_outline(self, self._dd_gui_dragging)
                 end
                 if options and options.direct then
                         box.goInside = false
@@ -122,7 +202,8 @@ function DD_GUI.new_adjustable_region(cons, parent, css, options)
                 -- Keep the region background on the drag layer itself.  The
                 -- content is raised afterwards, so this never tints it.
                 if box.adjLabel and box.adjLabel.setStyleSheet then
-                        box.adjLabel:setStyleSheet(css or "")
+                        box._dd_gui_base_style = css or ""
+                        set_adjustable_drag_outline(box, false)
                 end
                 box._dd_gui_region = true
                 return box
