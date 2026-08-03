@@ -8,6 +8,64 @@ local function compass_background_css(width)
   ]]
 end
 
+function dd_gui_compass_handle_click(event)
+  if not event or event.button ~= "LeftButton" or
+     not compass or not compass.back then
+    return
+  end
+
+  local mouse_x, mouse_y = getMousePosition()
+  compass.handle_drag = {
+    mouse_x = mouse_x,
+    mouse_y = mouse_y,
+    x = compass.back:get_x(),
+    y = compass.back:get_y(),
+    width = compass.back:get_width(),
+    height = compass.back:get_height(),
+  }
+
+  if DD_GUI.set_adjustable_drag_outline then
+    DD_GUI.set_adjustable_drag_outline(compass.back, true)
+  end
+  compass.handle:setCursor("ClosedHand")
+end
+
+function dd_gui_compass_handle_move(event)
+  if not compass or not compass.back or not compass.handle_drag then
+    return
+  end
+
+  local mouse_x, mouse_y = getMousePosition()
+  local drag = compass.handle_drag
+  local win_width, win_height = getMainWindowSize()
+  local x = math.max(0, math.min(win_width - drag.width,
+    drag.x + mouse_x - drag.mouse_x))
+  local y = math.max(0, math.min(win_height - drag.height,
+    drag.y + mouse_y - drag.mouse_y))
+
+  compass.back:move(
+    string.format("%.5f%%", (x / win_width) * 100),
+    string.format("%.5f%%", (y / win_height) * 100))
+end
+
+function dd_gui_compass_handle_release(event)
+  if not event or event.button ~= "LeftButton" or
+     not compass or not compass.back then
+    return
+  end
+
+  compass.handle_drag = nil
+  if DD_GUI.set_adjustable_drag_outline then
+    DD_GUI.set_adjustable_drag_outline(compass.back, false)
+  end
+  if compass.handle then
+    compass.handle:setCursor("OpenHand")
+  end
+  if compass.back.save then
+    compass.back:save()
+  end
+end
+
 function build_compass()
 
 local mw, mh = getMainWindowSize()
@@ -27,6 +85,13 @@ local mw, mh = getMainWindowSize()
 
   local compass_layout_path = ms_path .. "/layout/compass.back.lua"
   local saved_layout = io.exists and io.exists(compass_layout_path)
+
+  -- Vitals can rebuild the compass after the initial bootstrap. Remove the
+  -- previous native widget tree so its drag surface cannot remain visible or
+  -- steal mouse events from the current handle.
+  if compass and compass.back and compass.back.delete then
+    compass.back:delete()
+  end
 
   compass = {
     dirs = {"n","u","w","look","e","s","d"},
@@ -60,6 +125,29 @@ local mw, mh = getMainWindowSize()
 
   local compass_parent = compass.back
   if compass.back._dd_gui_adjustable then
+    -- The adjustable container's native drag label is covered by the
+    -- compass contents. Keep a full-width top rail above those contents and
+    -- forward its mouse events to the native adjustable handlers.
+    local go_inside = compass.back.goInside
+    compass.back.goInside = false
+    compass.handle = Geyser.Label:new({
+      name = "compass.handle",
+      x = 0,
+      y = 0,
+      width = "100%",
+      height = 14,
+    }, compass.back)
+    compass.back.goInside = go_inside
+    compass.handle:setStyleSheet([[
+      background-color: rgba(0,0,0,0);
+      border: 0px;
+      margin: 0px;
+    ]])
+    compass.handle:echo("")
+    compass.handle:setClickCallback("dd_gui_compass_handle_click")
+    compass.handle:setReleaseCallback("dd_gui_compass_handle_release")
+    compass.handle:setMoveCallback("dd_gui_compass_handle_move")
+
     compass.surface = Geyser.Label:new({
       name = "compass.surface",
       x = 0,
@@ -177,6 +265,10 @@ function compass.refresh()
     elseif compass.box.raise then
       compass.box:raise()
     end
+  end
+
+  if compass.handle and compass.handle.raise then
+    compass.handle:raise()
   end
 end
 

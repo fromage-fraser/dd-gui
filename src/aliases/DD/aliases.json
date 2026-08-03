@@ -6,5 +6,9 @@
         {
                 "name": "gcc",
                 "regex": "^gcc$"
+        },
+        {
+                "name": "resetgui",
+                "regex": "^resetgui$"
         }
 ]
