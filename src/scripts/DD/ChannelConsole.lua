@@ -244,12 +244,19 @@ function DD_GUI.Comms:ensure_channel_widget(key)
                 return
         end
 
+        local changed = false
         if not self.tab_buttons[key] then
                 self:create_tab_button(key)
+                changed = true
         end
 
         if not self.consoles[key] then
                 self:create_console(key)
+                changed = true
+        end
+
+        if changed and DD_GUI.raise_info_box_contents then
+                DD_GUI.raise_info_box_contents()
         end
 end
 
@@ -285,6 +292,10 @@ function DD_GUI.Comms:refresh_tabs()
                 self:switch_tab("all")
         else
                 self:style_tabs()
+        end
+
+        if DD_GUI.raise_info_box_contents then
+                DD_GUI.raise_info_box_contents()
         end
 end
 

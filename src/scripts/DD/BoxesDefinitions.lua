@@ -5,6 +5,25 @@ local function transparent_surface_css(css)
         )
 end
 
+function DD_GUI.raise_info_box_contents()
+        local box_names = {
+                "EnemyBox",
+                "MapBox",
+                "CharsheetBox",
+                "ChannelBox",
+                "InventoryBox",
+                "AffectBox",
+                "GaugesBox",
+        }
+
+        for _, box_name in ipairs(box_names) do
+                local box = DD_GUI[box_name]
+                if box and box.Inside and box.Inside.raiseAll then
+                        box.Inside:raiseAll()
+                end
+        end
+end
+
 local function new_info_box(cons, parent)
         if Adjustable and Adjustable.Container then
                 cons.padding = 4
