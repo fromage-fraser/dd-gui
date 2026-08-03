@@ -23,6 +23,11 @@ function update_vitals()
         build_enemy_box()
         build_enemy_console()
         build_compass()
+
+        if DD_GUI.raise_info_box_contents then
+                DD_GUI.raise_info_box_contents()
+        end
+
         lost_focus = false
     end
   end

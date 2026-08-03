@@ -20,4 +20,8 @@ function bootstrap()
         load_dd_mapper()
         get_custom_content()
         update_travel()
+
+        if DD_GUI.raise_info_box_contents then
+                DD_GUI.raise_info_box_contents()
+        end
 end
