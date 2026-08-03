@@ -3,27 +3,27 @@ function create_background()
           background-color: rgb(0,0,0);
         ]])
         
-        DD_GUI.Right = Geyser.Label:new({
+        DD_GUI.Right = DD_GUI.new_adjustable_region({
           name = "DD_GUI.Right",
           x = "-26%", y = "0%",
           width = "26%",
           height = "100%",
-        })
-        DD_GUI.Right:setStyleSheet(DD_GUI.BackgroundCSS:getCSS())
+          padding = 0,
+        }, nil, DD_GUI.BackgroundCSS:getCSS())
         
-        DD_GUI.Top = Geyser.Label:new({
+        DD_GUI.Top = DD_GUI.new_adjustable_region({
           name = "DD_GUI.Top",
           x = "0%", y = "0%",
           width = "100%",
           height = "36%",
-        })
-        DD_GUI.Top:setStyleSheet(DD_GUI.BackgroundCSS:getCSS())
+          padding = 0,
+        }, nil, DD_GUI.BackgroundCSS:getCSS())
         
-        DD_GUI.Bottom = Geyser.Label:new({
+        DD_GUI.Bottom = DD_GUI.new_adjustable_region({
           name = "DD_GUI.Bottom",
           x = "0%", y = "94%",
           width = "74%",
           height = "6%",
-        })
-        DD_GUI.Bottom:setStyleSheet(DD_GUI.BackgroundCSS:getCSS())
+          padding = 0,
+        }, nil, DD_GUI.BackgroundCSS:getCSS(), {direct = true})
 end

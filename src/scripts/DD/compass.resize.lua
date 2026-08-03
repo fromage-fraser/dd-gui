@@ -171,8 +171,12 @@ function compass.refresh()
   end
 
   -- Keep the navigation cells above the adjustable drag surface.
-  if compass.box and compass.box.raise then
-    compass.box:raise()
+  if compass.box then
+    if compass.box.raiseAll then
+      compass.box:raiseAll()
+    elseif compass.box.raise then
+      compass.box:raise()
+    end
   end
 end
 

@@ -23,5 +23,11 @@ function bootstrap()
 
         if DD_GUI.raise_info_box_contents then
                 DD_GUI.raise_info_box_contents()
+                -- Geyser completes its initial z-order pass after bootstrap.
+                tempTimer(0.1, function()
+                        if DD_GUI.raise_info_box_contents then
+                                DD_GUI.raise_info_box_contents()
+                        end
+                end)
         end
 end

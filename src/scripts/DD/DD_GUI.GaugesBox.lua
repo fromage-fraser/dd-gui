@@ -6,35 +6,42 @@ function build_gauges()
     local move    = gmcp.Char.Vitals.move
     local maxmove = gmcp.Char.Vitals.maxmove
 
-    DD_GUI.Footer = Geyser.HBox:new({
-      name = "DD_GUI.Footer",
-      x = "5%", y = "15%",
-      width = "94%", height = "70%",
-    },DD_GUI.Bottom )
+    DD_GUI.GaugesBox = DD_GUI.Bottom
+    DD_GUI.Footer = DD_GUI.Bottom
 
-    DD_GUI.FirstColumn = Geyser.VBox:new({
+    local function new_gauge_column(constraints)
+      local column = DD_GUI.new_adjustable_container and
+        DD_GUI.new_adjustable_container(constraints, DD_GUI.Bottom, {direct = true})
+      return column or Geyser.Container:new(constraints, DD_GUI.Bottom)
+    end
+
+    DD_GUI.FirstColumn = new_gauge_column({
       name = "DD_GUI.FirstColumn",
-      x = "0%", y = "0%",
-      width = "25%", height = "100%",
-    },DD_GUI.Footer)
+      x = "5%", y = "0%",
+      width = "23.5%", height = "100%",
+      padding = 0,
+    })
 
-    DD_GUI.SecondColumn = Geyser.VBox:new({
+    DD_GUI.SecondColumn = new_gauge_column({
       name = "DD_GUI.SecondColumn",
-      x = "0%", y = "0%",
-      width = "25%", height = "100%",
-    },DD_GUI.Footer)
+      x = "28.5%", y = "0%",
+      width = "23.5%", height = "100%",
+      padding = 0,
+    })
 
-    DD_GUI.ThirdColumn = Geyser.VBox:new({
+    DD_GUI.ThirdColumn = new_gauge_column({
       name = "DD_GUI.ThirdColumn",
-      x = "0%", y = "0%",
-      width = "25%", height = "100%",
-    },DD_GUI.Footer)
+      x = "52%", y = "0%",
+      width = "23.5%", height = "100%",
+      padding = 0,
+    })
 
-    DD_GUI.FourthColumn = Geyser.VBox:new({
+    DD_GUI.FourthColumn = new_gauge_column({
       name = "DD_GUI.FourthColumn",
-      x = "0%", y = "0%",
-      width = "25%", height = "100%",
-    },DD_GUI.Footer)
+      x = "75.5%", y = "0%",
+      width = "23.5%", height = "100%",
+      padding = 0,
+    })
 
 
     --Hitpoints
@@ -57,7 +64,11 @@ function build_gauges()
         padding: 10px;
     ]])
 
-    DD_GUI.Hitpoints = Geyser.Gauge:new({ name = "DD_GUI.Hitpoints", },DD_GUI.FirstColumn)
+    DD_GUI.Hitpoints = Geyser.Gauge:new({
+      name = "DD_GUI.Hitpoints",
+      x = "0%", y = "15%",
+      width = "100%", height = "70%",
+    }, DD_GUI.FirstColumn)
     DD_GUI.Hitpoints.back:setStyleSheet(DD_GUI.HitpointsGaugeBackCSS:getCSS())
     DD_GUI.Hitpoints.front:setStyleSheet(DD_GUI.HitpointsGaugeFrontCSS:getCSS())
     if (gmcp.Char.Vitals.hp > gmcp.Char.Vitals.maxhp) then
@@ -96,7 +107,11 @@ function build_gauges()
         padding: 10px;
     ]])
 
-    DD_GUI.Mana = Geyser.Gauge:new({ name = "DD_GUI.Mana", },DD_GUI.SecondColumn)
+    DD_GUI.Mana = Geyser.Gauge:new({
+      name = "DD_GUI.Mana",
+      x = "0%", y = "15%",
+      width = "100%", height = "70%",
+    }, DD_GUI.SecondColumn)
     DD_GUI.Mana.back:setStyleSheet(DD_GUI.ManaGaugeBackCSS:getCSS())
     DD_GUI.Mana.front:setStyleSheet(DD_GUI.ManaGaugeFrontCSS:getCSS())
     if (gmcp.Char.Vitals.mana > gmcp.Char.Vitals.maxmana) then
@@ -135,7 +150,11 @@ function build_gauges()
         padding: 10px;
     ]])
 
-    DD_GUI.Xp = Geyser.Gauge:new({ name = "DD_GUI.Xp", },DD_GUI.ThirdColumn)
+    DD_GUI.Xp = Geyser.Gauge:new({
+      name = "DD_GUI.Xp",
+      x = "0%", y = "15%",
+      width = "100%", height = "70%",
+    }, DD_GUI.ThirdColumn)
     DD_GUI.Xp.back:setStyleSheet(DD_GUI.XpGaugeBackCSS:getCSS())
     DD_GUI.Xp.front:setStyleSheet(DD_GUI.XpGaugeFrontCSS:getCSS())
     --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xplvl * 1000) / (gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl)), 1000)
@@ -177,7 +196,11 @@ function build_gauges()
         padding: 10px;
     ]])
 
-    DD_GUI.Moves = Geyser.Gauge:new({ name = "DD_GUI.Moves", }, DD_GUI.FourthColumn)
+    DD_GUI.Moves = Geyser.Gauge:new({
+      name = "DD_GUI.Moves",
+      x = "0%", y = "15%",
+      width = "100%", height = "70%",
+    }, DD_GUI.FourthColumn)
     DD_GUI.Moves.back:setStyleSheet(DD_GUI.MovesGaugeBackCSS:getCSS())
     DD_GUI.Moves.front:setStyleSheet(DD_GUI.MovesGaugeFrontCSS:getCSS())
     if (gmcp.Char.Vitals.move > gmcp.Char.Vitals.maxmove) then
