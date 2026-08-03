@@ -5,6 +5,21 @@ local function transparent_surface_css(css)
         )
 end
 
+local function raise_children(container)
+        if not container or not container.windows or not container.windowList then
+                return
+        end
+
+        for _, name in ipairs(container.windows) do
+                local child = container.windowList[name]
+                if child and child.raiseAll then
+                        child:raiseAll()
+                elseif child and child.raise then
+                        child:raise()
+                end
+        end
+end
+
 function DD_GUI.raise_info_box_contents()
         if ui and ui.mainconsole_container and ui.mainconsole_container.adjLabel and
            ui.mainconsole_container.adjLabel.raise then
@@ -19,8 +34,30 @@ function DD_GUI.raise_info_box_contents()
                 end
 
                 for _, box in pairs(Adjustable.Container.all) do
-                        if box and box.Inside and box.Inside.raiseAll then
-                                box.Inside:raiseAll()
+                        if box and box.Inside then
+                                -- Raise the contents without raising the
+                                -- full-size Inside container over the drag
+                                -- surface of its parent.
+                                raise_children(box.Inside)
+                        end
+                end
+
+                -- Gauge columns use the adjustable container directly so
+                -- their short row height does not get consumed by nested
+                -- Inside containers.
+                for _, box in pairs(Adjustable.Container.all) do
+                        if box and box.goInside == false and box.raiseAll then
+                                box:raiseAll()
+                        end
+                end
+
+                -- The compass overlaps the bottom gauge row at its default
+                -- position, so its navigation cells must be raised last.
+                if compass and compass.box then
+                        if compass.box.raiseAll then
+                                compass.box:raiseAll()
+                        elseif compass.box.raise then
+                                compass.box:raise()
                         end
                 end
                 return
@@ -44,10 +81,10 @@ function DD_GUI.raise_info_box_contents()
         end
 end
 
-function DD_GUI.new_adjustable_container(cons, parent)
+function DD_GUI.new_adjustable_container(cons, parent, options)
         if Adjustable and Adjustable.Container then
                 cons = cons or {}
-                cons.padding = 4
+                cons.padding = cons.padding or 4
                 cons.autoLoad = true
                 cons.autoSave = true
                 cons.defaultDir = ms_path .. "/layout/"
@@ -69,11 +106,33 @@ function DD_GUI.new_adjustable_container(cons, parent)
                 box.setStyleSheet = function(self, css)
                         self.adjLabel:setStyleSheet(transparent_surface_css(css))
                 end
+                if options and options.direct then
+                        box.goInside = false
+                end
                 box._dd_gui_adjustable = true
                 return box
         end
 
         return nil
+end
+
+function DD_GUI.new_adjustable_region(cons, parent, css, options)
+        local box = DD_GUI.new_adjustable_container(cons, parent, options)
+        if box then
+                -- Keep the region background on the drag layer itself.  The
+                -- content is raised afterwards, so this never tints it.
+                if box.adjLabel and box.adjLabel.setStyleSheet then
+                        box.adjLabel:setStyleSheet(css or "")
+                end
+                box._dd_gui_region = true
+                return box
+        end
+
+        local fallback = Geyser.Label:new(cons, parent)
+        if css then
+                fallback:setStyleSheet(css)
+        end
+        return fallback
 end
 
 local function new_info_box(cons, parent)
@@ -167,12 +226,4 @@ function define_boxes()
         DD_GUI.AffectBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.AffectBox:echo("<center>GUI.AffectBox")
         
-        DD_GUI.GaugesBox = new_info_box({
-          name = "DD_GUI.GaugesBox",
-          x = "5%", y = 0,
-          width = "95%",
-          height = "100%",
-        },DD_GUI.Bottom)
-        DD_GUI.GaugesBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
-        --GUI.GaugesBox:echo("<center>GUI.GaugesBox")
 end
