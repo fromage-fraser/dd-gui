@@ -6,6 +6,26 @@ local function transparent_surface_css(css)
 end
 
 function DD_GUI.raise_info_box_contents()
+        if ui and ui.mainconsole_container and ui.mainconsole_container.adjLabel and
+           ui.mainconsole_container.adjLabel.raise then
+                ui.mainconsole_container.adjLabel:raise()
+        end
+
+        if Adjustable and Adjustable.Container and Adjustable.Container.all then
+                for _, box in pairs(Adjustable.Container.all) do
+                        if box and box.adjLabel and box.adjLabel.raise then
+                                box.adjLabel:raise()
+                        end
+                end
+
+                for _, box in pairs(Adjustable.Container.all) do
+                        if box and box.Inside and box.Inside.raiseAll then
+                                box.Inside:raiseAll()
+                        end
+                end
+                return
+        end
+
         local box_names = {
                 "EnemyBox",
                 "MapBox",
@@ -24,8 +44,9 @@ function DD_GUI.raise_info_box_contents()
         end
 end
 
-local function new_info_box(cons, parent)
+function DD_GUI.new_adjustable_container(cons, parent)
         if Adjustable and Adjustable.Container then
+                cons = cons or {}
                 cons.padding = 4
                 cons.autoLoad = true
                 cons.autoSave = true
@@ -48,6 +69,16 @@ local function new_info_box(cons, parent)
                 box.setStyleSheet = function(self, css)
                         self.adjLabel:setStyleSheet(transparent_surface_css(css))
                 end
+                box._dd_gui_adjustable = true
+                return box
+        end
+
+        return nil
+end
+
+local function new_info_box(cons, parent)
+        local box = DD_GUI.new_adjustable_container(cons, parent)
+        if box then
                 return box
         end
 
