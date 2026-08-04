@@ -1,3 +1,17 @@
+function dd_gui_main_console_wheel(event)
+        local delta = tonumber(event and event.angleDeltaY) or 0
+        if delta == 0 then
+                return
+        end
+
+        local lines = math.max(1, math.floor(math.abs(delta) / 40))
+        if delta > 0 then
+                scrollUp("main", lines)
+        else
+                scrollDown("main", lines)
+        end
+end
+
 function ui_container()
 
         -- interfacescript
@@ -14,6 +28,12 @@ function ui_container()
         ui.mainconsole_container = DD_GUI.new_adjustable_container and
                 DD_GUI.new_adjustable_container(mainconsole_constraints) or
                 Geyser.Container:new(mainconsole_constraints)
+
+        if ui.mainconsole_container.adjLabel then
+                ui.mainconsole_container.adjLabel:setWheelCallback(
+                        "dd_gui_main_console_wheel"
+                )
+        end
 
         function ui.updateBorderSizes()
                 if not ui.mainconsole_container then
