@@ -87,7 +87,7 @@ function update_affects()
 
   local rows = {}
   local duration_width = 0
-  local modifier_width = 0
+  local amount_width = 0
 
   for _, count in ipairs(sorted_dur_keys) do
     local affect = affects[count]
@@ -111,32 +111,37 @@ function update_affects()
     }
 
     duration_width = math.max(duration_width, #duration)
-    modifier_width = math.max(modifier_width, #modifier)
+    amount_width = math.max(amount_width, #amount)
   end
 
   local width = get_console_width()
   duration_width = math.max(1, duration_width)
 
-  -- Reserve the final column for durations, and center amounts in everything
-  -- between the left-hand modifier column and that duration column.
-  local left_width = math.max(1, modifier_width)
-  local available_left = math.max(1, width - duration_width - 3)
-  left_width = math.min(left_width, available_left)
-  local middle_width = math.max(1, width - left_width - duration_width - 2)
+  -- Keep the modifier at the left edge, the amount at the center of the
+  -- console, and the duration at the right edge. The fields are calculated
+  -- from the current console width so the layout survives panel resizing.
+  amount_width = math.max(1, amount_width)
+  local left_width = math.max(1, math.floor((width - amount_width) / 2) - 1)
+  local trailing_width = width - left_width - amount_width - duration_width - 2
+  if trailing_width < 1 then
+    trailing_width = 1
+    left_width = math.max(1, width - amount_width - duration_width - 3)
+  end
 
   for _, row in ipairs(rows) do
     if row.has_detail then
       emit_name_line(row.name, "", width, duration_width)
 
-      local modifier_field = string.rep(" ", left_width)
-      if row.modifier ~= "" then
-        modifier_field = row.modifier
+      local modifier_field = row.modifier
+      if #modifier_field < left_width then
+        modifier_field = modifier_field .. string.rep(" ", left_width - #modifier_field)
       end
 
-      local amount_field = center_align(row.amount, middle_width)
+      local amount_field = center_align(row.amount, amount_width)
       AffectsConsole:cecho(
         "<green>" .. modifier_field .. "<reset> " ..
         "<yellow>" .. amount_field .. "<reset> " ..
+        string.rep(" ", trailing_width) ..
         "<green>" .. right_align(row.duration, duration_width) .. "<reset>\n"
       )
     else

@@ -62,15 +62,21 @@ function DD_GUI.migrate_layout_defaults()
         local char_width = DD_GUI.CharsheetBox and DD_GUI.CharsheetBox.get_width and
                 tonumber(DD_GUI.CharsheetBox:get_width()) or nil
 
-        -- The character sheet used to reserve the same width as the channel
-        -- panel. Migrate only that shipped geometry so user-customized layouts
-        -- remain untouched while the map receives the recovered space.
-        if approximately(map_x, window_width * 0.27, 2) and
-           approximately(map_width, window_width * 0.16, 2) and
-           approximately(char_x, window_width * 0.43, 2) and
-           approximately(char_width, window_width * 0.23, 2) then
-                reset_adjustable_box(DD_GUI.MapBox, "27%", "17%", "20%", "83%")
-                reset_adjustable_box(DD_GUI.CharsheetBox, "47%", "17%", "19%", "83%")
+        -- Migrate only shipped geometries so user-customized layouts remain
+        -- untouched while the map receives the recovered space.
+        local legacy_top_layout =
+                approximately(map_x, window_width * 0.27, 8) and
+                approximately(map_width, window_width * 0.16, 8) and
+                approximately(char_x, window_width * 0.43, 8) and
+                approximately(char_width, window_width * 0.23, 8)
+        local previous_top_layout =
+                approximately(map_x, window_width * 0.27, 8) and
+                approximately(map_width, window_width * 0.20, 8) and
+                approximately(char_x, window_width * 0.47, 8) and
+                approximately(char_width, window_width * 0.19, 8)
+        if legacy_top_layout or previous_top_layout then
+                reset_adjustable_box(DD_GUI.MapBox, "27%", "17%", "27%", "83%")
+                reset_adjustable_box(DD_GUI.CharsheetBox, "54%", "17%", "18%", "83%")
                 changed = true
         end
 
@@ -79,12 +85,11 @@ function DD_GUI.migrate_layout_defaults()
         -- positions remain untouched.
         for _, legacy in ipairs({
                 { x = 0.74, width = 0.26 },
-                { x = 0.72, width = 0.28 },
                 { x = 0.68, width = 0.32 },
                 { x = 0.66, width = 0.34 },
         }) do
-                if approximately(right_x, window_width * legacy.x, 2) and
-                   approximately(right_width, window_width * legacy.width, 2) then
+                if approximately(right_x, window_width * legacy.x, 12) and
+                   approximately(right_width, window_width * legacy.width, 12) then
                         legacy_default = true
                         break
                 end
@@ -120,13 +125,13 @@ function DD_GUI.migrate_layout_defaults()
         end
 
         local defaults = {
-                { ui and ui.mainconsole_container, "4%", "38%", "62%", "56%" },
-                { DD_GUI.Right, "-34%", "0%", "34%", "100%" },
-                { DD_GUI.Bottom, "0%", "94%", "66%", "6%" },
+                { ui and ui.mainconsole_container, "4%", "38%", "68%", "56%" },
+                { DD_GUI.Right, "-28%", "0%", "28%", "100%" },
+                { DD_GUI.Bottom, "0%", "94%", "72%", "6%" },
                 { DD_GUI.EnemyBox, "4%", "17%", "23%", "83%" },
-                { DD_GUI.MapBox, "27%", "17%", "20%", "83%" },
-                { DD_GUI.CharsheetBox, "47%", "17%", "19%", "83%" },
-                { DD_GUI.ChannelBox, "66%", "17%", "31%", "83%" },
+                { DD_GUI.MapBox, "27%", "17%", "27%", "83%" },
+                { DD_GUI.CharsheetBox, "54%", "17%", "18%", "83%" },
+                { DD_GUI.ChannelBox, "72%", "17%", "25%", "83%" },
                 { DD_GUI.InventoryBox, "0%", "36%", "91%", "34%" },
                 { DD_GUI.AffectBox, "0%", "70%", "91%", "30%" },
         }
@@ -156,18 +161,18 @@ end
 
 function DD_GUI.reset_layout()
         local defaults = {
-                { ui and ui.mainconsole_container, "4%", "38%", "62%", "56%" },
-                { DD_GUI.Right, "-34%", "0%", "34%", "100%" },
+                { ui and ui.mainconsole_container, "4%", "38%", "68%", "56%" },
+                { DD_GUI.Right, "-28%", "0%", "28%", "100%" },
                 { DD_GUI.Top, "0%", "0%", "100%", "36%" },
-                { DD_GUI.Bottom, "0%", "94%", "66%", "6%" },
+                { DD_GUI.Bottom, "0%", "94%", "72%", "6%" },
                 { DD_GUI.FirstColumn, "5%", "0%", "23.5%", "100%" },
                 { DD_GUI.SecondColumn, "28.5%", "0%", "23.5%", "100%" },
                 { DD_GUI.ThirdColumn, "52%", "0%", "23.5%", "100%" },
                 { DD_GUI.FourthColumn, "75.5%", "0%", "23.5%", "100%" },
                 { DD_GUI.EnemyBox, "4%", "17%", "23%", "83%" },
-                { DD_GUI.MapBox, "27%", "17%", "20%", "83%" },
-                { DD_GUI.CharsheetBox, "47%", "17%", "19%", "83%" },
-                { DD_GUI.ChannelBox, "66%", "17%", "31%", "83%" },
+                { DD_GUI.MapBox, "27%", "17%", "27%", "83%" },
+                { DD_GUI.CharsheetBox, "54%", "17%", "18%", "83%" },
+                { DD_GUI.ChannelBox, "72%", "17%", "25%", "83%" },
                 { DD_GUI.InventoryBox, "0%", "36%", "91%", "34%" },
                 { DD_GUI.AffectBox, "0%", "70%", "91%", "30%" },
         }
