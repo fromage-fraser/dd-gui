@@ -16,6 +16,9 @@ function bootstrap()
         build_enemy_box()
         build_enemy_console()
         build_compass()
+        if DD_GUI.migrate_layout_defaults then
+                DD_GUI.migrate_layout_defaults()
+        end
         initialise_mapper()
         load_dd_mapper()
         get_custom_content()
