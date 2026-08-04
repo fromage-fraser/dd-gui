@@ -21,6 +21,13 @@ function ui_container()
         --------------------------------
         ui = ui or {} -- user interface related stuff goes into this table
 
+        -- Remove the old named frame as well as the Lua reference below. A
+        -- package update can leave that label alive after its parent is
+        -- rebuilt, which otherwise creates a second border over the console.
+        if type(deleteLabel) == "function" then
+                pcall(deleteLabel, "DD_GUI.MainConsole.Frame")
+        end
+
         -- Transparent adjustable overlay used to define the main MUD console area.
         local mainconsole_constraints = {
                 name = "DD_GUI.MainConsole",
@@ -38,26 +45,13 @@ function ui_container()
                 )
         end
 
+        -- Older package versions created a second full-size frame here.
+        -- Remove it when upgrading; the adjustable container's own border is
+        -- the single visible frame for the Mud text viewport.
         if ui.mainconsole_frame and ui.mainconsole_frame.delete then
                 ui.mainconsole_frame:delete()
         end
-        local mainconsole_parent = ui.mainconsole_container.Inside or
-                ui.mainconsole_container
-        ui.mainconsole_frame = Geyser.Label:new({
-                name = "DD_GUI.MainConsole.Frame",
-                x = "0%", y = "0%",
-                width = "100%", height = "100%",
-        }, mainconsole_parent)
-        ui.mainconsole_frame:setStyleSheet(DD_GUI.Theme and
-                DD_GUI.Theme:image_frame_css() or [[
-                        background-color: rgba(0,0,0,0);
-                        border: 2px solid rgb(151,27,39);
-                        border-radius: 0px;
-                        margin: 0px;
-                ]])
-        if DD_GUI.set_widget_clickthrough then
-                DD_GUI.set_widget_clickthrough(ui.mainconsole_frame, true)
-        end
+        ui.mainconsole_frame = nil
 
         if ui.mainconsole_container.adjLabel then
                 ui.mainconsole_container.adjLabel:setWheelCallback(

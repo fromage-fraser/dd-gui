@@ -20,32 +20,21 @@ function DD_GUI.Affects:build_tabs()
                 self.tab_rail:hide()
         end
 
-        if not self.frame then
-                local frame_parent = DD_GUI.AffectBox.Inside or DD_GUI.AffectBox
-                self.frame = Geyser.Label:new({
-                        name = "DD_GUI.Affects.Frame",
-                        x = "0%",
-                        y = "0%",
-                        width = "100%",
-                        height = "100%",
-                }, frame_parent)
-                self.frame:setStyleSheet(DD_GUI.Theme and
-                        DD_GUI.Theme:image_frame_css() or [[
-                                background-color: rgba(0,0,0,0);
-                                border: 2px solid rgb(151,27,39);
-                                border-radius: 0px;
-                                margin: 0px;
-                        ]])
-                if DD_GUI.set_widget_clickthrough then
-                        DD_GUI.set_widget_clickthrough(self.frame, true)
-                end
+        -- Older package versions added a second full-size frame. Remove it
+        -- during rebuild so AffectBox's own red border is the only outline.
+        if self.frame and self.frame.delete then
+                self.frame:delete()
         end
+        if type(deleteLabel) == "function" then
+                pcall(deleteLabel, "DD_GUI.Affects.Frame")
+        end
+        self.frame = nil
 
         self.tab_rail = Geyser.Label:new({
                 name = "DD_GUI.Affects.TabRail",
-                x = "4%",
+                x = "2%",
                 y = "3%",
-                width = "92%",
+                width = "96%",
                 height = "10%",
         }, DD_GUI.AffectBox)
         self.tab_rail:setColor(0, 0, 0, 0)

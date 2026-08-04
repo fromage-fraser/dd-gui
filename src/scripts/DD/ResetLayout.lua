@@ -47,10 +47,11 @@ function DD_GUI.migrate_layout_defaults()
                 return false
         end
 
-        local window_width = getMainWindowSize()
+        local window_width, window_height = getMainWindowSize()
         local right_x = tonumber(DD_GUI.Right:get_x()) or 0
         local right_width = tonumber(DD_GUI.Right:get_width()) or 0
         local legacy_default = false
+        local changed = false
 
         -- Existing profiles may have saved one of the previous shipped
         -- defaults. Only migrate those exact layouts; custom panel sizes and
@@ -68,8 +69,33 @@ function DD_GUI.migrate_layout_defaults()
                 end
         end
 
+        if compass and compass.back and compass.back.get_x and
+           compass.back.get_y then
+                local compass_x = tonumber(compass.back:get_x()) or 0
+                local compass_y = tonumber(compass.back:get_y()) or 0
+                local legacy_compass =
+                        tostring(compass.back.x) == "60%" and
+                        tostring(compass.back.y) == "82%"
+                if legacy_compass or
+                   (approximately(compass_x, window_width * 0.60, 2) and
+                    approximately(compass_y, window_height * 0.82, 2)) then
+                        compass.back:move("52%", "70%")
+                        compass.back:resize("8%", "8%")
+                        if compass.back.get_width then
+                                compass.back:resize("8%", compass.back:get_width())
+                        end
+                        if compass.back.save then
+                                compass.back:save()
+                        end
+                        changed = true
+                end
+        end
+
         if not legacy_default then
-                return false
+                if changed and DD_GUI.raise_info_box_contents then
+                        DD_GUI.raise_info_box_contents()
+                end
+                return changed
         end
 
         local defaults = {
@@ -93,6 +119,7 @@ function DD_GUI.migrate_layout_defaults()
                         default_box[5]
                 )
         end
+        changed = true
 
         if ui and ui.updateBorderSizes then
                 ui.window_width = nil
@@ -103,7 +130,7 @@ function DD_GUI.migrate_layout_defaults()
                 DD_GUI.raise_info_box_contents()
         end
 
-        return true
+        return changed
 end
 
 function DD_GUI.reset_layout()
@@ -135,7 +162,7 @@ function DD_GUI.reset_layout()
         end
 
         if compass and compass.back then
-                reset_adjustable_box(compass.back, "60%", "82%", "8%", "8%")
+                reset_adjustable_box(compass.back, "52%", "70%", "8%", "8%")
 
                 -- Keep the default compass square even when the terminal is
                 -- not square. Its width remains responsive while its height

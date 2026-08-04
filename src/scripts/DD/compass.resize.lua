@@ -110,8 +110,8 @@ function build_compass()
 
   local compass_constraints = {
     name = "compass.back",
-    x = "60%",
-    y = "82%",
+    x = "52%",
+    y = "70%",
     width = "8%",
     height = "8%",
     padding = 4,
@@ -126,6 +126,21 @@ function build_compass()
   compass.back = DD_GUI.new_adjustable_container and
     DD_GUI.new_adjustable_container(compass_constraints, main) or
     Geyser.Label:new(compass_constraints, main)
+
+  -- Migrate the old shipped position after Adjustable.Container has loaded
+  -- the profile layout. This keeps the correction one-time and preserves any
+  -- position the player has chosen themselves.
+  if tostring(compass.back.x) == "60%" and
+     tostring(compass.back.y) == "82%" then
+    compass.back:move("52%", "70%")
+    compass.back:resize("8%", "8%")
+    if compass.back.get_width then
+      compass.back:resize("8%", compass.back:get_width())
+    end
+    if compass.back.save then
+      compass.back:save()
+    end
+  end
 
   if compass.back._dd_gui_adjustable and not saved_layout and
      (not previous_geometry or previous_default_size) then

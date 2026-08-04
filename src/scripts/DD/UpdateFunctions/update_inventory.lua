@@ -44,14 +44,6 @@ local function compact_inventory_name(value)
   return name
 end
 
-local function fit_inventory_name(name, width)
-  if #name > width then
-    return string.sub(name, 1, width - 2) .. ".."
-  end
-
-  return string.format("%-" .. width .. "s", name)
-end
-
 function update_inventory()
   if not InventoryConsole then
     return
@@ -82,6 +74,6 @@ function update_inventory()
 
     InventoryConsole:cecho(
       "<white>" .. string.format("(%3d)", quantity) .. "<reset> ")
-    InventoryConsole:decho(fit_inventory_name(desc_string, 28) .. "\n")
+    InventoryConsole:decho(desc_string .. "\n")
   end
 end
