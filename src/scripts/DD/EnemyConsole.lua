@@ -44,7 +44,7 @@ function build_enemy_console()
       name="EnemyInfoConsole",
       x = "0%", y = "72%",
       width="100%",
-      height="30%",
+      height="14%",
       autoWrap = false,
       color = "black",
       scrollBar = false,
@@ -63,11 +63,17 @@ function build_enemy_console()
       margin: 0px;
     ]])
 
-    EnemyConsoleHitpointsContainer = Geyser.VBox:new({
+    -- Keep the complete gauge outside both MiniConsole viewports. A console
+    -- can repaint its native surface over child widgets, including the red
+    -- hitpoint fill, so the overlay belongs directly to the enemy box.
+    EnemyConsoleHitpointsContainer = Geyser.Container:new({
       name = "EnemyConsoleHitpointsContainer",
-      x = "0%", y = "50%",
-      width = "100%", height = "35%",
-    },EnemyInfoConsole)
+      x = "4%", y = "85%",
+      width = "92%", height = "10%",
+    }, DD_GUI.EnemyBox)
+    EnemyConsoleHitpointsContainer:setStyleSheet(
+      EnemyConsoleHitpointsContainerCSS:getCSS()
+    )
 
 
     local theme = DD_GUI.Theme
@@ -77,7 +83,11 @@ function build_enemy_console()
       theme:gauge_front_css(theme.colors.hp) or
       [[background-color: rgb(180,0,0);]])
 
-    EnemyConsoleHitpoints = Geyser.Gauge:new({ name = "EnemyConsoleHitpoints", }, EnemyConsoleHitpointsContainer)
+    EnemyConsoleHitpoints = Geyser.Gauge:new({
+      name = "EnemyConsoleHitpoints",
+      x = "0%", y = "0%",
+      width = "100%", height = "100%",
+    }, EnemyConsoleHitpointsContainer)
     EnemyConsoleHitpoints.back:setStyleSheet(EnemyConsoleHitpointsGaugeBackCSS:getCSS())
     EnemyConsoleHitpoints.front:setStyleSheet(EnemyConsoleHitpointsGaugeFrontCSS:getCSS())
 

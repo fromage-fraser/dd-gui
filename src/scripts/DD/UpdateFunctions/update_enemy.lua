@@ -97,6 +97,18 @@ function update_enemy()
                         else
                                 EnemyConsoleHitpoints:setValue(0, 1000)
                         end
+
+                        -- The gauge is a sibling of the text console; keep it
+                        -- above the image and text surfaces after each update.
+                        if EnemyConsoleHitpointsContainer.raise then
+                                EnemyConsoleHitpointsContainer:raise()
+                        end
+                        if EnemyConsoleHitpoints.raise then
+                                EnemyConsoleHitpoints:raise()
+                        end
+                        if EnemyHitpointsLabel.raise then
+                                EnemyHitpointsLabel:raise()
+                        end
                 end
         end
 end

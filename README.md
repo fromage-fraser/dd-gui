@@ -32,6 +32,8 @@ explicitly.
 When layout editing is enabled, the red-bordered regions can be dragged and
 resized. This includes the room/enemy panel, map, character sheet, comms,
 inventory/equipment, affects, main MUD text, navigation compass, and gauges.
+The adjustment surfaces remain transparent and below the panel data, so
+content stays visible while borders remain available for layout editing.
 The compass keeps a square shape and room/enemy images keep their 56:30 display
 ratio. Leaving layout mode saves the current positions and sizes to the active
 Mudlet profile. Use `resetgui` to restore every region to its default geometry.
@@ -61,7 +63,9 @@ data. The main panels are:
   Communications are discrete GMCP events and are consumed once; rebuilding
   the GUI restores the saved history without replaying the last event.
 - **Inventory / Equipped:** inventory is read from `Char.Items`, including
-  quantities; visual item effects are stripped to keep rows compact. `Equipped`
+  quantities; visual item effects are stripped to keep rows compact. The
+  inventory view also shows current/max item count and current/max carried
+  weight in its lower-right footer. `Equipped`
   is a paper-doll view of every wear slot from `Char.Worn`, showing `[empty]`
   or `[prohibited]` where appropriate for the character's profession, class,
   or current form.
@@ -77,7 +81,8 @@ data. The main panels are:
   sends `open`, then the movement command in sequence. The parsed state is kept per room, with
   Mudlet mapper door data as a fallback when no current Exits line is
   available. If neither source has a state, it sends the normal movement
-  command.
+  command. Enemy hitpoints are rendered in a dedicated overlay below the
+  enemy text, so the red gauge remains visible when the enemy console refreshes.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. If a manual rebuild is needed, run `lua bootstrap()` in Mudlet.

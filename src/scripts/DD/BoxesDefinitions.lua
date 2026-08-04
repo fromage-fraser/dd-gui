@@ -137,6 +137,7 @@ local function raise_data_surfaces()
                 CharsheetImageFrame,
                 InventoryConsole,
                 EquippedConsole,
+                DD_GUI and DD_GUI.Inventory and DD_GUI.Inventory.stats_label,
                 AffectsConsole,
         }) do
                 raise_widget(widget)
@@ -225,32 +226,9 @@ function DD_GUI.raise_info_box_contents()
                         end
                 end
 
-                -- Child consoles sit above the adjustable surface during the
-                -- normal z-order pass. Raise the transparent frame surfaces
-                -- again so their red borders remain visible without masking
-                -- the click-through tab and console contents.
-                for _, box in pairs(Adjustable.Container.all) do
-                        if box and box.goInside ~= false and box.adjLabel and
-                           box.adjLabel.raise then
-                                box.adjLabel:raise()
-                        end
-                end
-
-                -- Keep the named information panels reliable across package
-                -- rebuilds, where Adjustable.Container.all can briefly hold
-                -- stale entries while the new children are being attached.
-                for _, box in ipairs({
-                        DD_GUI.EnemyBox,
-                        DD_GUI.MapBox,
-                        DD_GUI.CharsheetBox,
-                        DD_GUI.ChannelBox,
-                        DD_GUI.InventoryBox,
-                        DD_GUI.AffectBox,
-                }) do
-                        if box and box.adjLabel and box.adjLabel.raise then
-                                box.adjLabel:raise()
-                        end
-                end
+                -- Keep data surfaces above the full-size transparent frame
+                -- labels. Their inset geometry leaves the red border visible,
+                -- while raising the frames last can hide all panel content.
                 raise_tab_rails()
                 raise_data_surfaces()
                 raise_tab_controls()

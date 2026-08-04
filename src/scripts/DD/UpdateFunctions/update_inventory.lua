@@ -44,6 +44,59 @@ local function compact_inventory_name(value)
   return name
 end
 
+local function display_stat(value)
+  local number = tonumber(value)
+  if number then
+    return tostring(math.floor(number))
+  end
+
+  if value == nil or tostring(value) == "" then
+    return "?"
+  end
+
+  return tostring(value)
+end
+
+local function update_inventory_stats()
+  if not InventoryStatsLabel then
+    return
+  end
+
+  local char = gmcp and gmcp.Char
+  local stats = char and char.Stats
+  if type(stats) ~= "table" then
+    stats = char and char.Items and char.Items.Stats
+  end
+  if type(stats) ~= "table" then
+    InventoryStatsLabel:hide()
+    return
+  end
+
+  local current_number = stats.carry_num
+  local maximum_number = stats.maxcarry_num
+  local current_weight = stats.carry_wt
+  local maximum_weight = stats.maxcarry_wt
+
+  if current_number == nil and maximum_number == nil and
+     current_weight == nil and maximum_weight == nil then
+    InventoryStatsLabel:hide()
+    return
+  end
+
+  local message = string.format(
+    "Items: %s / %s<br/>Weight: %s / %s",
+    display_stat(current_number),
+    display_stat(maximum_number),
+    display_stat(current_weight),
+    display_stat(maximum_weight)
+  )
+  InventoryStatsLabel:show()
+  InventoryStatsLabel:echo(message, "white", "r9")
+  if InventoryStatsLabel.raise then
+    InventoryStatsLabel:raise()
+  end
+end
+
 function update_inventory()
   if not InventoryConsole then
     return
@@ -62,6 +115,7 @@ function update_inventory()
 
   InventoryConsole:clear()
   InventoryConsole:resetAutoWrap()
+  update_inventory_stats()
 
   if #entries == 0 then
     InventoryConsole:cecho("Nothing.<reset>")
