@@ -40,42 +40,30 @@ function build_enemy_console()
       DD_GUI.Theme:style_console(EnemyTPConsoleTop, 10)
     end
 
+    -- Keep descriptive text outside the native EnemyConsole viewport.
+    -- MiniConsole can repaint its own surface over nested child consoles.
     EnemyInfoConsole = Geyser.MiniConsole:new({
       name="EnemyInfoConsole",
-      x = "0%", y = "72%",
-      width="100%",
+      x = "4%", y = "72%",
+      width="92%",
       height="14%",
       autoWrap = false,
       color = "black",
       scrollBar = false,
       fontSize = 10,
-    }, EnemyConsole)
+    }, DD_GUI.EnemyBox)
     if DD_GUI.Theme then
       DD_GUI.Theme:style_console(EnemyInfoConsole, 10)
     end
 
-    EnemyConsoleHitpointsContainerCSS = CSSMan.new([[
-      background-color: rgb(0,0,0);
-      border-style: solid;
-      border-width: 0px;
-      border-radius: 5px;
-      border-color: red;
-      margin: 0px;
-    ]])
-
-    -- Keep the complete gauge outside both MiniConsole viewports. A console
-    -- can repaint its native surface over child widgets, including the red
-    -- hitpoint fill, so the overlay belongs directly to the enemy box.
-    EnemyConsoleHitpointsContainer = Geyser.Container:new({
+    -- Keep the complete gauge outside both MiniConsole viewports. Native
+    -- console surfaces can repaint over nested gauges, so the bar uses
+    -- direct sibling labels for deterministic stacking.
+    EnemyConsoleHitpointsContainer = Geyser.Label:new({
       name = "EnemyConsoleHitpointsContainer",
       x = "4%", y = "85%",
       width = "92%", height = "10%",
     }, DD_GUI.EnemyBox)
-    EnemyConsoleHitpointsContainer:setStyleSheet(
-      EnemyConsoleHitpointsContainerCSS:getCSS()
-    )
-
-
     local theme = DD_GUI.Theme
     EnemyConsoleHitpointsGaugeBackCSS = CSSMan.new(theme and
       theme:gauge_back_css() or [[background-color: rgb(0,0,0);]])
@@ -83,38 +71,36 @@ function build_enemy_console()
       theme:gauge_front_css(theme.colors.hp) or
       [[background-color: rgb(180,0,0);]])
 
-    EnemyConsoleHitpoints = Geyser.Gauge:new({
-      name = "EnemyConsoleHitpoints",
-      x = "0%", y = "0%",
-      width = "100%", height = "100%",
-    }, EnemyConsoleHitpointsContainer)
-    EnemyConsoleHitpoints.back:setStyleSheet(EnemyConsoleHitpointsGaugeBackCSS:getCSS())
-    EnemyConsoleHitpoints.front:setStyleSheet(EnemyConsoleHitpointsGaugeFrontCSS:getCSS())
+    EnemyConsoleHitpointsContainer:setStyleSheet(
+      EnemyConsoleHitpointsGaugeBackCSS:getCSS()
+    )
 
-    for index = 1, 9 do
-      local separator = Geyser.Label:new({
-        name = "EnemyConsoleHitpoints.Segment." .. index,
-        x = tostring(index * 10) .. "%",
-        y = 0,
-        width = 1,
-        height = "100%",
-      }, EnemyConsoleHitpoints)
-      separator:setStyleSheet([[
-        background-color: rgba(0,0,0,185);
-        border: 0px;
-      ]])
-      if DD_GUI.set_widget_clickthrough then
-        DD_GUI.set_widget_clickthrough(separator, true)
+    EnemyConsoleHitpoints = Geyser.Label:new({
+      name = "EnemyConsoleHitpoints",
+      x = "4%", y = "85%",
+      width = "0%", height = "10%",
+    }, DD_GUI.EnemyBox)
+    EnemyConsoleHitpoints:setStyleSheet(
+      EnemyConsoleHitpointsGaugeFrontCSS:getCSS()
+    )
+
+    function EnemyConsoleHitpoints:setValue(value, maximum)
+      local current = tonumber(value) or 0
+      local limit = tonumber(maximum) or 100
+      local ratio = 0
+      if limit > 0 then
+        ratio = math.max(0, math.min(1, current / limit))
       end
+      self:resize(string.format("%.3f%%", ratio * 100), "100%")
     end
 
     EnemyHitpointsLabel = Geyser.Label:new({
       name = "EnemyHitpointsLabel",
-      x = 0, y = 0,
-      width = "100%", height = "100%",
+      x = "4%", y = "85%",
+      width = "92%", height = "10%",
       fgColor = "black",
       message = [[HITS]]
-    },EnemyConsoleHitpoints )
+    }, DD_GUI.EnemyBox)
     EnemyHitpointsLabel:setColor(0,0,0,0)
     EnemyHitpointsLabel:setFgColor("white")
     EnemyHitpointsLabel:echo("HITS", "white", "c")

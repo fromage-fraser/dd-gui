@@ -85,7 +85,13 @@ data. The main panels are:
   enemy text, so the red gauge remains visible when the enemy console refreshes.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
-reconnect. If a manual rebuild is needed, run `lua bootstrap()` in Mudlet.
+reconnect. `bootstrap()` is idempotent for the installed package version, so
+running `lua bootstrap()` after reconnect refreshes the existing widgets
+without stacking another copy of the interface. When a package update really
+does require new widgets, the previous GUI roots are hidden safely before the
+new tree is built and then explicitly shown again after Mudlet reuses any named
+containers. The enemy hitpoint bar is a direct label overlay rather than a
+nested native gauge, which keeps it visible above the enemy console surface.
 
 
 ## Aliases
@@ -96,7 +102,7 @@ These aliases are available from the Mudlet command line:
 | --- | --- |
 | `layoutgui` | Toggle layout editing. |
 | `layoutgui on` / `layoutgui off` | Explicitly enable or disable layout editing. |
-| `ddguiversion` | Display the installed DD_GUI package version. |
+| `ddguiversion` | Display the installed DD_GUI package version, including on Mudlet builds without `getPackageInfo()`. |
 | `resetgui` | Restore all GUI regions to their default positions and sizes. |
 | `gcc` | Refresh and download the latest custom content. |
 | `ddmap on` / `ddmap off` | Enable or disable the Dragons Domain custom mapper. |

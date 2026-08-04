@@ -60,7 +60,85 @@ end
 -- Rebuilds can happen while the server already has a complete GMCP snapshot.
 -- Replay that snapshot after creating the widgets instead of waiting for the
 -- next GMCP event to arrive.
+local function dd_gui_installed_version()
+        if DD_GUI and DD_GUI.package_version then
+                return tostring(DD_GUI.package_version)
+        end
+
+        if type(getPackageInfo) ~= "function" then
+                return ""
+        end
+
+        local ok, version = pcall(getPackageInfo, "DD_GUI", "version")
+        if not ok then
+                return ""
+        end
+
+        return tostring(version or "")
+end
+
+local function dd_gui_hide_widget(widget)
+        if widget and type(widget.hide) == "function" then
+                pcall(function() widget:hide() end)
+        end
+end
+
+local function dd_gui_show_widget(widget)
+        if widget and type(widget.show) == "function" then
+                pcall(function() widget:show() end)
+        end
+end
+
+local function dd_gui_hide_previous_roots()
+        -- Deleting a live Adjustable.Container tree can crash some Mudlet
+        -- builds while child QWidgets are still being repainted. Hide the
+        -- old roots before constructing the replacement tree instead.
+        for _, widget in ipairs({
+                ui and ui.mainconsole_container,
+                DD_GUI and DD_GUI.Top,
+                DD_GUI and DD_GUI.Right,
+                DD_GUI and DD_GUI.Bottom,
+        }) do
+                dd_gui_hide_widget(widget)
+        end
+end
+
+local function dd_gui_show_current_roots()
+        for _, widget in ipairs({
+                ui and ui.mainconsole_container,
+                DD_GUI and DD_GUI.Top,
+                DD_GUI and DD_GUI.Right,
+                DD_GUI and DD_GUI.Bottom,
+        }) do
+                dd_gui_show_widget(widget)
+        end
+end
+
 function bootstrap()
+        local package_version = dd_gui_installed_version()
+
+        if DD_GUI.bootstrap_ready and
+           DD_GUI.bootstrap_version == package_version then
+                if DD_GUI.bootstrap_refresh_timer then
+                        killTimer(DD_GUI.bootstrap_refresh_timer)
+                        DD_GUI.bootstrap_refresh_timer = nil
+                end
+
+                dd_gui_show_current_roots()
+                DD_GUI.refresh_data()
+                if DD_GUI.raise_info_box_contents then
+                        DD_GUI.raise_info_box_contents()
+                end
+                if DD_GUI.Layout then
+                        DD_GUI.Layout:apply(false)
+                end
+                return
+        end
+
+        if DD_GUI.bootstrap_ready then
+                dd_gui_hide_previous_roots()
+        end
+
         set_borders()
         ui_container()
         create_background()
@@ -99,6 +177,14 @@ function bootstrap()
         if DD_GUI.raise_info_box_contents then
                 DD_GUI.raise_info_box_contents()
         end
+
+        -- Named adjustable containers can be reused by Mudlet during a live
+        -- package replacement. Ensure a root hidden during that handoff is
+        -- visible before the first data refresh and paint pass.
+        dd_gui_show_current_roots()
+
+        DD_GUI.bootstrap_ready = true
+        DD_GUI.bootstrap_version = package_version
 
         -- Geyser completes its initial geometry and stacking pass after
         -- bootstrap. Refresh once more so package updates also repaint the
