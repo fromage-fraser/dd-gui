@@ -448,18 +448,18 @@ function define_boxes()
         
         DD_GUI.InventoryBox = new_info_box({
           name = "DD_GUI.InventoryBox",
-          x = "0%", y = "35.42%",
+          x = "0%", y = "35.11%",
           width = "89.29%",
-          height = "35.42%",
+          height = "36.17%",
         },DD_GUI.Right)
         DD_GUI.InventoryBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.InventoryBox:echo("<center>GUI.InventoryBox")
         
         DD_GUI.AffectBox = new_info_box({
           name = "DD_GUI.AffectBox",
-          x = "0%", y = "70.83%",
+          x = "0%", y = "71.28%",
           width = "89.29%",
-          height = "29.17%",
+          height = "28.72%",
         },DD_GUI.Right)
         DD_GUI.AffectBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.AffectBox:echo("<center>GUI.AffectBox")
