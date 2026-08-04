@@ -278,9 +278,9 @@ function build_compass()
   function compass.send_movement(name, command)
     local status = compass.door_status(name)
     if status == 3 then
-      sendAll("unlock " .. command, "open " .. command, command)
+      sendAll(0.2, "unlock " .. command, "open " .. command, command)
     elseif status == 2 then
-      sendAll("open " .. command, command)
+      sendAll(0.2, "open " .. command, command)
     else
       send(command)
     end

@@ -10,7 +10,7 @@ downloadQueue = downloadQueue or {}
 isDownloadingFileList = false
 
 -- Make the file list path/URL visible to all handlers
-FILELIST_LOCAL = getMudletHomeDir() .. "/DD_GUI/custom_filelist.txt"
+FILELIST_LOCAL = ms_path .. "/custom_filelist.txt"
 FILELIST_URL   = "https://www.dragons-domain.org/main/gui/custom/files.php"
 CONTENT_BASE   = "https://www.dragons-domain.org/main/gui/custom/"
 
@@ -71,11 +71,13 @@ function process_file_list()
 
     -- NEW: ignore blank lines and *directory* entries
     if relPath ~= "" and looks_like_file(relPath) then
-      local saveto   = getMudletHomeDir() .. "/DD_GUI/" .. relPath
+      local saveto   = ms_path .. "/" .. relPath
       local url      = CONTENT_BASE .. relPath
-      local existing = lfs.attributes(saveto, "size")
+      local existing_path = DD_GUI.asset_path and
+        DD_GUI.asset_path(relPath) or saveto
+      local existing = lfs.attributes(existing_path, "size")
 
-      if (file_exists(saveto) and tonumber(sizeStr) ~= tonumber(existing)) or (existing == nil) then
+      if existing == nil or tonumber(sizeStr) ~= tonumber(existing) then
         table.insert(downloadQueue, { url = url, saveto = saveto })
       end
     -- else: it's a directory or bad line — skip it
@@ -91,7 +93,7 @@ function start_next_download()
     return
   end
   local nextDownload = table.remove(downloadQueue, 1)
-  ensure_dir_for(nextDownload.saveto)           -- <-- create DD_GUI/audio/ etc.
+  ensure_dir_for(nextDownload.saveto)
   downloadFile(nextDownload.saveto, nextDownload.url)
 end
 

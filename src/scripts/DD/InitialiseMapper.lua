@@ -8,13 +8,26 @@ local function file_exists(path)
         return true
 end
 
+local function asset_path(relative_path)
+        if DD_GUI and DD_GUI.asset_path then
+                return DD_GUI.asset_path(relative_path)
+        end
+
+        return string.gsub(
+                getMudletHomeDir() .. "/DD_GUI/" .. relative_path,
+                "\\", "/"
+        )
+end
+
 function dd_mapper_save_path()
         -- Keep player map data outside the package resource folder so reinstalls preserve it.
         return string.gsub(getMudletHomeDir() .. "/dragons_domain_mapper.dat", "\\", "/")
 end
 
 local function legacy_mapper_save_path()
-        return string.gsub(getMudletHomeDir() .. "/DD_GUI/maps/dragons_domain_mapper.dat", "\\", "/")
+        local package_path = DD_GUI and DD_GUI.package_path or
+                getMudletHomeDir() .. "/DD_GUI"
+        return string.gsub(package_path .. "/maps/dragons_domain_mapper.dat", "\\", "/")
 end
 
 function save_dd_mapper()
@@ -29,7 +42,7 @@ end
 function initialise_mapper()
         expandAlias("ignores")
 
-        local bundled_map = string.gsub(getMudletHomeDir() .. "/DD_GUI/maps/mud_school.dat", "\\", "/")
+        local bundled_map = asset_path("maps/mud_school.dat")
         local persistent_map = dd_mapper_save_path()
         local legacy_map = legacy_mapper_save_path()
         local map_to_load = bundled_map

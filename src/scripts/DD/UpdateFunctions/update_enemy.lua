@@ -1,4 +1,8 @@
 function update_enemy()
+        local asset_path = DD_GUI.asset_path or function(relative_path)
+                return ms_path .. "/" .. relative_path
+        end
+
         local enemies = gmcp and gmcp.Char and gmcp.Char.Enemies
         local enemy = type(enemies) == "table" and type(enemies[1]) == "table" and
                 enemies[1][1]
@@ -12,17 +16,16 @@ function update_enemy()
                 EnemyHitpointsLabel:show()
                 EnemyConsole:clear()
                 EnemyInfoConsole:clear()
-                local enemy_image       = ms_path .. "/mobs/20412_the_destroyer.png"
-                local def_enemy_image   = ms_path .. "/mobs/0_default.png"
+                local enemy_image       = asset_path("mobs/20412_the_destroyer.png")
+                local def_enemy_image   = asset_path("mobs/0_default.png")
 
                 -- 0 if a PC, otherwise the VNUM of the mob
                 if (enemy.isnpc ~= 0) then
-                        enemy_image = ms_path
-                        .."/mobs/"
+                        enemy_image = asset_path("mobs/"
                         ..tonumber(enemy.isnpc)
                         .."_"
                         ..string.lower(string.gsub(enemy.name, " ", "_"))
-                        ..".png"
+                        ..".png")
                 end
 
                 enemy_image = string.gsub(enemy_image, "'", "_")

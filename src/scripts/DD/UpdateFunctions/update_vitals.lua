@@ -91,6 +91,12 @@ function update_vitals()
   local pfp_filename = gmcp.Char.Base.race:lower():gsub("-", "_") .. '_'
   ..chsex_string .. '_1.png'
 
+  local profile_avatar = DD_GUI.profile_avatar_filename and
+    DD_GUI.profile_avatar_filename()
+  if profile_avatar then
+    pfp_filename = profile_avatar
+  end
+
   --[[
         Right now all pfp filenames end in _1; at some point make it so a random default number for them
         can be chosen based on how many exist, and that this will persist across sessions for the profile.
@@ -98,10 +104,6 @@ function update_vitals()
 
   -- display(gmcp.Char.Base.race:lower():gsub("-", "_"))
   -- display(pfp_filename)
-  -- Replace the below with your avatar filename and uncomment the below line if you want a custom avatar. Should
-  -- be a 160 x 200 px .png in the ms_path + /avatars/ directory
-  -- pfp_filename = 'abbadon.png'
-
   -- Shifter stuff
   if (gmcp.Char.Base.class == "Shape Shifter") and (gmcp.Char.Vitals.form == "hawk") then
     pfp_filename = 'hawk_form.png'
@@ -163,8 +165,11 @@ function update_vitals()
     pfp_filename = 'mist_form.png'
   end
 
-  local char_image = ms_path .. '/avatars/' .. pfp_filename
-  local def_image = ms_path .. '/avatars/' .. 'default_char.png'
+  local asset_path = DD_GUI.asset_path or function(relative_path)
+    return ms_path .. '/' .. relative_path
+  end
+  local char_image = asset_path('avatars/' .. pfp_filename)
+  local def_image = asset_path('avatars/default_char.png')
 
   if file_exists(char_image) then
         DD_GUI.ImageFit:set(
