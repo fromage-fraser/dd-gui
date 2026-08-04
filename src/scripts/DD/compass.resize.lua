@@ -97,14 +97,27 @@ function build_compass()
   end
 
   compass = {
-    dirs = {"n", "u", "w", "look", "e", "s", "d"},
+    buttons = {"nw", "n", "u", "w", "look", "e", "sw", "s", "d"},
+    commands = {
+      nw = "equipment",
+      n = "north",
+      u = "up",
+      w = "west",
+      look = "look",
+      e = "east",
+      sw = "scan",
+      s = "south",
+      d = "down",
+    },
     ratio = mw / mh,
     labels = {
+      nw = "EQ",
       n = "N",
       u = "UP",
       w = "W",
       look = "LOOK",
       e = "E",
+      sw = "SCAN",
       s = "S",
       d = "DOWN",
     },
@@ -219,17 +232,17 @@ function build_compass()
   compass.d = Geyser.Label:new({name = "compass.d"}, compass.row3)
 
   local theme = DD_GUI.Theme
-  for _, blank in ipairs({"nw", "sw"}) do
-    compass[blank]:setStyleSheet(theme and
-      theme:compass_cell_css(false, true) or
-      [[background-color: rgb(0,0,0); border: 1px solid grey;]])
-    if DD_GUI.set_widget_clickthrough then
-      DD_GUI.set_widget_clickthrough(compass[blank], true)
-    end
-  end
 
   function compass.click(name)
-    send(name)
+    local command = compass.commands[name]
+    if not command then
+      return
+    end
+
+    if compass.activate then
+      compass.activate(name)
+    end
+    send(command)
   end
 
   function compass.onEnter(name)
@@ -246,7 +259,38 @@ function build_compass()
     compass[name]:echo(compass.labels[name], "white", "c")
   end
 
-  for _, direction in ipairs(compass.dirs) do
+  function compass.activate(name)
+    if not compass[name] then
+      return
+    end
+
+    if compass.highlight_timer then
+      killTimer(compass.highlight_timer)
+      compass.highlight_timer = nil
+    end
+
+    if compass.active_name and compass.active_name ~= name then
+      compass.onLeave(compass.active_name)
+    end
+
+    compass.active_name = name
+    compass.onEnter(name)
+    compass.highlight_timer = tempTimer(0.45, function()
+      if compass and compass.active_name == name then
+        compass.active_name = nil
+        compass.onLeave(name)
+      end
+    end)
+  end
+
+  DD_GUI = DD_GUI or {}
+  function DD_GUI.compass_press(name)
+    if compass and compass.click then
+      compass.click(name)
+    end
+  end
+
+  for _, direction in ipairs(compass.buttons) do
     local cell = compass[direction]
     compass.onLeave(direction)
     if theme then

@@ -2,9 +2,9 @@ function build_charsheet_console()
 
     CharsheetConsole = Geyser.MiniConsole:new({
       name="CharsheetConsole",
-      x = "2%", y = "0%",
-      width="96%",
-      height="100%",
+      x = "4%", y = "8%",
+      width="92%",
+      height="92%",
       autoWrap = false,
       color = "black",
       scrollBar = false,
