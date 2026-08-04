@@ -318,11 +318,7 @@ local function compact_equipped_name(value)
   return name
 end
 
-local function fit_equipped_name(name, width)
-  if #name > width then
-    return string.sub(name, 1, width - 2) .. ".."
-  end
-
+local function format_equipped_name(name, width)
   return string.format("%-" .. width .. "s", name)
 end
 
@@ -359,7 +355,9 @@ function update_equipped()
   last_equipped_signature = signature
 
   EquippedConsole:clear()
-  EquippedConsole:resetAutoWrap()
+  EquippedConsole:disableAutoWrap()
+  EquippedConsole:setWrap(10000)
+  EquippedConsole:disableHorizontalScrollBar()
 
   local equipped = worn_by_slot(entries)
   for _, slot in ipairs(paper_doll_slots) do
@@ -369,7 +367,7 @@ function update_equipped()
     local item = equipped[slot.key]
     if item then
       local name = compact_equipped_name(item.name or item.short_desc)
-      EquippedConsole:decho(fit_equipped_name(name, 27) .. "\n")
+      EquippedConsole:decho(format_equipped_name(name, 27) .. "\n")
     elseif slot_is_allowed(slot, context) then
       EquippedConsole:cecho("<yellow>[empty]<reset>\n")
     else
