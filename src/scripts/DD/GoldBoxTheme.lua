@@ -9,9 +9,9 @@ Theme.colors = {
         navy = "rgb(10,16,34)",
         panel = "rgb(15,24,46)",
         panel_alt = "rgb(22,34,61)",
-        frame = "rgb(181,35,48)",
-        bright_frame = "rgb(239,65,76)",
-        dark_frame = "rgb(92,14,24)",
+        frame = "rgb(151,27,39)",
+        bright_frame = "rgb(205,48,60)",
+        dark_frame = "rgb(72,10,18)",
         gold = "rgb(196,161,78)",
         bright_gold = "rgb(239,210,118)",
         dark_gold = "rgb(105,82,36)",
@@ -32,31 +32,21 @@ function Theme:panel_css(options)
 
         return string.format([[
                 background-color: %s;
-                border-style: double;
-                border-width: 3px;
+                border-style: solid;
+                border-width: 2px;
                 border-color: %s;
                 border-radius: 0px;
                 margin: %dpx;
         ]], background, border, margin)
 end
 
-function Theme:band_css(edge)
-        local border_rule = ""
-        if edge == "left" then
-                border_rule = "border-left: 3px double " .. self.colors.frame .. ";"
-        elseif edge == "top" then
-                border_rule = "border-top: 3px double " .. self.colors.frame .. ";"
-        elseif edge == "bottom" then
-                border_rule = "border-bottom: 3px double " .. self.colors.frame .. ";"
-        end
-
+function Theme:band_css()
         return string.format([[
                 background-color: %s;
                 border: 0px;
-                %s
                 border-radius: 0px;
                 margin: 0px;
-        ]], self.colors.navy, border_rule)
+        ]], self.colors.navy)
 end
 
 function Theme:tab_css(active, drop_target)
@@ -120,8 +110,8 @@ end
 function Theme:image_frame_css()
         return string.format([[
                 background-color: rgba(0,0,0,0);
-                border-style: double;
-                border-width: 3px;
+                border-style: solid;
+                border-width: 2px;
                 border-color: %s;
                 border-radius: 0px;
                 margin: 0px;
