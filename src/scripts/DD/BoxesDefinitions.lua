@@ -317,7 +317,7 @@ function define_boxes()
         DD_GUI.MapBox = new_info_box({
           name = "DD_GUI.MapBox",
           x = "27%", y = "17%",
-          width = "16%",
+          width = "20%",
           height = "83%",
         },DD_GUI.Top)
         DD_GUI.MapBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
@@ -335,8 +335,8 @@ function define_boxes()
         
         DD_GUI.CharsheetBox = new_info_box({
           name = "DD_GUI.CharsheetBox",
-          x = "43%", y = "17%",
-          width = "23%",
+          x = "47%", y = "17%",
+          width = "19%",
           height = "83%",
         },DD_GUI.Top)
         DD_GUI.CharsheetBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())

@@ -53,6 +53,27 @@ function DD_GUI.migrate_layout_defaults()
         local legacy_default = false
         local changed = false
 
+        local map_x = DD_GUI.MapBox and DD_GUI.MapBox.get_x and
+                tonumber(DD_GUI.MapBox:get_x()) or nil
+        local map_width = DD_GUI.MapBox and DD_GUI.MapBox.get_width and
+                tonumber(DD_GUI.MapBox:get_width()) or nil
+        local char_x = DD_GUI.CharsheetBox and DD_GUI.CharsheetBox.get_x and
+                tonumber(DD_GUI.CharsheetBox:get_x()) or nil
+        local char_width = DD_GUI.CharsheetBox and DD_GUI.CharsheetBox.get_width and
+                tonumber(DD_GUI.CharsheetBox:get_width()) or nil
+
+        -- The character sheet used to reserve the same width as the channel
+        -- panel. Migrate only that shipped geometry so user-customized layouts
+        -- remain untouched while the map receives the recovered space.
+        if approximately(map_x, window_width * 0.27, 2) and
+           approximately(map_width, window_width * 0.16, 2) and
+           approximately(char_x, window_width * 0.43, 2) and
+           approximately(char_width, window_width * 0.23, 2) then
+                reset_adjustable_box(DD_GUI.MapBox, "27%", "17%", "20%", "83%")
+                reset_adjustable_box(DD_GUI.CharsheetBox, "47%", "17%", "19%", "83%")
+                changed = true
+        end
+
         -- Existing profiles may have saved one of the previous shipped
         -- defaults. Only migrate those exact layouts; custom panel sizes and
         -- positions remain untouched.
@@ -103,8 +124,8 @@ function DD_GUI.migrate_layout_defaults()
                 { DD_GUI.Right, "-34%", "0%", "34%", "100%" },
                 { DD_GUI.Bottom, "0%", "94%", "66%", "6%" },
                 { DD_GUI.EnemyBox, "4%", "17%", "23%", "83%" },
-                { DD_GUI.MapBox, "27%", "17%", "16%", "83%" },
-                { DD_GUI.CharsheetBox, "43%", "17%", "23%", "83%" },
+                { DD_GUI.MapBox, "27%", "17%", "20%", "83%" },
+                { DD_GUI.CharsheetBox, "47%", "17%", "19%", "83%" },
                 { DD_GUI.ChannelBox, "66%", "17%", "31%", "83%" },
                 { DD_GUI.InventoryBox, "0%", "36%", "91%", "34%" },
                 { DD_GUI.AffectBox, "0%", "70%", "91%", "30%" },
@@ -144,8 +165,8 @@ function DD_GUI.reset_layout()
                 { DD_GUI.ThirdColumn, "52%", "0%", "23.5%", "100%" },
                 { DD_GUI.FourthColumn, "75.5%", "0%", "23.5%", "100%" },
                 { DD_GUI.EnemyBox, "4%", "17%", "23%", "83%" },
-                { DD_GUI.MapBox, "27%", "17%", "16%", "83%" },
-                { DD_GUI.CharsheetBox, "43%", "17%", "23%", "83%" },
+                { DD_GUI.MapBox, "27%", "17%", "20%", "83%" },
+                { DD_GUI.CharsheetBox, "47%", "17%", "19%", "83%" },
                 { DD_GUI.ChannelBox, "66%", "17%", "31%", "83%" },
                 { DD_GUI.InventoryBox, "0%", "36%", "91%", "34%" },
                 { DD_GUI.AffectBox, "0%", "70%", "91%", "30%" },
