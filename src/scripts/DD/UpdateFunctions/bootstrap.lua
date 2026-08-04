@@ -41,9 +41,10 @@ function DD_GUI.refresh_data()
         local room = gmcp.Room and gmcp.Room.Info
         local position = type(vitals) == "table" and tonumber(vitals.position)
         local enemy_rows = char.Enemies
-        local has_enemy = type(enemy_rows) == "table" and
-                type(enemy_rows[1]) == "table" and
-                type(enemy_rows[1][1]) == "table"
+        local first_enemy_row = type(enemy_rows) == "table" and enemy_rows[1]
+        local has_enemy = type(first_enemy_row) == "table" and
+                (first_enemy_row.name ~= nil or first_enemy_row.hp ~= nil or
+                 first_enemy_row.maxhp ~= nil or type(first_enemy_row[1]) == "table")
 
         if position == 6 and has_enemy then
                 run_update(update_enemy)

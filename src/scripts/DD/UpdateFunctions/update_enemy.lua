@@ -1,11 +1,29 @@
+local function first_enemy(enemies)
+        if type(enemies) ~= "table" or type(enemies[1]) ~= "table" then
+                return nil
+        end
+
+        -- Older GMCP payloads wrapped the enemy rows one level deeper;
+        -- the current web-gate payload sends a flat array of enemy objects.
+        if enemies[1].name ~= nil or enemies[1].hp ~= nil or
+           enemies[1].maxhp ~= nil then
+                return enemies[1]
+        end
+
+        if type(enemies[1][1]) == "table" then
+                return enemies[1][1]
+        end
+
+        return nil
+end
+
 function update_enemy()
         local asset_path = DD_GUI.asset_path or function(relative_path)
                 return ms_path .. "/" .. relative_path
         end
 
         local enemies = gmcp and gmcp.Char and gmcp.Char.Enemies
-        local enemy = type(enemies) == "table" and type(enemies[1]) == "table" and
-                enemies[1][1]
+        local enemy = first_enemy(enemies)
 
         if type(enemy) == "table" and
            (tonumber(gmcp.Char.Vitals.position) == 6) then
