@@ -5,43 +5,71 @@
         },
         {
                 "name": "North",
-                "keys": "keypad+Up",
-                "command":"north"
+                "keys": "keypad+Up"
         },
         {
                 "name": "South",
-                "keys": "keypad+Down",
-                "command":"south"
+                "keys": "keypad+Down"
         },
         {
                 "name": "West",
-                "keys": "keypad+Left",
-                "command":"west"
+                "keys": "keypad+Left"
         },
         {
                 "name": "East",
-                "keys": "keypad+Right",
-                "command":"east"
+                "keys": "keypad+Right"
         },
         {
                 "name": "Up",
-                "keys": "keypad+pgup",
-                "command":"up"
+                "keys": "keypad+pgup"
         },
         {
                 "name": "Down",
-                "keys": "keypad+pgdn",
-                "command":"down"
+                "keys": "keypad+pgdn"
         },
         {
                 "name": "Look",
-                "keys": "keypad+clear",
-                "command":"look"
+                "keys": "keypad+clear"
         },
         {
                 "name": "Scan",
-                "keys": "keypad+ins",
-                "command":"scan"
+                "keys": "keypad+ins"
+        },
+        {
+                "name": "Numpad7",
+                "keys": "keypad+7"
+        },
+        {
+                "name": "Numpad8",
+                "keys": "keypad+8"
+        },
+        {
+                "name": "Numpad9",
+                "keys": "keypad+9"
+        },
+        {
+                "name": "Numpad4",
+                "keys": "keypad+4"
+        },
+        {
+                "name": "Numpad5",
+                "keys": "keypad+5"
+        },
+        {
+                "name": "Numpad6",
+                "keys": "keypad+6"
+        },
+        {
+                "name": "Numpad1",
+                "keys": "keypad+1"
+        },
+        {
+                "name": "Numpad2",
+                "keys": "keypad+2"
+        },
+        {
+                "name": "Numpad3",
+                "keys": "keypad+3"
         }
                 
 ]

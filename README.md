@@ -90,6 +90,10 @@ These aliases are available from the Mudlet command line:
 While the GUI is in its normal locked state:
 
 - `Ctrl+Shift+Alt+C` clears the main MUD text window.
+- Numeric keypad `7`, `8`, and `9` send equipment, north, and up.
+- Numeric keypad `4`, `5`, and `6` send west, look, and east.
+- Numeric keypad `1`, `2`, and `3` send scan, south, and down. Each action
+  briefly highlights its corresponding compass button.
 - Keypad `Up`, `Down`, `Left`, and `Right` move north, south, west, and east.
 - Keypad `PgUp` and `PgDn` move up and down.
 - Keypad `Clear` looks, and keypad `Insert` scans.
