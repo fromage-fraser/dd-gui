@@ -50,6 +50,18 @@ function DD_GUI.migrate_layout_defaults()
         local window_width, window_height = getMainWindowSize()
         local right_x = tonumber(DD_GUI.Right:get_x()) or 0
         local right_width = tonumber(DD_GUI.Right:get_width()) or 0
+        local right_y = DD_GUI.Right.get_y and
+                tonumber(DD_GUI.Right:get_y()) or nil
+        local right_height = DD_GUI.Right.get_height and
+                tonumber(DD_GUI.Right:get_height()) or nil
+        local top_y = DD_GUI.Top and DD_GUI.Top.get_y and
+                tonumber(DD_GUI.Top:get_y()) or nil
+        local top_height = DD_GUI.Top and DD_GUI.Top.get_height and
+                tonumber(DD_GUI.Top:get_height()) or nil
+        local bottom_y = DD_GUI.Bottom and DD_GUI.Bottom.get_y and
+                tonumber(DD_GUI.Bottom:get_y()) or nil
+        local bottom_height = DD_GUI.Bottom and DD_GUI.Bottom.get_height and
+                tonumber(DD_GUI.Bottom:get_height()) or nil
         local legacy_default = false
         local changed = false
         local inventory_width = DD_GUI.InventoryBox and DD_GUI.InventoryBox.get_width and
@@ -119,21 +131,42 @@ function DD_GUI.migrate_layout_defaults()
                 approximately(char_y, window_height * 0.0612, 8) and
                 approximately(char_height, window_height * 0.2988, 8)
         if legacy_top_layout or previous_top_layout or current_top_layout then
-                reset_adjustable_box(DD_GUI.EnemyBox, "4%", "2%", "23%", "98%")
-                reset_adjustable_box(DD_GUI.MapBox, "27%", "2%", "27%", "98%")
-                reset_adjustable_box(DD_GUI.CharsheetBox, "54%", "2%", "18%", "98%")
-                reset_adjustable_box(DD_GUI.ChannelBox, "72%", "2%", "25%", "98%")
+                reset_adjustable_box(DD_GUI.EnemyBox, "4%", "0%", "23%", "100%")
+                reset_adjustable_box(DD_GUI.MapBox, "27%", "0%", "27%", "100%")
+                reset_adjustable_box(DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%")
+                reset_adjustable_box(DD_GUI.ChannelBox, "72%", "0%", "25%", "100%")
                 changed = true
         end
 
-        if approximately(main_x, window_width * 0.04, 8) and
-           approximately(main_y, window_height * 0.38, 8) and
-           approximately(main_width, window_width * 0.68, 8) and
-           approximately(main_height, window_height * 0.56, 8) then
+        local legacy_main_layout =
+                approximately(main_x, window_width * 0.04, 8) and
+                approximately(main_y, window_height * 0.38, 8) and
+                approximately(main_width, window_width * 0.68, 8) and
+                approximately(main_height, window_height * 0.56, 8)
+        local previous_main_layout =
+                approximately(main_x, window_width * 0.04, 8) and
+                approximately(main_y, window_height * 0.36, 8) and
+                approximately(main_width, window_width * 0.68, 8) and
+                approximately(main_height, window_height * 0.58, 8)
+        if legacy_main_layout or previous_main_layout then
                 reset_adjustable_box(
                         ui and ui.mainconsole_container,
-                        "4%", "36%", "68%", "58%"
+                        "4%", "36%", "68%", "57%"
                 )
+                changed = true
+        end
+
+        local previous_outer_layout =
+                approximately(top_y, 0, 8) and
+                approximately(top_height, window_height * 0.36, 8) and
+                approximately(right_y, 0, 8) and
+                approximately(right_height, window_height, 8) and
+                approximately(bottom_y, window_height * 0.94, 8) and
+                approximately(bottom_height, window_height * 0.06, 8)
+        if previous_outer_layout then
+                reset_adjustable_box(DD_GUI.Top, "0%", "2%", "100%", "34%")
+                reset_adjustable_box(DD_GUI.Right, "-28%", "2%", "28%", "96%")
+                reset_adjustable_box(DD_GUI.Bottom, "0%", "93%", "72%", "5%")
                 changed = true
         end
 
@@ -198,11 +231,11 @@ function DD_GUI.migrate_layout_defaults()
            approximately(affect_width, right_width * 0.91, 8) then
                 reset_adjustable_box(
                         DD_GUI.InventoryBox,
-                        "0%", "36%", "89.29%", "34%"
+                        "0%", "35.42%", "89.29%", "35.42%"
                 )
                 reset_adjustable_box(
                         DD_GUI.AffectBox,
-                        "0%", "70%", "89.29%", "30%"
+                        "0%", "70.83%", "89.29%", "29.17%"
                 )
                 changed = true
         end
@@ -233,12 +266,13 @@ function DD_GUI.migrate_layout_defaults()
                         tostring(compass.back.x) == "52%" and
                         tostring(compass.back.y) == "70%" and
                         (tostring(compass.back.width) == "8%" or
-                                tostring(compass.back.width) == "9%")
+                                tostring(compass.back.width) == "9%" or
+                                tostring(compass.back.width) == "11%")
                 if legacy_compass or
                    shipped_compass or
                    (approximately(compass_x, window_width * 0.60, 2) and
                     approximately(compass_y, window_height * 0.82, 2)) then
-                        compass.back:move("52%", "70%")
+                        compass.back:move("54%", "70%")
                         compass.back:resize("11%", "11%")
                         if compass.back.get_width then
                                 compass.back:resize("11%", compass.back:get_width())
@@ -258,19 +292,19 @@ function DD_GUI.migrate_layout_defaults()
         end
 
         local defaults = {
-                { ui and ui.mainconsole_container, "4%", "36%", "68%", "58%" },
-                { DD_GUI.Right, "-28%", "0%", "28%", "100%" },
-                { DD_GUI.Bottom, "0%", "94%", "72%", "6%" },
+                { ui and ui.mainconsole_container, "4%", "36%", "68%", "57%" },
+                { DD_GUI.Right, "-28%", "2%", "28%", "96%" },
+                { DD_GUI.Bottom, "0%", "93%", "72%", "5%" },
                 { DD_GUI.FirstColumn, "5.56%", "0%", "23.36%", "100%" },
                 { DD_GUI.SecondColumn, "28.92%", "0%", "23.36%", "100%" },
                 { DD_GUI.ThirdColumn, "52.28%", "0%", "23.36%", "100%" },
                 { DD_GUI.FourthColumn, "75.64%", "0%", "23.36%", "100%" },
-                { DD_GUI.EnemyBox, "4%", "2%", "23%", "98%" },
-                { DD_GUI.MapBox, "27%", "2%", "27%", "98%" },
-                { DD_GUI.CharsheetBox, "54%", "2%", "18%", "98%" },
-                { DD_GUI.ChannelBox, "72%", "2%", "25%", "98%" },
-                { DD_GUI.InventoryBox, "0%", "36%", "89.29%", "34%" },
-                { DD_GUI.AffectBox, "0%", "70%", "89.29%", "30%" },
+                { DD_GUI.EnemyBox, "4%", "0%", "23%", "100%" },
+                { DD_GUI.MapBox, "27%", "0%", "27%", "100%" },
+                { DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%" },
+                { DD_GUI.ChannelBox, "72%", "0%", "25%", "100%" },
+                { DD_GUI.InventoryBox, "0%", "35.42%", "89.29%", "35.42%" },
+                { DD_GUI.AffectBox, "0%", "70.83%", "89.29%", "29.17%" },
         }
 
         for _, default_box in ipairs(defaults) do
@@ -298,20 +332,20 @@ end
 
 function DD_GUI.reset_layout()
         local defaults = {
-                { ui and ui.mainconsole_container, "4%", "36%", "68%", "58%" },
-                { DD_GUI.Right, "-28%", "0%", "28%", "100%" },
-                { DD_GUI.Top, "0%", "0%", "100%", "36%" },
-                { DD_GUI.Bottom, "0%", "94%", "72%", "6%" },
+                { ui and ui.mainconsole_container, "4%", "36%", "68%", "57%" },
+                { DD_GUI.Right, "-28%", "2%", "28%", "96%" },
+                { DD_GUI.Top, "0%", "2%", "100%", "34%" },
+                { DD_GUI.Bottom, "0%", "93%", "72%", "5%" },
                 { DD_GUI.FirstColumn, "5.56%", "0%", "23.36%", "100%" },
                 { DD_GUI.SecondColumn, "28.92%", "0%", "23.36%", "100%" },
                 { DD_GUI.ThirdColumn, "52.28%", "0%", "23.36%", "100%" },
                 { DD_GUI.FourthColumn, "75.64%", "0%", "23.36%", "100%" },
-                { DD_GUI.EnemyBox, "4%", "2%", "23%", "98%" },
-                { DD_GUI.MapBox, "27%", "2%", "27%", "98%" },
-                { DD_GUI.CharsheetBox, "54%", "2%", "18%", "98%" },
-                { DD_GUI.ChannelBox, "72%", "2%", "25%", "98%" },
-                { DD_GUI.InventoryBox, "0%", "36%", "89.29%", "34%" },
-                { DD_GUI.AffectBox, "0%", "70%", "89.29%", "30%" },
+                { DD_GUI.EnemyBox, "4%", "0%", "23%", "100%" },
+                { DD_GUI.MapBox, "27%", "0%", "27%", "100%" },
+                { DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%" },
+                { DD_GUI.ChannelBox, "72%", "0%", "25%", "100%" },
+                { DD_GUI.InventoryBox, "0%", "35.42%", "89.29%", "35.42%" },
+                { DD_GUI.AffectBox, "0%", "70.83%", "89.29%", "29.17%" },
         }
 
         for _, default_box in ipairs(defaults) do
@@ -325,7 +359,7 @@ function DD_GUI.reset_layout()
         end
 
         if compass and compass.back then
-                reset_adjustable_box(compass.back, "52%", "70%", "11%", "11%")
+                reset_adjustable_box(compass.back, "54%", "70%", "11%", "11%")
 
                 -- Keep the default compass square even when the terminal is
                 -- not square. Its width remains responsive while its height

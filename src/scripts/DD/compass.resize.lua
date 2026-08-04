@@ -112,7 +112,7 @@ function build_compass()
 
   local compass_constraints = {
     name = "compass.back",
-    x = "52%",
+    x = "54%",
     y = "70%",
     width = "11%",
     height = "11%",
@@ -132,9 +132,14 @@ function build_compass()
   -- Migrate the old shipped position after Adjustable.Container has loaded
   -- the profile layout. This keeps the correction one-time and preserves any
   -- position the player has chosen themselves.
-  if tostring(compass.back.x) == "60%" and
-     tostring(compass.back.y) == "82%" then
-    compass.back:move("52%", "70%")
+  local old_default_position =
+    tostring(compass.back.x) == "52%" and
+    tostring(compass.back.y) == "70%" and
+    tostring(compass.back.width) == "11%" and
+    tostring(compass.back.height) == "11%"
+  if (tostring(compass.back.x) == "60%" and
+      tostring(compass.back.y) == "82%") or old_default_position then
+    compass.back:move("54%", "70%")
     compass.back:resize("11%", "11%")
     if compass.back.get_width then
       compass.back:resize("11%", compass.back:get_width())
