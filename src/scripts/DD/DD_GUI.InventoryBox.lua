@@ -54,18 +54,18 @@ function DD_GUI.Inventory:build_tabs()
 
         self.tab_rail = Geyser.Label:new({
                 name = "DD_GUI.Inventory.TabRail",
-                x = "4%",
+                x = "2%",
                 y = "3%",
-                width = "92%",
+                width = "96%",
                 height = "10%",
         }, DD_GUI.InventoryBox)
         self.tab_rail:setColor(0, 0, 0, 0)
 
         self.content_stack = Geyser.Label:new({
                 name = "DD_GUI.Inventory.ContentStack",
-                x = "4%",
+                x = "2%",
                 y = "14%",
-                width = "92%",
+                width = "96%",
                 height = "82%",
         }, DD_GUI.InventoryBox)
         self.content_stack:setColor(0, 0, 0, 255)

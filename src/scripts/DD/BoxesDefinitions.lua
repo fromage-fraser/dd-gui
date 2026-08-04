@@ -151,11 +151,6 @@ function DD_GUI.raise_info_box_contents()
                         end
                 end
 
-                if DD_GUI.Affects and DD_GUI.Affects.frame and
-                   DD_GUI.Affects.frame.raise then
-                        DD_GUI.Affects.frame:raise()
-                end
-
                 -- Console widgets can be raised during bootstrap and GMCP
                 -- refreshes. Put the tab controls back on top afterwards.
                 raise_tab_rails()
@@ -169,8 +164,10 @@ function DD_GUI.raise_info_box_contents()
                         end
                 end
 
-                if ui and ui.mainconsole_frame and ui.mainconsole_frame.raise then
-                        ui.mainconsole_frame:raise()
+                if ui and ui.mainconsole_container and
+                   ui.mainconsole_container.adjLabel and
+                   ui.mainconsole_container.adjLabel.raise then
+                        ui.mainconsole_container.adjLabel:raise()
                 end
 
                 -- The compass overlaps the bottom gauge row at its default
@@ -213,12 +210,10 @@ function DD_GUI.raise_info_box_contents()
                 end
         end
 
-        if DD_GUI.Affects and DD_GUI.Affects.frame and
-           DD_GUI.Affects.frame.raise then
-                DD_GUI.Affects.frame:raise()
-        end
-        if ui and ui.mainconsole_frame and ui.mainconsole_frame.raise then
-                ui.mainconsole_frame:raise()
+        if ui and ui.mainconsole_container and
+           ui.mainconsole_container.adjLabel and
+           ui.mainconsole_container.adjLabel.raise then
+                ui.mainconsole_container.adjLabel:raise()
         end
         if compass and compass.back and compass.back.raise then
                 compass.back:raise()

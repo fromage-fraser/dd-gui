@@ -20,13 +20,9 @@ function update_affects()
     local has_mod = 0
     --display(name)
     if (gmcp.Char.Affect[1][count].name) ~= nil then
-      if (#gmcp.Char.Affect[1][count].name) > 18 then
-        local tmp_string = replace_char(18, gmcp.Char.Affect[1][count].name, '.')
-        local tmp_string = replace_char(17, tmp_string, '.')
-        AffectsConsole:cecho("<white>"..string.format("%.18s",tmp_string).."<reset>")
-      else
-        AffectsConsole:cecho("<white>"..string.format("%-18s", gmcp.Char.Affect[1][count].name).."<reset>")
-      end
+      AffectsConsole:cecho(
+        "<white>" .. tostring(gmcp.Char.Affect[1][count].name) .. "<reset>"
+      )
     end
     --[[if gmcp.Char.Affect[1][count].gives ~= nil then
       if gmcp.Char.Affect[1][count].gives ~= "some unknown effect" then
