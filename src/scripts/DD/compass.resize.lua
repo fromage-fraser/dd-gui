@@ -109,6 +109,14 @@ function build_compass()
       s = "south",
       d = "down",
     },
+    door_directions = {
+      n = "n",
+      u = "up",
+      w = "w",
+      e = "e",
+      s = "s",
+      d = "down",
+    },
     ratio = mw / mh,
     labels = {
       nw = "EQ",
@@ -233,6 +241,41 @@ function build_compass()
 
   local theme = DD_GUI.Theme
 
+  function compass.door_status(name)
+    local direction = compass.door_directions[name]
+    if not direction or type(getDoors) ~= "function" or
+       type(map) ~= "table" or type(map.room_info) ~= "table" then
+      return nil
+    end
+
+    local room_id = tonumber(map.room_info.vnum)
+    if not room_id then
+      return nil
+    end
+
+    local ok, doors = pcall(getDoors, room_id)
+    if not ok or type(doors) ~= "table" then
+      return nil
+    end
+
+    local status = doors[direction]
+    if status == nil then
+      status = doors[compass.commands[name]]
+    end
+    return tonumber(status)
+  end
+
+  function compass.send_movement(name, command)
+    local status = compass.door_status(name)
+    if status == 3 then
+      sendAll("unlock " .. command, "open " .. command, command)
+    elseif status == 2 then
+      sendAll("open " .. command, command)
+    else
+      send(command)
+    end
+  end
+
   function compass.click(name)
     local command = compass.commands[name]
     if not command then
@@ -242,14 +285,18 @@ function build_compass()
     if compass.activate then
       compass.activate(name)
     end
-    send(command)
+    if compass.door_directions[name] then
+      compass.send_movement(name, command)
+    else
+      send(command)
+    end
   end
 
   function compass.onEnter(name)
     compass[name]:setStyleSheet(theme and
       theme:compass_cell_css(true, false) or
-      [[background-color: white; color: black; border: 1px solid grey;]])
-    compass[name]:echo(compass.labels[name], "black", "c")
+      [[background-color: black; color: white; border: 2px solid white;]])
+    compass[name]:echo(compass.labels[name], "white", "c")
   end
 
   function compass.onLeave(name)
