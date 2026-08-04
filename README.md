@@ -88,6 +88,7 @@ These aliases are available from the Mudlet command line:
 | --- | --- |
 | `layoutgui` | Toggle layout editing. |
 | `layoutgui on` / `layoutgui off` | Explicitly enable or disable layout editing. |
+| `ddguiversion` | Display the installed DD_GUI package version. |
 | `resetgui` | Restore all GUI regions to their default positions and sizes. |
 | `gcc` | Refresh and download the latest custom content. |
 | `ddmap on` / `ddmap off` | Enable or disable the Dragons Domain custom mapper. |
