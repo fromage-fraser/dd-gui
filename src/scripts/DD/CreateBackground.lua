@@ -8,8 +8,8 @@ function create_background()
         
         DD_GUI.Right = DD_GUI.new_adjustable_region({
           name = "DD_GUI.Right",
-          x = "-26%", y = "0%",
-          width = "26%",
+          x = "-34%", y = "0%",
+          width = "34%",
           height = "100%",
           padding = 0,
         }, nil, background_css)
@@ -25,7 +25,7 @@ function create_background()
         DD_GUI.Bottom = DD_GUI.new_adjustable_region({
           name = "DD_GUI.Bottom",
           x = "0%", y = "94%",
-          width = "74%",
+          width = "66%",
           height = "6%",
           padding = 0,
         }, nil, background_css, {direct = true})

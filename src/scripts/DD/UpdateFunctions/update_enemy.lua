@@ -34,6 +34,7 @@ function update_enemy()
                                         fallback = { width = 560, height = 300 },
                                         frame = EnemyImageFrame,
                                         align_x = "center",
+                                        stretch = true,
                                 }
                         )
                 else
@@ -45,6 +46,7 @@ function update_enemy()
                                         fallback = { width = 560, height = 300 },
                                         frame = EnemyImageFrame,
                                         align_x = "center",
+                                        stretch = true,
                                 }
                         )
                 end

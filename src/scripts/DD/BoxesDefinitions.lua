@@ -151,6 +151,11 @@ function DD_GUI.raise_info_box_contents()
                         end
                 end
 
+                if DD_GUI.Affects and DD_GUI.Affects.frame and
+                   DD_GUI.Affects.frame.raise then
+                        DD_GUI.Affects.frame:raise()
+                end
+
                 -- Console widgets can be raised during bootstrap and GMCP
                 -- refreshes. Put the tab controls back on top afterwards.
                 raise_tab_rails()
@@ -164,8 +169,20 @@ function DD_GUI.raise_info_box_contents()
                         end
                 end
 
+                if ui and ui.mainconsole_frame and ui.mainconsole_frame.raise then
+                        ui.mainconsole_frame:raise()
+                end
+
                 -- The compass overlaps the bottom gauge row at its default
-                -- position, so its navigation cells must be raised last.
+                -- position, so its parent and navigation cells must be raised
+                -- last.
+                if compass and compass.back and compass.back.raise then
+                        compass.back:raise()
+                end
+                if compass and compass.back and compass.back.Inside and
+                   compass.back.Inside.raiseAll then
+                        compass.back.Inside:raiseAll()
+                end
                 if compass and compass.box then
                         if compass.box.raiseAll then
                                 compass.box:raiseAll()
@@ -194,6 +211,20 @@ function DD_GUI.raise_info_box_contents()
                 if box and box.Inside and box.Inside.raiseAll then
                         box.Inside:raiseAll()
                 end
+        end
+
+        if DD_GUI.Affects and DD_GUI.Affects.frame and
+           DD_GUI.Affects.frame.raise then
+                DD_GUI.Affects.frame:raise()
+        end
+        if ui and ui.mainconsole_frame and ui.mainconsole_frame.raise then
+                ui.mainconsole_frame:raise()
+        end
+        if compass and compass.back and compass.back.raise then
+                compass.back:raise()
+        end
+        if compass and compass.box and compass.box.raiseAll then
+                compass.box:raiseAll()
         end
 end
 
@@ -291,7 +322,7 @@ function define_boxes()
         DD_GUI.MapBox = new_info_box({
           name = "DD_GUI.MapBox",
           x = "27%", y = "17%",
-          width = "24%",
+          width = "16%",
           height = "83%",
         },DD_GUI.Top)
         DD_GUI.MapBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
@@ -309,7 +340,7 @@ function define_boxes()
         
         DD_GUI.CharsheetBox = new_info_box({
           name = "DD_GUI.CharsheetBox",
-          x = "51%", y = "17%",
+          x = "43%", y = "17%",
           width = "23%",
           height = "83%",
         },DD_GUI.Top)
@@ -318,8 +349,8 @@ function define_boxes()
         
         DD_GUI.ChannelBox = new_info_box({
           name = "DD_GUI.ChannelBox",
-          x = "74%", y = "17%",
-          width = "23%",
+          x = "66%", y = "17%",
+          width = "31%",
           height = "83%",
         },DD_GUI.Top)
         DD_GUI.ChannelBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
@@ -328,7 +359,7 @@ function define_boxes()
         DD_GUI.InventoryBox = new_info_box({
           name = "DD_GUI.InventoryBox",
           x = "0%", y = "36%",
-          width = "89%",
+          width = "91%",
           height = "34%",
         },DD_GUI.Right)
         DD_GUI.InventoryBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
@@ -337,7 +368,7 @@ function define_boxes()
         DD_GUI.AffectBox = new_info_box({
           name = "DD_GUI.AffectBox",
           x = "0%", y = "70%",
-          width = "89%",
+          width = "91%",
           height = "30%",
         },DD_GUI.Right)
         DD_GUI.AffectBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
