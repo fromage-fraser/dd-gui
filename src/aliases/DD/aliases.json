@@ -8,6 +8,10 @@
                 "regex": "^gcc$"
         },
         {
+                "name": "ddguiversion",
+                "regex": "^ddguiversion$"
+        },
+        {
                 "name": "resetgui",
                 "regex": "^resetgui$"
         },
