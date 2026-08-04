@@ -84,8 +84,10 @@ function build_compass()
     }
   end
   local previous_default_size = previous_geometry and
-    tostring(previous_geometry.width) == "8%" and
-    tostring(previous_geometry.height) == "8%"
+    (tostring(previous_geometry.width) == "8%" or
+      tostring(previous_geometry.width) == "9%") and
+    (tostring(previous_geometry.height) == "8%" or
+      tostring(previous_geometry.height) == "9%")
 
   local compass_layout_path = ms_path .. "/layout/compass.back.lua"
   local saved_layout = io.exists and io.exists(compass_layout_path)
@@ -112,8 +114,8 @@ function build_compass()
     name = "compass.back",
     x = "52%",
     y = "70%",
-    width = "8%",
-    height = "8%",
+    width = "11%",
+    height = "11%",
     padding = 4,
   }
 
@@ -133,9 +135,19 @@ function build_compass()
   if tostring(compass.back.x) == "60%" and
      tostring(compass.back.y) == "82%" then
     compass.back:move("52%", "70%")
-    compass.back:resize("8%", "8%")
+    compass.back:resize("11%", "11%")
     if compass.back.get_width then
-      compass.back:resize("8%", compass.back:get_width())
+      compass.back:resize("11%", compass.back:get_width())
+    end
+    if compass.back.save then
+      compass.back:save()
+    end
+  end
+
+  if compass.back._dd_gui_adjustable and previous_default_size then
+    compass.back:resize("11%", "11%")
+    if compass.back.get_width then
+      compass.back:resize("11%", compass.back:get_width())
     end
     if compass.back.save then
       compass.back:save()

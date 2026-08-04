@@ -1,6 +1,12 @@
 function update_travel()
 
-    if (tonumber(gmcp.Char.Vitals.position) ~= 6) then
+    local vitals = gmcp and gmcp.Char and gmcp.Char.Vitals
+    local room = gmcp and gmcp.Room and gmcp.Room.Info
+    if type(vitals) ~= "table" or type(room) ~= "table" then
+            return
+    end
+
+    if (tonumber(vitals.position) ~= 6) then
 
             EnemyConsole:clear()
             DD_GUI.EnemyBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())

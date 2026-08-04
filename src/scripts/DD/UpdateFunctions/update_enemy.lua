@@ -1,5 +1,10 @@
 function update_enemy()
-        if (tonumber(gmcp.Char.Vitals.position) == 6) then
+        local enemies = gmcp and gmcp.Char and gmcp.Char.Enemies
+        local enemy = type(enemies) == "table" and type(enemies[1]) == "table" and
+                enemies[1][1]
+
+        if type(enemy) == "table" and
+           (tonumber(gmcp.Char.Vitals.position) == 6) then
 
                 DD_GUI.EnemyBox:setStyleSheet(DD_GUI.EnemyBoxCSS:getCSS())
                 EnemyConsoleHitpointsContainer:show()
@@ -11,12 +16,12 @@ function update_enemy()
                 local def_enemy_image   = ms_path .. "/mobs/0_default.png"
 
                 -- 0 if a PC, otherwise the VNUM of the mob
-                if (gmcp.Char.Enemies[1][1].isnpc ~= 0) then
+                if (enemy.isnpc ~= 0) then
                         enemy_image = ms_path
                         .."/mobs/"
-                        ..tonumber(gmcp.Char.Enemies[1][1].isnpc)
+                        ..tonumber(enemy.isnpc)
                         .."_"
-                        ..string.lower(string.gsub(gmcp.Char.Enemies[1][1].name, " ", "_"))
+                        ..string.lower(string.gsub(enemy.name, " ", "_"))
                         ..".png"
                 end
 
@@ -51,13 +56,13 @@ function update_enemy()
                         )
                 end
 
-                for i, count in ipairs(gmcp.Char.Enemies) do
+                for i, count in ipairs(enemies) do
                         --display(i)
                         --display(count)
-                        if (gmcp.Char.Enemies[1][i].name) ~= nil then
-                                EnemyInfoConsole:cecho("<white>Enemy: <reset>"..string.format("%-22s", firstToUpper(gmcp.Char.Enemies[1][1].name)))
-                                EnemyInfoConsole:cecho("\n<white>Lvl: <reset>" ..string.format("%-3s", gmcp.Char.Enemies[1][1].level))
-                                EnemyConsoleHitpoints:setValue(((gmcp.Char.Enemies[1][1].hp * 1000) / gmcp.Char.Enemies[1][1].maxhp),1000)
+                        if (enemies[1][i].name) ~= nil then
+                                EnemyInfoConsole:cecho("<white>Enemy: <reset>"..string.format("%-22s", firstToUpper(enemy.name)))
+                                EnemyInfoConsole:cecho("\n<white>Lvl: <reset>" ..string.format("%-3s", enemy.level))
+                                EnemyConsoleHitpoints:setValue(((enemy.hp * 1000) / enemy.maxhp),1000)
                         end
                 end
         end

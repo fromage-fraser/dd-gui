@@ -19,12 +19,6 @@ local function dd_gui_bootstrap_when_ready()
         end
 
         bootstrap()
-        update_affects()
-        update_vitals()
-        update_inventory()
-        update_equipped()
-        update_enemy()
-        update_travel()
         echo("\nBootstrapping GUI...")
 end
 

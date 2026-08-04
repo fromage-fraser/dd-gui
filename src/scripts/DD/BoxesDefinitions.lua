@@ -108,6 +108,46 @@ local function raise_children(container)
         end
 end
 
+local function raise_widget(widget)
+        if not widget then
+                return
+        end
+
+        if widget.raise then
+                widget:raise()
+        elseif widget.raiseAll then
+                widget:raiseAll()
+        end
+end
+
+local function raise_data_surfaces()
+        -- Adjustable.Container keeps its drag surface above its children.
+        -- Raise the actual data widgets after the frame pass so a transparent
+        -- border can never hide text, images, or channel history.
+        for _, widget in ipairs({
+                DD_GUI and DD_GUI.Mapper,
+                EnemyConsole,
+                EnemyTPConsoleTop,
+                EnemyInfoConsole,
+                EnemyConsoleHitpointsContainer,
+                EnemyConsoleHitpoints,
+                EnemyHitpointsLabel,
+                CharsheetPFPConsole,
+                CharsheetConsole,
+                InventoryConsole,
+                EquippedConsole,
+                AffectsConsole,
+        }) do
+                raise_widget(widget)
+        end
+
+        if DD_GUI and DD_GUI.Comms and DD_GUI.Comms.consoles then
+                for _, console in pairs(DD_GUI.Comms.consoles) do
+                        raise_widget(console)
+                end
+        end
+end
+
 local function raise_tab_rails()
         local rails = {}
         if DD_GUI.Comms and DD_GUI.Comms.tab_rail then
@@ -126,6 +166,26 @@ local function raise_tab_rails()
                 elseif rail and rail.raise then
                         rail:raise()
                 end
+        end
+end
+
+local function raise_tab_controls()
+        raise_tab_rails()
+
+        if DD_GUI and DD_GUI.Comms and DD_GUI.Comms.tab_buttons then
+                for _, button in pairs(DD_GUI.Comms.tab_buttons) do
+                        raise_widget(button)
+                end
+        end
+
+        if DD_GUI and DD_GUI.Inventory and DD_GUI.Inventory.tab_buttons then
+                for _, button in pairs(DD_GUI.Inventory.tab_buttons) do
+                        raise_widget(button)
+                end
+        end
+
+        if DD_GUI and DD_GUI.Affects and DD_GUI.Affects.tab_button then
+                raise_widget(DD_GUI.Affects.tab_button)
         end
 end
 
@@ -191,6 +251,8 @@ function DD_GUI.raise_info_box_contents()
                         end
                 end
                 raise_tab_rails()
+                raise_data_surfaces()
+                raise_tab_controls()
 
                 if ui and ui.mainconsole_container and
                    ui.mainconsole_container.adjLabel and
@@ -218,6 +280,7 @@ function DD_GUI.raise_info_box_contents()
                 if compass and compass.handle and compass.handle.raise then
                         compass.handle:raise()
                 end
+                raise_tab_controls()
                 return
         end
 
@@ -237,6 +300,9 @@ function DD_GUI.raise_info_box_contents()
                         box.Inside:raiseAll()
                 end
         end
+
+        raise_data_surfaces()
+        raise_tab_controls()
 
         if ui and ui.mainconsole_container and
            ui.mainconsole_container.adjLabel and
