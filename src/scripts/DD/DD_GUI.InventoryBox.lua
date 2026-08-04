@@ -111,6 +111,15 @@ function DD_GUI.Inventory:switch_tab(key)
                 end
         end
 
+        if self.stats_label then
+                if key == "inventory" then
+                        self.stats_label:show()
+                        raiseWindow(self.stats_label.name)
+                else
+                        self.stats_label:hide()
+                end
+        end
+
         self:style_tabs()
 
         if key == "inventory" and type(update_inventory) == "function" then
