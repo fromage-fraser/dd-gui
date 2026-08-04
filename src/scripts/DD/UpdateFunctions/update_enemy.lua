@@ -18,11 +18,16 @@ function update_enemy()
                 EnemyInfoConsole:clear()
                 local enemy_image       = asset_path("mobs/20412_the_destroyer.png")
                 local def_enemy_image   = asset_path("mobs/0_default.png")
+                local enemy_vnum = tonumber(enemy.vnum)
+                if enemy_vnum == nil then
+                        enemy_vnum = tonumber(enemy.isnpc) or 0
+                end
 
-                -- 0 if a PC, otherwise the VNUM of the mob
-                if (enemy.isnpc ~= 0) then
+                -- Newer GMCP payloads call this vnum; older ones call it isnpc.
+                -- Zero means the enemy is a player and has no mob portrait.
+                if enemy_vnum ~= 0 then
                         enemy_image = asset_path("mobs/"
-                        ..tonumber(enemy.isnpc)
+                        ..enemy_vnum
                         .."_"
                         ..string.lower(string.gsub(enemy.name, " ", "_"))
                         ..".png")
@@ -59,13 +64,20 @@ function update_enemy()
                         )
                 end
 
-                for i, count in ipairs(enemies) do
-                        --display(i)
-                        --display(count)
-                        if (enemies[1][i].name) ~= nil then
-                                EnemyInfoConsole:cecho("<white>Enemy: <reset>"..string.format("%-22s", firstToUpper(enemy.name)))
-                                EnemyInfoConsole:cecho("\n<white>Lvl: <reset>" ..string.format("%-3s", enemy.level))
-                                EnemyConsoleHitpoints:setValue(((enemy.hp * 1000) / enemy.maxhp),1000)
+                if enemy.name ~= nil then
+                        EnemyInfoConsole:cecho("<white>Enemy: <reset>"..string.format("%-22s", firstToUpper(enemy.name)))
+                        EnemyInfoConsole:cecho("\n<white>Lvl: <reset>" ..string.format("%-3s", enemy.level))
+
+                        local enemy_hp = tonumber(enemy.hp) or 0
+                        local enemy_maxhp = tonumber(enemy.maxhp) or 0
+                        if enemy_maxhp > 0 then
+                                enemy_hp = math.max(0, math.min(enemy_hp, enemy_maxhp))
+                                EnemyConsoleHitpoints:setValue(
+                                        (enemy_hp * 1000) / enemy_maxhp,
+                                        1000
+                                )
+                        else
+                                EnemyConsoleHitpoints:setValue(0, 1000)
                         end
                 end
         end

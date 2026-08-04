@@ -46,7 +46,8 @@ The GUI is driven by GMCP rather than by scraping ordinary MUD text for panel
 data. The main panels are:
 
 - **Room / enemy:** room details and the current enemy, including custom images
-  fitted to the 56:30 display frame.
+  fitted to the 56:30 display frame. Enemy GMCP payloads support both the
+  legacy `isnpc` identifier and the newer `vnum` identifier.
 - **Map:** the current room and surrounding map data.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
