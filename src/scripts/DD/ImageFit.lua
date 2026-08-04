@@ -47,8 +47,26 @@ function DD_GUI.ImageFit:refresh_widget(state)
         width = math.max(1, width)
         height = math.max(1, height)
 
+        if state.align_x == "center" then
+                x = parent_width * state.x_ratio + (max_width - width) / 2
+        end
+        if state.align_y == "center" then
+                y = parent_height * state.y_ratio + (max_height - height) / 2
+        end
+
         widget:move(math.floor(x + 0.5), math.floor(y + 0.5))
         widget:resize(math.floor(width + 0.5), math.floor(height + 0.5))
+
+        if state.frame then
+                state.frame:move(math.floor(x + 0.5), math.floor(y + 0.5))
+                state.frame:resize(
+                        math.floor(width + 0.5),
+                        math.floor(height + 0.5)
+                )
+                if state.frame.raise then
+                        state.frame:raise()
+                end
+        end
 end
 
 function DD_GUI.ImageFit:refresh_all()
@@ -88,6 +106,9 @@ function DD_GUI.ImageFit:set(widget, parent, path, options)
 
         state.parent = parent
         state.path = path
+        state.frame = options.frame or state.frame
+        state.align_x = options.align_x or state.align_x
+        state.align_y = options.align_y or state.align_y
         state.image_width, state.image_height = image_dimensions(path, options.fallback)
 
         if widget.setBackgroundImage then

@@ -30,14 +30,22 @@ function update_enemy()
                                 EnemyTPConsoleTop,
                                 EnemyConsole,
                                 enemy_image,
-                                { fallback = { width = 560, height = 300 } }
+                                {
+                                        fallback = { width = 560, height = 300 },
+                                        frame = EnemyImageFrame,
+                                        align_x = "center",
+                                }
                         )
                 else
                         DD_GUI.ImageFit:set(
                                 EnemyTPConsoleTop,
                                 EnemyConsole,
                                 def_enemy_image,
-                                { fallback = { width = 560, height = 300 } }
+                                {
+                                        fallback = { width = 560, height = 300 },
+                                        frame = EnemyImageFrame,
+                                        align_x = "center",
+                                }
                         )
                 end
 

@@ -2,6 +2,10 @@ DD_GUI = DD_GUI or {}
 DD_GUI.Affects = DD_GUI.Affects or {}
 
 function DD_GUI.Affects:tab_css()
+        if DD_GUI.Theme then
+                return DD_GUI.Theme:tab_css(true)
+        end
+
         return [[
                 background-color: rgba(0,120,135,190);
                 border-style: solid;
@@ -32,10 +36,14 @@ function DD_GUI.Affects:build_tabs()
                 width = "100%",
                 height = "100%",
         }, self.tab_rail)
-        self.tab_button:setFontSize(8)
-        self.tab_button:setBold(1)
+        if DD_GUI.Theme then
+                DD_GUI.Theme:style_label(self.tab_button, 8, true)
+        else
+                self.tab_button:setFontSize(8)
+                self.tab_button:setBold(1)
+        end
         self.tab_button:setStyleSheet(self:tab_css())
-        self.tab_button:echo("Affects", "white", "c")
+        self.tab_button:echo("Affects", "black", "c")
 end
 
 function build_affects_box()

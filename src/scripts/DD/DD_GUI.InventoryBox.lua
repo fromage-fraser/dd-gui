@@ -7,14 +7,8 @@ DD_GUI.Inventory.tab_definitions = {
 }
 
 function DD_GUI.Inventory:tab_css(key)
-        if key == self.current_tab then
-                return [[
-                        background-color: rgba(0,120,135,190);
-                        border-style: solid;
-                        border-width: 1px;
-                        border-color: cyan;
-                        margin: 1px;
-                ]]
+        if DD_GUI.Theme then
+                return DD_GUI.Theme:tab_css(key == self.current_tab)
         end
 
         return [[
@@ -33,7 +27,11 @@ function DD_GUI.Inventory:style_tab(key)
         end
 
         tab:setStyleSheet(self:tab_css(key))
-        tab:echo(self.tab_labels[key], "white", "c")
+        tab:echo(
+                self.tab_labels[key],
+                key == self.current_tab and "black" or "white",
+                "c"
+        )
 end
 
 function DD_GUI.Inventory:style_tabs()
@@ -81,8 +79,12 @@ function DD_GUI.Inventory:build_tabs()
                         height = "100%",
                 }, self.tab_rail)
 
-                tab:setFontSize(8)
-                tab:setBold(1)
+                if DD_GUI.Theme then
+                        DD_GUI.Theme:style_label(tab, 8, true)
+                else
+                        tab:setFontSize(8)
+                        tab:setBold(1)
+                end
                 tab:setClickCallback("dd_inventory_tab_click", definition.key)
 
                 self.tab_buttons[definition.key] = tab

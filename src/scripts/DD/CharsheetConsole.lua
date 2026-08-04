@@ -10,10 +10,25 @@ function build_charsheet_console()
       scrollBar = false,
       fontSize = 10,
     }, DD_GUI.CharsheetBox)
+    if DD_GUI.Theme then
+      DD_GUI.Theme:style_console(CharsheetConsole, 10)
+    end
+
+    CharsheetImageFrame = Geyser.Label:new({
+      name="CharsheetImageFrame",
+      x = "0%", y = "1%",
+      width="105px",
+      height="130px",
+    }, CharsheetConsole)
+    CharsheetImageFrame:setStyleSheet(DD_GUI.Theme and
+      DD_GUI.Theme:image_frame_css() or [[border: 1px solid grey;]])
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(CharsheetImageFrame, true)
+    end
 
     CharsheetPFPConsole = Geyser.MiniConsole:new({
       name="CharsheetPFPConsole",
-      x = "0%", y = "2%",
+      x = "3px", y = "4px",
       width="99px",
       height="124px",
       autoWrap = false,
@@ -21,6 +36,9 @@ function build_charsheet_console()
       scrollBar = false,
       fontSize = 10,
     }, CharsheetConsole)
+    if DD_GUI.Theme then
+      DD_GUI.Theme:style_console(CharsheetPFPConsole, 10)
+    end
 
     local chsex_string = 'male'
 
@@ -49,6 +67,9 @@ function build_charsheet_console()
       CharsheetPFPConsole,
       CharsheetConsole,
       pfp_path,
-      { fallback = { width = 160, height = 200 } }
+      {
+        fallback = { width = 160, height = 200 },
+        frame = CharsheetImageFrame,
+      }
     )
 end

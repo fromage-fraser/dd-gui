@@ -9,4 +9,7 @@ function build_affects_console()
       scrollBar = true,
       fontSize = 10,
     }, DD_GUI.AffectBox)
+    if DD_GUI.Theme then
+      DD_GUI.Theme:style_console(AffectsConsole, 10)
+    end
 end

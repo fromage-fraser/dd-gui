@@ -19,6 +19,9 @@ function build_inventory_console()
       scrollBar = true,
       fontSize = 10,
     }, DD_GUI.Inventory.content_stack)
+    if DD_GUI.Theme then
+      DD_GUI.Theme:style_console(InventoryConsole, 10)
+    end
 
     EquippedConsole = Geyser.MiniConsole:new({
       name="EquippedConsole",
@@ -32,6 +35,9 @@ function build_inventory_console()
       horizontalScrollBar = false,
       fontSize = 10,
     }, DD_GUI.Inventory.content_stack)
+    if DD_GUI.Theme then
+      DD_GUI.Theme:style_console(EquippedConsole, 10)
+    end
 
     DD_GUI.Inventory.consoles.inventory = InventoryConsole
     DD_GUI.Inventory.consoles.equipped = EquippedConsole

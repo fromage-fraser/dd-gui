@@ -87,4 +87,8 @@ function DD_GUI.reset_layout()
         if DD_GUI.raise_info_box_contents then
                 DD_GUI.raise_info_box_contents()
         end
+
+        if DD_GUI.Layout then
+                DD_GUI.Layout:apply()
+        end
 end

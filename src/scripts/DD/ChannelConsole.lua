@@ -392,6 +392,13 @@ function DD_GUI.Comms:comm_channel(comm)
 end
 
 function DD_GUI.Comms:tab_css(key)
+        if DD_GUI.Theme then
+                return DD_GUI.Theme:tab_css(
+                        key == self.current_tab,
+                        key == self.drag_target and key ~= self.drag_source
+                )
+        end
+
         if key == self.current_tab then
                 return [[
                         background-color: rgba(0,120,135,190);
@@ -429,7 +436,7 @@ function DD_GUI.Comms:style_tab(key)
 
         label:setStyleSheet(self:tab_css(key))
         if key == self.current_tab then
-                label:echo(self:tab_label(key), "white", "c")
+                label:echo(self:tab_label(key), "black", "c")
         else
                 label:echo(self:tab_label(key), "<" .. self:rgb_string(key) .. ">", "c")
         end
@@ -492,8 +499,12 @@ function DD_GUI.Comms:create_tab_button(key)
                 height = "10%",
         }, self.tab_rail)
 
-        tab:setFontSize(8)
-        tab:setBold(1)
+        if DD_GUI.Theme then
+                DD_GUI.Theme:style_label(tab, 8, true)
+        else
+                tab:setFontSize(8)
+                tab:setBold(1)
+        end
         tab:setClickCallback("dd_comms_tab_click", key)
         tab:setReleaseCallback("dd_comms_tab_release", key)
         tab:setMoveCallback("dd_comms_tab_move", key)
@@ -537,6 +548,10 @@ function DD_GUI.Comms:create_console(key)
                 scrollBar = true,
                 fontSize = 8,
         }, self.console_stack)
+
+        if DD_GUI.Theme then
+                DD_GUI.Theme:style_console(console, 8)
+        end
 
         if console.setBufferSize then
                 console:setBufferSize(100000, 1000)

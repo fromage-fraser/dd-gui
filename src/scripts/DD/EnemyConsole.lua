@@ -10,17 +10,35 @@ function build_enemy_console()
       scrollBar = false,
       fontSize = 10,
     }, DD_GUI.EnemyBox)
+    if DD_GUI.Theme then
+      DD_GUI.Theme:style_console(EnemyConsole, 10)
+    end
+
+    EnemyImageFrame = Geyser.Label:new({
+      name="EnemyImageFrame",
+      x = "0%", y = "0%",
+      width="100%",
+      height="69%",
+    }, EnemyConsole)
+    EnemyImageFrame:setStyleSheet(DD_GUI.Theme and
+      DD_GUI.Theme:image_frame_css() or [[border: 1px solid grey;]])
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(EnemyImageFrame, true)
+    end
 
     EnemyTPConsoleTop = Geyser.MiniConsole:new({
       name="EnemyTPConsoleTop",
       x = "0%", y = "0%",
-      width="300px",
+      width="100%",
       height="69%",
       autoWrap = false,
       color = "black",
       scrollBar = false,
       fontSize = 10,
     }, EnemyConsole)
+    if DD_GUI.Theme then
+      DD_GUI.Theme:style_console(EnemyTPConsoleTop, 10)
+    end
 
     EnemyInfoConsole = Geyser.MiniConsole:new({
       name="EnemyInfoConsole",
@@ -32,6 +50,9 @@ function build_enemy_console()
       scrollBar = false,
       fontSize = 10,
     }, EnemyConsole)
+    if DD_GUI.Theme then
+      DD_GUI.Theme:style_console(EnemyInfoConsole, 10)
+    end
 
     EnemyConsoleHitpointsContainerCSS = CSSMan.new([[
       background-color: rgba(89,0,0,100);
@@ -49,37 +70,51 @@ function build_enemy_console()
     },EnemyInfoConsole)
 
 
-    EnemyConsoleHitpointsGaugeBackCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #bd3333, stop: 0.1 #bd2020, stop: 0.49 #990000, stop: 0.5 #700000, stop: 1 #990000);
-        border-width: 1px;
-        border-color: black;
-        border-style: solid;
-        border-radius: 7;
-        padding: 5px;
-    ]])
-
-    EnemyConsoleHitpointsGaugeFrontCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f04141, stop: 0.1 #ef2929, stop: 0.49 #cc0000, stop: 0.5 #a40000, stop: 1 #cc0000);
-        border-top: 1px black solid;
-        border-left: 1px black solid;
-        border-bottom: 1px black solid;
-        border-radius: 7;
-        padding: 5px;
-    ]])
+    local theme = DD_GUI.Theme
+    EnemyConsoleHitpointsGaugeBackCSS = CSSMan.new(theme and
+      theme:gauge_back_css() or [[background-color: rgb(80,0,0);]])
+    EnemyConsoleHitpointsGaugeFrontCSS = CSSMan.new(theme and
+      theme:gauge_front_css(theme.colors.hp) or
+      [[background-color: rgb(180,0,0);]])
 
     EnemyConsoleHitpoints = Geyser.Gauge:new({ name = "EnemyConsoleHitpoints", }, EnemyConsoleHitpointsContainer)
     EnemyConsoleHitpoints.back:setStyleSheet(EnemyConsoleHitpointsGaugeBackCSS:getCSS())
     EnemyConsoleHitpoints.front:setStyleSheet(EnemyConsoleHitpointsGaugeFrontCSS:getCSS())
 
+    for index = 1, 9 do
+      local separator = Geyser.Label:new({
+        name = "EnemyConsoleHitpoints.Segment." .. index,
+        x = tostring(index * 10) .. "%",
+        y = 0,
+        width = 1,
+        height = "100%",
+      }, EnemyConsoleHitpoints)
+      separator:setStyleSheet([[
+        background-color: rgba(5,8,18,185);
+        border: 0px;
+      ]])
+      if DD_GUI.set_widget_clickthrough then
+        DD_GUI.set_widget_clickthrough(separator, true)
+      end
+    end
+
     EnemyHitpointsLabel = Geyser.Label:new({
       name = "EnemyHitpointsLabel",
-      x = 0, y = "15%",
-      width = "30%", height = "70%",
+      x = 0, y = 0,
+      width = "100%", height = "100%",
       fgColor = "black",
-      message = [[&nbsp;Hits]]
+      message = [[HITS]]
     },EnemyConsoleHitpoints )
     EnemyHitpointsLabel:setColor(0,0,0,0)
-    EnemyHitpointsLabel:setFgColor("Grey")
-    EnemyHitpointsLabel:setFontSize(10)
+    EnemyHitpointsLabel:setFgColor("white")
+    EnemyHitpointsLabel:echo("HITS", "white", "c")
+    if theme then
+      theme:style_label(EnemyHitpointsLabel, 9, true)
+    else
+      EnemyHitpointsLabel:setFontSize(9)
+    end
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(EnemyHitpointsLabel, true)
+    end
 
   end

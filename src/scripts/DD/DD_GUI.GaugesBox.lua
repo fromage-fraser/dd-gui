@@ -1,10 +1,109 @@
+local function gauge_value(value, maximum)
+    value = tonumber(value) or 0
+    maximum = tonumber(maximum) or 0
+    if maximum <= 0 then
+      return 0
+    end
+    return math.max(0, math.min(1000, (value * 1000) / maximum))
+end
+
+local function delete_existing_widget(widget)
+    if not widget then
+      return
+    end
+
+    if type(widget.delete) == "function" then
+      pcall(function() widget:delete() end)
+    elseif widget.name and type(deleteLabel) == "function" then
+      pcall(deleteLabel, widget.name)
+    end
+end
+
+local function add_gauge_segments(gauge, name)
+    for index = 1, 9 do
+      local separator = Geyser.Label:new({
+        name = name .. ".Segment." .. index,
+        x = tostring(index * 10) .. "%",
+        y = 0,
+        width = 1,
+        height = "100%",
+      }, gauge)
+      separator:setStyleSheet([[
+        background-color: rgba(5,8,18,185);
+        border: 0px;
+        margin: 0px;
+      ]])
+      if DD_GUI.set_widget_clickthrough then
+        DD_GUI.set_widget_clickthrough(separator, true)
+      end
+    end
+end
+
+local function new_status_gauge(name, parent, label_text, color, value, maximum)
+    local theme = DD_GUI.Theme
+    local gauge = Geyser.Gauge:new({
+      name = name,
+      x = "0%", y = "15%",
+      width = "100%", height = "70%",
+    }, parent)
+
+    gauge.back:setStyleSheet(theme and theme:gauge_back_css() or [[
+      background-color: rgb(30,30,30);
+      border: 1px solid grey;
+      border-radius: 0px;
+    ]])
+    gauge.front:setStyleSheet(theme and theme:gauge_front_css(color) or [[
+      background-color: grey;
+      border: 1px solid black;
+      border-radius: 0px;
+    ]])
+    gauge:setValue(gauge_value(value, maximum), 1000)
+    add_gauge_segments(gauge, name)
+
+    local label = Geyser.Label:new({
+      name = name .. ".Label",
+      x = 0, y = 0,
+      width = "100%", height = "100%",
+    }, gauge)
+    label:setColor(0, 0, 0, 0)
+    label:setFgColor("white")
+    label:echo(label_text, "white", "c")
+    if theme then
+      theme:style_label(label, 9, true)
+    else
+      label:setFontSize(9)
+      label:setBold(1)
+    end
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(label, true)
+    end
+
+    return gauge, label
+end
+
 function build_gauges()
-    local hp      = gmcp.Char.Vitals.hp
-    local maxhp   = gmcp.Char.Vitals.maxhp
-    local mana    = gmcp.Char.Vitals.mana
-    local maxmana = gmcp.Char.Vitals.maxmana
-    local move    = gmcp.Char.Vitals.move
-    local maxmove = gmcp.Char.Vitals.maxmove
+    -- Package upgrades used shorter legacy label names. Remove both those
+    -- labels and the previous gauge tree before rebuilding so an in-session
+    -- update cannot leave old text beneath the segmented bars.
+    if type(deleteLabel) == "function" then
+      for _, legacy_name in ipairs({
+        "HitpointsLabel", "ManaLabel", "XpLabel", "MovesLabel",
+      }) do
+        pcall(deleteLabel, legacy_name)
+      end
+    end
+    delete_existing_widget(HitpointsLabel)
+    delete_existing_widget(ManaLabel)
+    delete_existing_widget(XpLabel)
+    delete_existing_widget(MovesLabel)
+    delete_existing_widget(DD_GUI.Hitpoints)
+    delete_existing_widget(DD_GUI.Mana)
+    delete_existing_widget(DD_GUI.Xp)
+    delete_existing_widget(DD_GUI.Moves)
+    delete_existing_widget(DD_GUI.FirstColumn)
+    delete_existing_widget(DD_GUI.SecondColumn)
+    delete_existing_widget(DD_GUI.ThirdColumn)
+    delete_existing_widget(DD_GUI.FourthColumn)
 
     DD_GUI.GaugesBox = DD_GUI.Bottom
     DD_GUI.Footer = DD_GUI.Bottom
@@ -43,180 +142,30 @@ function build_gauges()
       padding = 0,
     })
 
+    local colors = DD_GUI.Theme and DD_GUI.Theme.colors or {
+      hp = "rgb(181,42,48)",
+      mana = "rgb(46,92,184)",
+      xp = "rgb(188,145,43)",
+      moves = "rgb(38,139,126)",
+    }
 
-    --Hitpoints
+    DD_GUI.Hitpoints, HitpointsLabel = new_status_gauge(
+      "DD_GUI.Hitpoints", DD_GUI.FirstColumn, "HITS", colors.hp,
+      gmcp.Char.Vitals.hp, gmcp.Char.Vitals.maxhp)
 
-    DD_GUI.HitpointsGaugeBackCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #bd3333, stop: 0.1 #bd2020, stop: 0.49 #990000, stop: 0.5 #700000, stop: 1 #990000);
-        border-width: 1px;
-        border-color: black;
-        border-style: solid;
-        border-radius: 7;
-        padding: 10px;
-    ]])
+    DD_GUI.Mana, ManaLabel = new_status_gauge(
+      "DD_GUI.Mana", DD_GUI.SecondColumn, "MANA", colors.mana,
+      gmcp.Char.Vitals.mana, gmcp.Char.Vitals.maxmana)
 
-    DD_GUI.HitpointsGaugeFrontCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f04141, stop: 0.1 #ef2929, stop: 0.49 #cc0000, stop: 0.5 #a40000, stop: 1 #cc0000);
-        border-top: 1px black solid;
-        border-left: 1px black solid;
-        border-bottom: 1px black solid;
-        border-radius: 7;
-        padding: 10px;
-    ]])
+    local xplvl = tonumber(gmcp.Char.Worth.xplvl) or 0
+    local xptnl = tonumber(gmcp.Char.Worth.xptnl) or 0
+    local xp_value = xptnl > 0 and math.max(0, xplvl - xptnl) or 1
+    local xp_maximum = xptnl > 0 and xplvl or 1
+    DD_GUI.Xp, XpLabel = new_status_gauge(
+      "DD_GUI.Xp", DD_GUI.ThirdColumn, "XP", colors.xp,
+      xp_value, xp_maximum)
 
-    DD_GUI.Hitpoints = Geyser.Gauge:new({
-      name = "DD_GUI.Hitpoints",
-      x = "0%", y = "15%",
-      width = "100%", height = "70%",
-    }, DD_GUI.FirstColumn)
-    DD_GUI.Hitpoints.back:setStyleSheet(DD_GUI.HitpointsGaugeBackCSS:getCSS())
-    DD_GUI.Hitpoints.front:setStyleSheet(DD_GUI.HitpointsGaugeFrontCSS:getCSS())
-    if (gmcp.Char.Vitals.hp > gmcp.Char.Vitals.maxhp) then
-      hp = maxhp
-    end
-    DD_GUI.Hitpoints:setValue(((hp * 1000) / maxhp),1000)
-
-    HitpointsLabel = Geyser.Label:new({
-      name = "HitpointsLabel",
-      x = 0, y = "15%",
-      width = "50%", height = "70%",
-      fgColor = "black",
-      message = [[&nbsp;Hits]]
-    }, DD_GUI.Hitpoints )
-    HitpointsLabel:setColor(0,0,0,0)
-    HitpointsLabel:setFgColor("Grey")
-    HitpointsLabel:setFontSize(10)
-
-    --Mana
-
-    DD_GUI.ManaGaugeBackCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3833bd, stop: 0.1 #2020bd, stop: 0.49 #000399, stop: 0.5 #000470, stop: 1 #000399);
-        border-top: 1px black solid;
-        border-left: 1px black solid;
-        border-bottom: 1px black solid;
-        border-radius: 7;
-        padding: 10px;
-    ]])
-
-    DD_GUI.ManaGaugeFrontCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4147f0, stop: 0.1 #2929f0, stop: 0.49 #0007cc, stop: 0.5 #0000a3, stop: 1 #0007cc);
-        border-width: 1px;
-        border-color: black;
-        border-style: solid;
-        border-radius: 7;
-        padding: 10px;
-    ]])
-
-    DD_GUI.Mana = Geyser.Gauge:new({
-      name = "DD_GUI.Mana",
-      x = "0%", y = "15%",
-      width = "100%", height = "70%",
-    }, DD_GUI.SecondColumn)
-    DD_GUI.Mana.back:setStyleSheet(DD_GUI.ManaGaugeBackCSS:getCSS())
-    DD_GUI.Mana.front:setStyleSheet(DD_GUI.ManaGaugeFrontCSS:getCSS())
-    if (gmcp.Char.Vitals.mana > gmcp.Char.Vitals.maxmana) then
-      mana = maxmana
-    end
-    DD_GUI.Mana:setValue(((mana * 1000) / maxmana),1000)
-
-    ManaLabel = Geyser.Label:new({
-      name = "ManaLabel",
-      x = 0, y = "15%",
-      width = "50%", height = "70%",
-      fgColor = "Black",
-      message = [[&nbsp;Mana]]
-    }, DD_GUI.Mana )
-    ManaLabel:setColor(0,0,0,0)
-    ManaLabel:setFgColor("Grey")
-    ManaLabel:setFontSize(10)
-
-    -- XP
-
-    DD_GUI.XpGaugeBackCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #78bd33, stop: 0.1 #6ebd20, stop: 0.49 #4c9900, stop: 0.5 #387000, stop: 1 #4c9900);
-        border-top: 1px black solid;
-        border-left: 1px black solid;
-        border-bottom: 1px black solid;
-        border-radius: 7;
-        padding: 10px;
-    ]])
-
-    DD_GUI.XpGaugeFrontCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #98f041, stop: 0.1 #8cf029, stop: 0.49 #66cc00, stop: 0.5 #52a300, stop: 1 #66cc00);
-        border-width: 1px;
-        border-color: black;
-        border-style: solid;
-        border-radius: 7;
-        padding: 10px;
-    ]])
-
-    DD_GUI.Xp = Geyser.Gauge:new({
-      name = "DD_GUI.Xp",
-      x = "0%", y = "15%",
-      width = "100%", height = "70%",
-    }, DD_GUI.ThirdColumn)
-    DD_GUI.Xp.back:setStyleSheet(DD_GUI.XpGaugeBackCSS:getCSS())
-    DD_GUI.Xp.front:setStyleSheet(DD_GUI.XpGaugeFrontCSS:getCSS())
-    --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xplvl * 1000) / (gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl)), 1000)
-
-    if (tonumber(gmcp.Char.Worth.xptnl) > 0 ) then
-      DD_GUI.Xp:setValue((((gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl) * 1000) / gmcp.Char.Worth.xplvl), 1000)
-    else
-      DD_GUI.Xp:setValue(1000, 1000)
-    end
-
-    XpLabel = Geyser.Label:new({
-      name = "XpLabel",
-      x = 0, y = "15%",
-      width = "50%", height = "70%",
-      fgColor = "Black",
-      message = [[&nbsp;Xp]]
-    }, DD_GUI.Xp )
-    XpLabel:setColor(0,0,0,0)
-    XpLabel:setFgColor("White")
-    XpLabel:setFontSize(10)
-
-    --Moves
-
-    DD_GUI.MovesGaugeBackCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #33bdb4, stop: 0.1 #20bdb0, stop: 0.49 #009996, stop: 0.5 #00706e, stop: 1 #009996);
-        border-top: 1px black solid;
-        border-left: 1px black solid;
-        border-bottom: 1px black solid;
-        border-radius: 7;
-        padding: 10px;
-    ]])
-
-    DD_GUI.MovesGaugeFrontCSS = CSSMan.new([[
-        background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #41f0d6, stop: 0.1 #29f0df, stop: 0.49 #00ccc9, stop: 0.5 #009ea3, stop: 1 #00ccc9);
-        border-width: 1px;
-        border-color: black;
-        border-style: solid;
-        border-radius: 7;
-        padding: 10px;
-    ]])
-
-    DD_GUI.Moves = Geyser.Gauge:new({
-      name = "DD_GUI.Moves",
-      x = "0%", y = "15%",
-      width = "100%", height = "70%",
-    }, DD_GUI.FourthColumn)
-    DD_GUI.Moves.back:setStyleSheet(DD_GUI.MovesGaugeBackCSS:getCSS())
-    DD_GUI.Moves.front:setStyleSheet(DD_GUI.MovesGaugeFrontCSS:getCSS())
-    if (gmcp.Char.Vitals.move > gmcp.Char.Vitals.maxmove) then
-      move = maxmove
-    end
-    DD_GUI.Moves:setValue(((move * 1000) / maxmove),1000)
-
-    MovesLabel = Geyser.Label:new({
-      name = "MovesLabel",
-      x = 0, y = "15%",
-      width = "50%", height = "70%",
-      fgColor = "Black",
-      message = [[&nbsp;Moves]]
-    }, DD_GUI.Moves )
-    MovesLabel:setColor(0,0,0,0)
-    MovesLabel:setFgColor("White")
-    MovesLabel:setFontSize(10)
-
-  end
+    DD_GUI.Moves, MovesLabel = new_status_gauge(
+      "DD_GUI.Moves", DD_GUI.FourthColumn, "MOVES", colors.moves,
+      gmcp.Char.Vitals.move, gmcp.Char.Vitals.maxmove)
+end
