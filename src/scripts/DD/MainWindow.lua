@@ -31,8 +31,8 @@ function ui_container()
         -- Transparent adjustable overlay used to define the main MUD console area.
         local mainconsole_constraints = {
                 name = "DD_GUI.MainConsole",
-                x = "4%", y = "38%",
-                width = "68%", height = "56%",
+                x = "4%", y = "36%",
+                width = "68%", height = "58%",
         }
 
         ui.mainconsole_container = DD_GUI.new_adjustable_container and

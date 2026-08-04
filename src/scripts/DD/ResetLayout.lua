@@ -52,6 +52,10 @@ function DD_GUI.migrate_layout_defaults()
         local right_width = tonumber(DD_GUI.Right:get_width()) or 0
         local legacy_default = false
         local changed = false
+        local inventory_width = DD_GUI.InventoryBox and DD_GUI.InventoryBox.get_width and
+                tonumber(DD_GUI.InventoryBox:get_width()) or nil
+        local affect_width = DD_GUI.AffectBox and DD_GUI.AffectBox.get_width and
+                tonumber(DD_GUI.AffectBox:get_width()) or nil
 
         local map_x = DD_GUI.MapBox and DD_GUI.MapBox.get_x and
                 tonumber(DD_GUI.MapBox:get_x()) or nil
@@ -61,6 +65,36 @@ function DD_GUI.migrate_layout_defaults()
                 tonumber(DD_GUI.CharsheetBox:get_x()) or nil
         local char_width = DD_GUI.CharsheetBox and DD_GUI.CharsheetBox.get_width and
                 tonumber(DD_GUI.CharsheetBox:get_width()) or nil
+        local map_y = DD_GUI.MapBox and DD_GUI.MapBox.get_y and
+                tonumber(DD_GUI.MapBox:get_y()) or nil
+        local map_height = DD_GUI.MapBox and DD_GUI.MapBox.get_height and
+                tonumber(DD_GUI.MapBox:get_height()) or nil
+        local char_y = DD_GUI.CharsheetBox and DD_GUI.CharsheetBox.get_y and
+                tonumber(DD_GUI.CharsheetBox:get_y()) or nil
+        local char_height = DD_GUI.CharsheetBox and DD_GUI.CharsheetBox.get_height and
+                tonumber(DD_GUI.CharsheetBox:get_height()) or nil
+
+        local main_x = ui and ui.mainconsole_container and
+                ui.mainconsole_container.get_x and
+                tonumber(ui.mainconsole_container:get_x()) or nil
+        local main_y = ui and ui.mainconsole_container and
+                ui.mainconsole_container.get_y and
+                tonumber(ui.mainconsole_container:get_y()) or nil
+        local main_width = ui and ui.mainconsole_container and
+                ui.mainconsole_container.get_width and
+                tonumber(ui.mainconsole_container:get_width()) or nil
+        local main_height = ui and ui.mainconsole_container and
+                ui.mainconsole_container.get_height and
+                tonumber(ui.mainconsole_container:get_height()) or nil
+
+        local bottom_width = DD_GUI.Bottom and DD_GUI.Bottom.get_width and
+                tonumber(DD_GUI.Bottom:get_width()) or window_width * 0.72
+        local gauge_columns = {
+                DD_GUI.FirstColumn,
+                DD_GUI.SecondColumn,
+                DD_GUI.ThirdColumn,
+                DD_GUI.FourthColumn,
+        }
 
         -- Migrate only shipped geometries so user-customized layouts remain
         -- untouched while the map receives the recovered space.
@@ -74,9 +108,102 @@ function DD_GUI.migrate_layout_defaults()
                 approximately(map_width, window_width * 0.20, 8) and
                 approximately(char_x, window_width * 0.47, 8) and
                 approximately(char_width, window_width * 0.19, 8)
-        if legacy_top_layout or previous_top_layout then
-                reset_adjustable_box(DD_GUI.MapBox, "27%", "17%", "27%", "83%")
-                reset_adjustable_box(DD_GUI.CharsheetBox, "54%", "17%", "18%", "83%")
+
+        local current_top_layout =
+                approximately(map_x, window_width * 0.27, 8) and
+                approximately(map_width, window_width * 0.27, 8) and
+                approximately(map_y, window_height * 0.0612, 8) and
+                approximately(map_height, window_height * 0.2988, 8) and
+                approximately(char_x, window_width * 0.54, 8) and
+                approximately(char_width, window_width * 0.18, 8) and
+                approximately(char_y, window_height * 0.0612, 8) and
+                approximately(char_height, window_height * 0.2988, 8)
+        if legacy_top_layout or previous_top_layout or current_top_layout then
+                reset_adjustable_box(DD_GUI.EnemyBox, "4%", "2%", "23%", "98%")
+                reset_adjustable_box(DD_GUI.MapBox, "27%", "2%", "27%", "98%")
+                reset_adjustable_box(DD_GUI.CharsheetBox, "54%", "2%", "18%", "98%")
+                reset_adjustable_box(DD_GUI.ChannelBox, "72%", "2%", "25%", "98%")
+                changed = true
+        end
+
+        if approximately(main_x, window_width * 0.04, 8) and
+           approximately(main_y, window_height * 0.38, 8) and
+           approximately(main_width, window_width * 0.68, 8) and
+           approximately(main_height, window_height * 0.56, 8) then
+                reset_adjustable_box(
+                        ui and ui.mainconsole_container,
+                        "4%", "36%", "68%", "58%"
+                )
+                changed = true
+        end
+
+        local old_gauge_columns = true
+        local old_gauge_positions = { 0.05, 0.285, 0.52, 0.755 }
+        local current_gauge_columns = true
+        local current_gauge_positions = { 0.0556, 0.2917, 0.5278, 0.7639 }
+        for index, column in ipairs(gauge_columns) do
+                local column_x = column and column.get_x and
+                        tonumber(column:get_x()) or nil
+                local column_width = column and column.get_width and
+                        tonumber(column:get_width()) or nil
+                local matches_old = column and column.get_x and
+                        column.get_width and
+                        approximately(
+                                column_x,
+                                bottom_width * old_gauge_positions[index],
+                                8
+                        ) and approximately(
+                                column_width,
+                                bottom_width * 0.235,
+                                8
+                        )
+                local matches_current = column and column.get_x and
+                        column.get_width and
+                        approximately(
+                                column_x,
+                                bottom_width * current_gauge_positions[index],
+                                8
+                        ) and approximately(
+                                column_width,
+                                bottom_width * 0.2361,
+                                8
+                        )
+                if not matches_old then
+                        old_gauge_columns = false
+                end
+                if not matches_current then
+                        current_gauge_columns = false
+                end
+        end
+        if old_gauge_columns or current_gauge_columns then
+                local new_gauge_columns = {
+                        { "5.56%", "23.36%" },
+                        { "28.92%", "23.36%" },
+                        { "52.28%", "23.36%" },
+                        { "75.64%", "23.36%" },
+                }
+                for index, column in ipairs(gauge_columns) do
+                        reset_adjustable_box(
+                                column,
+                                new_gauge_columns[index][1],
+                                "0%",
+                                new_gauge_columns[index][2],
+                                "100%"
+                        )
+                end
+                changed = true
+        end
+
+        if approximately(inventory_width, right_width * 0.91, 8) and
+           approximately(affect_width, right_width * 0.91, 8) then
+                reset_adjustable_box(
+                        DD_GUI.InventoryBox,
+                        "0%", "36%", "89.29%", "34%"
+                )
+                reset_adjustable_box(
+                        DD_GUI.AffectBox,
+                        "0%", "70%", "89.29%", "30%"
+                )
                 changed = true
         end
 
@@ -125,15 +252,19 @@ function DD_GUI.migrate_layout_defaults()
         end
 
         local defaults = {
-                { ui and ui.mainconsole_container, "4%", "38%", "68%", "56%" },
+                { ui and ui.mainconsole_container, "4%", "36%", "68%", "58%" },
                 { DD_GUI.Right, "-28%", "0%", "28%", "100%" },
                 { DD_GUI.Bottom, "0%", "94%", "72%", "6%" },
-                { DD_GUI.EnemyBox, "4%", "17%", "23%", "83%" },
-                { DD_GUI.MapBox, "27%", "17%", "27%", "83%" },
-                { DD_GUI.CharsheetBox, "54%", "17%", "18%", "83%" },
-                { DD_GUI.ChannelBox, "72%", "17%", "25%", "83%" },
-                { DD_GUI.InventoryBox, "0%", "36%", "91%", "34%" },
-                { DD_GUI.AffectBox, "0%", "70%", "91%", "30%" },
+                { DD_GUI.FirstColumn, "5.56%", "0%", "23.36%", "100%" },
+                { DD_GUI.SecondColumn, "28.92%", "0%", "23.36%", "100%" },
+                { DD_GUI.ThirdColumn, "52.28%", "0%", "23.36%", "100%" },
+                { DD_GUI.FourthColumn, "75.64%", "0%", "23.36%", "100%" },
+                { DD_GUI.EnemyBox, "4%", "2%", "23%", "98%" },
+                { DD_GUI.MapBox, "27%", "2%", "27%", "98%" },
+                { DD_GUI.CharsheetBox, "54%", "2%", "18%", "98%" },
+                { DD_GUI.ChannelBox, "72%", "2%", "25%", "98%" },
+                { DD_GUI.InventoryBox, "0%", "36%", "89.29%", "34%" },
+                { DD_GUI.AffectBox, "0%", "70%", "89.29%", "30%" },
         }
 
         for _, default_box in ipairs(defaults) do
@@ -161,20 +292,20 @@ end
 
 function DD_GUI.reset_layout()
         local defaults = {
-                { ui and ui.mainconsole_container, "4%", "38%", "68%", "56%" },
+                { ui and ui.mainconsole_container, "4%", "36%", "68%", "58%" },
                 { DD_GUI.Right, "-28%", "0%", "28%", "100%" },
                 { DD_GUI.Top, "0%", "0%", "100%", "36%" },
                 { DD_GUI.Bottom, "0%", "94%", "72%", "6%" },
-                { DD_GUI.FirstColumn, "5%", "0%", "23.5%", "100%" },
-                { DD_GUI.SecondColumn, "28.5%", "0%", "23.5%", "100%" },
-                { DD_GUI.ThirdColumn, "52%", "0%", "23.5%", "100%" },
-                { DD_GUI.FourthColumn, "75.5%", "0%", "23.5%", "100%" },
-                { DD_GUI.EnemyBox, "4%", "17%", "23%", "83%" },
-                { DD_GUI.MapBox, "27%", "17%", "27%", "83%" },
-                { DD_GUI.CharsheetBox, "54%", "17%", "18%", "83%" },
-                { DD_GUI.ChannelBox, "72%", "17%", "25%", "83%" },
-                { DD_GUI.InventoryBox, "0%", "36%", "91%", "34%" },
-                { DD_GUI.AffectBox, "0%", "70%", "91%", "30%" },
+                { DD_GUI.FirstColumn, "5.56%", "0%", "23.36%", "100%" },
+                { DD_GUI.SecondColumn, "28.92%", "0%", "23.36%", "100%" },
+                { DD_GUI.ThirdColumn, "52.28%", "0%", "23.36%", "100%" },
+                { DD_GUI.FourthColumn, "75.64%", "0%", "23.36%", "100%" },
+                { DD_GUI.EnemyBox, "4%", "2%", "23%", "98%" },
+                { DD_GUI.MapBox, "27%", "2%", "27%", "98%" },
+                { DD_GUI.CharsheetBox, "54%", "2%", "18%", "98%" },
+                { DD_GUI.ChannelBox, "72%", "2%", "25%", "98%" },
+                { DD_GUI.InventoryBox, "0%", "36%", "89.29%", "34%" },
+                { DD_GUI.AffectBox, "0%", "70%", "89.29%", "30%" },
         }
 
         for _, default_box in ipairs(defaults) do
