@@ -243,13 +243,23 @@ function build_compass()
 
   function compass.door_status(name)
     local direction = compass.door_directions[name]
-    if not direction or type(getDoors) ~= "function" or
-       type(map) ~= "table" or type(map.room_info) ~= "table" then
+    if not direction or type(map) ~= "table" or
+       type(map.room_info) ~= "table" then
       return nil
     end
 
     local room_id = tonumber(map.room_info.vnum)
     if not room_id then
+      return nil
+    end
+
+    local parsed_status = DD_GUI.exit_status_by_room and
+      DD_GUI.exit_status_by_room[room_id]
+    if parsed_status then
+      return tonumber(parsed_status[name]) or 0
+    end
+
+    if type(getDoors) ~= "function" then
       return nil
     end
 
