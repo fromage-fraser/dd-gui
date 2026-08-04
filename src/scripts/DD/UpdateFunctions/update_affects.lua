@@ -56,8 +56,21 @@ local function emit_name_line(name, duration, width, duration_width)
 end
 
 function update_affects()
+  if not AffectsConsole then
+    return
+  end
+
   local duration_ordered = {}
-  local affects = gmcp.Char.Affect[1]
+  local affect_data = gmcp and gmcp.Char and gmcp.Char.Affect
+  local affects = type(affect_data) == "table" and affect_data[1] or nil
+
+  AffectsConsole:clear()
+  AffectsConsole:resetAutoWrap()
+  if type(affects) ~= "table" then
+    AffectsConsole:cecho("Nothing.<reset>")
+    return
+  end
+
   for key, value in orderedPairs(affects) do
     duration_ordered[key] = value.duration
   end
@@ -67,8 +80,6 @@ function update_affects()
     function(a, b) return tonumber(b) < tonumber(a) end
   )
 
-  AffectsConsole:clear()
-  AffectsConsole:resetAutoWrap()
   if next(sorted_dur_keys) == nil then
     AffectsConsole:cecho("Nothing.<reset>")
     return

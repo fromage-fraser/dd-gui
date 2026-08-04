@@ -1,6 +1,22 @@
 debug.setmetatable(nil, { __index=function () end })
 
+local function current_affect_name()
+    local affects = gmcp and gmcp.Char and gmcp.Char.Affect
+    if type(affects) ~= "table" or type(affects[1]) ~= "table" or
+       type(affects[1][1]) ~= "table" then
+        return ""
+    end
+
+    return tostring(affects[1][1].name or "")
+end
+
 function update_vitals()
+    if not gmcp or not gmcp.Char or type(gmcp.Char.Vitals) ~= "table" or
+       type(gmcp.Char.Base) ~= "table" or type(gmcp.Char.Stats) ~= "table" or
+       type(gmcp.Char.Worth) ~= "table" then
+        return
+    end
+
     if not hasFocus() then
         lost_focus = true
       end
@@ -143,7 +159,7 @@ function update_vitals()
     pfp_filename = 'bat_form.png'
   end
 
-  if (gmcp.Char.Affect[1][1].name == "mist walk") then
+  if (current_affect_name() == "mist walk") then
     pfp_filename = 'mist_form.png'
   end
 
@@ -212,7 +228,7 @@ CharsheetConsole:cecho(
 )
 
 if (gmcp.Char.Base.class == "Shape Shifter") or (gmcp.Char.Base.subclass == "Werewolf") then
-    if (gmcp.Char.Affect[1][1].name ~= "mist walk") then
+    if (current_affect_name() ~= "mist walk") then
     CharsheetConsole:cecho(
       "<white>"
       ..string.format("                <white>Form:  <ansi_white>%s\n",
@@ -222,7 +238,7 @@ if (gmcp.Char.Base.class == "Shape Shifter") or (gmcp.Char.Base.subclass == "Wer
     end
 end
 
-if (gmcp.Char.Affect[1][1].name =="mist walk")  then
+if (current_affect_name() == "mist walk")  then
     CharsheetConsole:cecho(
       "<white>"
       ..string.format("                <white>Form:  <ansi_white>Mist\n")

@@ -17,6 +17,7 @@ Theme.colors = {
         dark_gold = "rgb(105,82,36)",
         ivory = "rgb(240,235,213)",
         white = "rgb(255,255,255)",
+        active_tab = "rgb(45,45,45)",
         muted = "rgb(153,160,174)",
         blue_grey = "rgb(72,91,123)",
         hp = "rgb(181,42,48)",
@@ -60,7 +61,7 @@ function Theme:tab_css(active, drop_target)
                         border-color: %s;
                         border-radius: 0px;
                         margin: 1px;
-                ]], self.colors.white, self.colors.ink, self.colors.bright_frame)
+                ]], self.colors.active_tab, self.colors.white, self.colors.bright_frame)
         end
 
         if drop_target then

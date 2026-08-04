@@ -229,13 +229,19 @@ function DD_GUI.migrate_layout_defaults()
                 local legacy_compass =
                         tostring(compass.back.x) == "60%" and
                         tostring(compass.back.y) == "82%"
+                local shipped_compass =
+                        tostring(compass.back.x) == "52%" and
+                        tostring(compass.back.y) == "70%" and
+                        (tostring(compass.back.width) == "8%" or
+                                tostring(compass.back.width) == "9%")
                 if legacy_compass or
+                   shipped_compass or
                    (approximately(compass_x, window_width * 0.60, 2) and
                     approximately(compass_y, window_height * 0.82, 2)) then
                         compass.back:move("52%", "70%")
-                        compass.back:resize("8%", "8%")
+                        compass.back:resize("11%", "11%")
                         if compass.back.get_width then
-                                compass.back:resize("8%", compass.back:get_width())
+                                compass.back:resize("11%", compass.back:get_width())
                         end
                         if compass.back.save then
                                 compass.back:save()
@@ -319,13 +325,13 @@ function DD_GUI.reset_layout()
         end
 
         if compass and compass.back then
-                reset_adjustable_box(compass.back, "52%", "70%", "8%", "8%")
+                reset_adjustable_box(compass.back, "52%", "70%", "11%", "11%")
 
                 -- Keep the default compass square even when the terminal is
                 -- not square. Its width remains responsive while its height
                 -- is stored in pixels to preserve the intended aspect ratio.
                 if type(compass.back.get_width) == "function" then
-                        compass.back:resize("8%", compass.back:get_width())
+                        compass.back:resize("11%", compass.back:get_width())
                         if type(compass.back.save) == "function" then
                                 compass.back:save()
                         end

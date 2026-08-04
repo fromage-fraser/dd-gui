@@ -436,7 +436,7 @@ function DD_GUI.Comms:style_tab(key)
 
         label:setStyleSheet(self:tab_css(key))
         if key == self.current_tab then
-                label:echo(self:tab_label(key), "black", "c")
+                label:echo(self:tab_label(key), "white", "c")
         else
                 label:echo(self:tab_label(key), "<" .. self:rgb_string(key) .. ">", "c")
         end

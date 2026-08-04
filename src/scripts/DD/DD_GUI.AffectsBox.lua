@@ -53,7 +53,7 @@ function DD_GUI.Affects:build_tabs()
                 self.tab_button:setBold(1)
         end
         self.tab_button:setStyleSheet(self:tab_css())
-        self.tab_button:echo("Affects", "black", "c")
+        self.tab_button:echo("Affects", "white", "c")
 end
 
 function build_affects_box()

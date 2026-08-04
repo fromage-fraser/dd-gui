@@ -29,7 +29,7 @@ function DD_GUI.Inventory:style_tab(key)
         tab:setStyleSheet(self:tab_css(key))
         tab:echo(
                 self.tab_labels[key],
-                key == self.current_tab and "black" or "white",
+                "white",
                 "c"
         )
 end
