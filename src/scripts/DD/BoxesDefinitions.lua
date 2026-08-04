@@ -164,6 +164,34 @@ function DD_GUI.raise_info_box_contents()
                         end
                 end
 
+                -- Child consoles sit above the adjustable surface during the
+                -- normal z-order pass. Raise the transparent frame surfaces
+                -- again so their red borders remain visible without masking
+                -- the click-through tab and console contents.
+                for _, box in pairs(Adjustable.Container.all) do
+                        if box and box.goInside ~= false and box.adjLabel and
+                           box.adjLabel.raise then
+                                box.adjLabel:raise()
+                        end
+                end
+
+                -- Keep the named information panels reliable across package
+                -- rebuilds, where Adjustable.Container.all can briefly hold
+                -- stale entries while the new children are being attached.
+                for _, box in ipairs({
+                        DD_GUI.EnemyBox,
+                        DD_GUI.MapBox,
+                        DD_GUI.CharsheetBox,
+                        DD_GUI.ChannelBox,
+                        DD_GUI.InventoryBox,
+                        DD_GUI.AffectBox,
+                }) do
+                        if box and box.adjLabel and box.adjLabel.raise then
+                                box.adjLabel:raise()
+                        end
+                end
+                raise_tab_rails()
+
                 if ui and ui.mainconsole_container and
                    ui.mainconsole_container.adjLabel and
                    ui.mainconsole_container.adjLabel.raise then
@@ -307,18 +335,18 @@ function define_boxes()
         
         DD_GUI.EnemyBox = new_info_box({
           name = "DD_GUI.EnemyBox",
-          x = "4%", y = "17%",
+          x = "4%", y = "2%",
           width = "23%",
-          height = "83%",
+          height = "98%",
         },DD_GUI.Top)
         DD_GUI.EnemyBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.EnemyBox:echo("<center>GUI.EnemyBox")
         
         DD_GUI.MapBox = new_info_box({
           name = "DD_GUI.MapBox",
-          x = "27%", y = "17%",
+          x = "27%", y = "2%",
           width = "27%",
-          height = "83%",
+          height = "98%",
         },DD_GUI.Top)
         DD_GUI.MapBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.MapBox:echo("<center>GUI.MapBox")
@@ -335,18 +363,18 @@ function define_boxes()
         
         DD_GUI.CharsheetBox = new_info_box({
           name = "DD_GUI.CharsheetBox",
-          x = "54%", y = "17%",
+          x = "54%", y = "2%",
           width = "18%",
-          height = "83%",
+          height = "98%",
         },DD_GUI.Top)
         DD_GUI.CharsheetBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.CharsheetBox:echo("<center>GUI.CharsheetBox")
         
         DD_GUI.ChannelBox = new_info_box({
           name = "DD_GUI.ChannelBox",
-          x = "72%", y = "17%",
+          x = "72%", y = "2%",
           width = "25%",
-          height = "83%",
+          height = "98%",
         },DD_GUI.Top)
         DD_GUI.ChannelBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.ChannelBox:echo("<center>GUI.ChannelBox")
@@ -354,7 +382,7 @@ function define_boxes()
         DD_GUI.InventoryBox = new_info_box({
           name = "DD_GUI.InventoryBox",
           x = "0%", y = "36%",
-          width = "91%",
+          width = "89.29%",
           height = "34%",
         },DD_GUI.Right)
         DD_GUI.InventoryBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
@@ -363,7 +391,7 @@ function define_boxes()
         DD_GUI.AffectBox = new_info_box({
           name = "DD_GUI.AffectBox",
           x = "0%", y = "70%",
-          width = "91%",
+          width = "89.29%",
           height = "30%",
         },DD_GUI.Right)
         DD_GUI.AffectBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
