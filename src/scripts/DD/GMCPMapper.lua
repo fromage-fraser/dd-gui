@@ -131,7 +131,9 @@ function load_dd_mapper ()
 
             for dir, id in pairs(info.exits) do
                 -- need to see how special exits are represented to handle those properly here
-                if getRoomName(id) then
+                -- roomExists is a quiet existence check. getRoomName logs an
+                -- error when an exit vnum has not been mapped yet.
+                if roomExists(id) then
                     setExit(info.vnum, id, dir)
                 else
                     setExitStub(info.vnum, dir, true)
@@ -156,7 +158,7 @@ function load_dd_mapper ()
         local function handle_move()
             local info = map.room_info
             local map_changed = false
-            if not getRoomName(info.vnum) then
+            if not roomExists(info.vnum) then
                 make_room()
                 map_changed = true
             else
@@ -168,7 +170,7 @@ function load_dd_mapper ()
                       local id = info.exits[dir]
                       --display("id is " .. id)
                       -- need to see how special exits are represented to handle those properly here
-                      if id and getRoomName(id) then
+                      if id and roomExists(id) then
                           setExit(info.vnum, id, dir)
                           map_changed = true
                       end
