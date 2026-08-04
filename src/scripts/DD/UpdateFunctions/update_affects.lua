@@ -33,17 +33,6 @@ local function right_align(value, width)
   return string.rep(" ", width - #value) .. value
 end
 
-local function center_align(value, width)
-  value = tostring(value or "")
-  if #value >= width then
-    return value
-  end
-
-  local padding = width - #value
-  local left_padding = math.floor(padding / 2)
-  return string.rep(" ", left_padding) .. value .. string.rep(" ", padding - left_padding)
-end
-
 local function emit_name_line(name, duration, width, duration_width)
   name = tostring(name or "")
   duration = tostring(duration or "")
@@ -137,7 +126,8 @@ function update_affects()
         modifier_field = modifier_field .. string.rep(" ", left_width - #modifier_field)
       end
 
-      local amount_field = center_align(row.amount, amount_width)
+      -- Keep signs in the leftmost slot while aligning the numeric digits.
+      local amount_field = right_align(row.amount, amount_width)
       AffectsConsole:cecho(
         "<green>" .. modifier_field .. "<reset> " ..
         "<yellow>" .. amount_field .. "<reset> " ..
