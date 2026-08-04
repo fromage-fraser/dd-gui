@@ -1,5 +1,7 @@
 local version
-if type(getPackageInfo) == "function" then
+if DD_GUI and DD_GUI.package_version then
+        version = DD_GUI.package_version
+elseif type(getPackageInfo) == "function" then
         version = getPackageInfo("DD_GUI", "version")
 end
 
