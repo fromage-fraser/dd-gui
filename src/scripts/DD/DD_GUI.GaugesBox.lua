@@ -29,7 +29,7 @@ local function add_gauge_segments(gauge, name)
         height = "100%",
       }, gauge)
       separator:setStyleSheet([[
-        background-color: rgba(5,8,18,185);
+        background-color: rgba(0,0,0,185);
         border: 0px;
         margin: 0px;
       ]])
@@ -48,7 +48,7 @@ local function new_status_gauge(name, parent, label_text, color, value, maximum)
     }, parent)
 
     gauge.back:setStyleSheet(theme and theme:gauge_back_css() or [[
-      background-color: rgb(30,30,30);
+      background-color: rgb(0,0,0);
       border: 1px solid grey;
       border-radius: 0px;
     ]])

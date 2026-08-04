@@ -5,10 +5,10 @@ local Theme = DD_GUI.Theme
 
 Theme.font = "Consolas"
 Theme.colors = {
-        ink = "rgb(5,8,18)",
-        navy = "rgb(10,16,34)",
-        panel = "rgb(15,24,46)",
-        panel_alt = "rgb(22,34,61)",
+        ink = "rgb(0,0,0)",
+        navy = "rgb(0,0,0)",
+        panel = "rgb(0,0,0)",
+        panel_alt = "rgb(0,0,0)",
         frame = "rgb(151,27,39)",
         bright_frame = "rgb(205,48,60)",
         dark_frame = "rgb(72,10,18)",
@@ -209,7 +209,7 @@ function Theme:style_console(console, size)
                 pcall(function() console:setFontSize(size) end)
         end
         if type(console.setColor) == "function" then
-                pcall(function() console:setColor(5, 8, 18) end)
+                pcall(function() console:setColor(0, 0, 0) end)
         end
 end
 

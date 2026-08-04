@@ -411,7 +411,7 @@ function DD_GUI.Comms:tab_css(key)
 
         if key == self.drag_target and key ~= self.drag_source then
                 return [[
-                        background-color: rgba(50,80,90,180);
+                        background-color: rgba(0,0,0,180);
                         border-style: solid;
                         border-width: 1px;
                         border-color: cyan;
@@ -420,7 +420,7 @@ function DD_GUI.Comms:tab_css(key)
         end
 
         return [[
-                background-color: rgba(20,20,20,170);
+                background-color: rgba(0,0,0,170);
                 border-style: solid;
                 border-width: 1px;
                 border-color: rgb(45,45,45);
