@@ -21,13 +21,14 @@ function DD_GUI.Affects:build_tabs()
         end
 
         if not self.frame then
+                local frame_parent = DD_GUI.AffectBox.Inside or DD_GUI.AffectBox
                 self.frame = Geyser.Label:new({
                         name = "DD_GUI.Affects.Frame",
                         x = "0%",
                         y = "0%",
                         width = "100%",
                         height = "100%",
-                }, DD_GUI.AffectBox)
+                }, frame_parent)
                 self.frame:setStyleSheet(DD_GUI.Theme and
                         DD_GUI.Theme:image_frame_css() or [[
                                 background-color: rgba(0,0,0,0);

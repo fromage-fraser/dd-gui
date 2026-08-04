@@ -12,6 +12,9 @@ function dd_gui_main_console_wheel(event)
         end
 end
 
+DD_GUI = DD_GUI or {}
+DD_GUI.mainconsole_padding = 8
+
 function ui_container()
 
         -- interfacescript
@@ -22,7 +25,7 @@ function ui_container()
         local mainconsole_constraints = {
                 name = "DD_GUI.MainConsole",
                 x = "4%", y = "38%",
-                width = "75%", height = "56%",
+                width = "66%", height = "56%",
         }
 
         ui.mainconsole_container = DD_GUI.new_adjustable_container and
@@ -33,6 +36,27 @@ function ui_container()
                 ui.mainconsole_container:setStyleSheet(
                         DD_GUI.Theme:panel_css({ background = "rgba(0,0,0,0)" })
                 )
+        end
+
+        if ui.mainconsole_frame and ui.mainconsole_frame.delete then
+                ui.mainconsole_frame:delete()
+        end
+        local mainconsole_parent = ui.mainconsole_container.Inside or
+                ui.mainconsole_container
+        ui.mainconsole_frame = Geyser.Label:new({
+                name = "DD_GUI.MainConsole.Frame",
+                x = "0%", y = "0%",
+                width = "100%", height = "100%",
+        }, mainconsole_parent)
+        ui.mainconsole_frame:setStyleSheet(DD_GUI.Theme and
+                DD_GUI.Theme:image_frame_css() or [[
+                        background-color: rgba(0,0,0,0);
+                        border: 2px solid rgb(151,27,39);
+                        border-radius: 0px;
+                        margin: 0px;
+                ]])
+        if DD_GUI.set_widget_clickthrough then
+                DD_GUI.set_widget_clickthrough(ui.mainconsole_frame, true)
         end
 
         if ui.mainconsole_container.adjLabel then
@@ -52,10 +76,11 @@ function ui_container()
                 local cw = tonumber(ui.mainconsole_container:get_width()) or w
                 local ch = tonumber(ui.mainconsole_container:get_height()) or h
 
-                local left = math.max(0, cx)
-                local top = math.max(0, cy)
-                local right = math.max(0, w - cx - cw)
-                local bottom = math.max(0, h - cy - ch)
+                local padding = tonumber(DD_GUI.mainconsole_padding) or 8
+                local left = math.max(0, cx + padding)
+                local top = math.max(0, cy + padding)
+                local right = math.max(0, w - cx - cw + padding)
+                local bottom = math.max(0, h - cy - ch + padding)
 
                 if w ~= ui.window_width or h ~= ui.window_height or
                    left ~= ui.border_left or top ~= ui.border_top or

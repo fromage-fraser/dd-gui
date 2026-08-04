@@ -32,15 +32,21 @@ function DD_GUI.ImageFit:refresh_widget(state)
         local y = parent_height * state.y_ratio
         local max_width = math.max(1, parent_width * state.width_ratio)
         local max_height = math.max(1, parent_height * state.height_ratio)
-        local image_ratio = state.image_height / state.image_width
+        local width
+        local height
+        if state.stretch then
+                width = math.min(max_width, parent_width - x)
+                height = math.min(max_height, parent_height - y)
+        else
+                local image_ratio = state.image_height / state.image_width
+                width = math.min(max_width, max_height / image_ratio)
+                height = width * image_ratio
 
-        local width = math.min(max_width, max_height / image_ratio)
-        local height = width * image_ratio
-
-        width = math.min(width, parent_width - x)
-        height = width * image_ratio
-        height = math.min(height, parent_height - y)
-        width = height / image_ratio
+                width = math.min(width, parent_width - x)
+                height = width * image_ratio
+                height = math.min(height, parent_height - y)
+                width = height / image_ratio
+        end
 
         x = math.max(0, x)
         y = math.max(0, y)
@@ -109,6 +115,9 @@ function DD_GUI.ImageFit:set(widget, parent, path, options)
         state.frame = options.frame or state.frame
         state.align_x = options.align_x or state.align_x
         state.align_y = options.align_y or state.align_y
+        if options.stretch ~= nil then
+                state.stretch = options.stretch == true
+        end
         state.image_width, state.image_height = image_dimensions(path, options.fallback)
 
         if widget.setBackgroundImage then

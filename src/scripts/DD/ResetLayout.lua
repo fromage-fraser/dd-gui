@@ -39,20 +39,20 @@ end
 
 function DD_GUI.reset_layout()
         local defaults = {
-                { ui and ui.mainconsole_container, "4%", "38%", "75%", "56%" },
-                { DD_GUI.Right, "-26%", "0%", "26%", "100%" },
+                { ui and ui.mainconsole_container, "4%", "38%", "66%", "56%" },
+                { DD_GUI.Right, "-34%", "0%", "34%", "100%" },
                 { DD_GUI.Top, "0%", "0%", "100%", "36%" },
-                { DD_GUI.Bottom, "0%", "94%", "74%", "6%" },
+                { DD_GUI.Bottom, "0%", "94%", "66%", "6%" },
                 { DD_GUI.FirstColumn, "5%", "0%", "23.5%", "100%" },
                 { DD_GUI.SecondColumn, "28.5%", "0%", "23.5%", "100%" },
                 { DD_GUI.ThirdColumn, "52%", "0%", "23.5%", "100%" },
                 { DD_GUI.FourthColumn, "75.5%", "0%", "23.5%", "100%" },
                 { DD_GUI.EnemyBox, "4%", "17%", "23%", "83%" },
-                { DD_GUI.MapBox, "27%", "17%", "24%", "83%" },
-                { DD_GUI.CharsheetBox, "51%", "17%", "23%", "83%" },
-                { DD_GUI.ChannelBox, "74%", "17%", "23%", "83%" },
-                { DD_GUI.InventoryBox, "0%", "36%", "89%", "34%" },
-                { DD_GUI.AffectBox, "0%", "70%", "89%", "30%" },
+                { DD_GUI.MapBox, "27%", "17%", "16%", "83%" },
+                { DD_GUI.CharsheetBox, "43%", "17%", "23%", "83%" },
+                { DD_GUI.ChannelBox, "66%", "17%", "31%", "83%" },
+                { DD_GUI.InventoryBox, "0%", "36%", "91%", "34%" },
+                { DD_GUI.AffectBox, "0%", "70%", "91%", "30%" },
         }
 
         for _, default_box in ipairs(defaults) do
