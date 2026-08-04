@@ -141,7 +141,7 @@ function Theme:compass_cell_css(hovered, blank)
                         border-color: %s;
                         border-radius: 0px;
                         margin: 1px;
-                ]], self.colors.bright_gold, self.colors.ink, self.colors.bright_frame)
+                ]], self.colors.active_tab, self.colors.white, self.colors.bright_frame)
         end
 
         return string.format([[

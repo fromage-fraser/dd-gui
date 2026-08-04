@@ -64,7 +64,13 @@ data. The main panels are:
 - **Affects:** active affects from GMCP, with names left-aligned, modifiers
   centred, and durations aligned at the right edge.
 - **Gauges and compass:** current hits, mana, experience, movement, and the
-  clickable navigation compass.
+  clickable navigation compass. The compass includes `EQ` for equipment and
+  `SCAN` for scanning. Movement buttons briefly highlight their borders while
+  leaving the black cell background unchanged. For mapped rooms, movement
+  checks Mudlet's door status before sending: a locked exit sends `unlock`,
+  `open`, then the movement command; a closed exit sends `open`, then the
+  movement command. If the room or door state is unavailable, it sends the
+  normal movement command.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. If a manual rebuild is needed, run `lua bootstrap()` in Mudlet.
@@ -116,11 +122,15 @@ The basic GUI workflow is:
 
 - Make some changes to the GUI codebase.
 - Run `.\scripts\build-and-upload.ps1` from the repository root. This invokes muddler, builds `build\DD_GUI.mpackage` and `build\DD_GUI.xml`, and uploads both files to the production GUI directory.
-- Open your Dragons Domain Mudlet test account and install the `DD_GUI.mpackage` package before logging in.
+- In the Dragons Domain Mudlet test account, uninstall the existing `DD_GUI`
+  package before installing the new `DD_GUI.mpackage` package.
 - After logging in you should see the latest version of the GUI with any changes you made.
 
 The upload helper reads FTP credentials from the ignored `.dd-gui-ftp.netrc`
 file. Keep that file local and never commit or print it.
+
+Keep this README synchronized with significant GUI, alias, keybinding, package,
+and workflow changes.
 
 For smaller changes, you may wish to work in Mudlet's built-in text editor so you can quickly view the changes, then copy the code over to your local `dd-gui` repo after you're satisfied with it before building the package.
 
