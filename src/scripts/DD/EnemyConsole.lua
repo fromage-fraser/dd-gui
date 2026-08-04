@@ -91,7 +91,7 @@ function build_enemy_console()
       if limit > 0 then
         ratio = math.max(0, math.min(1, current / limit))
       end
-      self:resize(string.format("%.3f%%", ratio * 100), "100%")
+      self:resize(string.format("%.3f%%", ratio * 100), "10%")
     end
 
     EnemyHitpointsLabel = Geyser.Label:new({
