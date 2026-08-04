@@ -5,11 +5,40 @@ local function transparent_surface_css(css)
         )
 end
 
-local adjustable_drag_outline_css = [[
-        border-style: solid;
-        border-width: 2px;
-        border-color: rgba(255,255,255,220);
-]]
+local function adjustable_state_css(box)
+        local theme = DD_GUI and DD_GUI.Theme
+        local layout_enabled = DD_GUI and DD_GUI.Layout and
+                DD_GUI.Layout.enabled
+
+        if theme and layout_enabled then
+                return theme:layout_outline_css(box._dd_gui_dragging)
+        end
+
+        if box._dd_gui_dragging then
+                if theme then
+                        return theme:layout_outline_css(true)
+                end
+                return [[
+                        border-style: solid;
+                        border-width: 2px;
+                        border-color: rgba(255,255,255,220);
+                ]]
+        end
+
+        return ""
+end
+
+local function refresh_adjustable_style(box)
+        if not box or not box.adjLabel then
+                return
+        end
+
+        box.adjLabel:setStyleSheet(
+                (box._dd_gui_base_style or "") .. adjustable_state_css(box)
+        )
+end
+
+DD_GUI.refresh_adjustable_style = refresh_adjustable_style
 
 local function set_adjustable_drag_outline(box, active)
         if not box or not box.adjLabel then
@@ -17,12 +46,7 @@ local function set_adjustable_drag_outline(box, active)
         end
 
         box._dd_gui_dragging = active == true
-        local base_style = box._dd_gui_base_style or ""
-        if box._dd_gui_dragging then
-                box.adjLabel:setStyleSheet(base_style .. adjustable_drag_outline_css)
-        else
-                box.adjLabel:setStyleSheet(base_style)
-        end
+        refresh_adjustable_style(box)
 end
 
 DD_GUI.set_adjustable_drag_outline = set_adjustable_drag_outline
@@ -198,12 +222,15 @@ function DD_GUI.new_adjustable_container(cons, parent, options)
                 hide_adjustable_controls(box)
                 box.setStyleSheet = function(self, css)
                         self._dd_gui_base_style = transparent_surface_css(css)
-                        set_adjustable_drag_outline(self, self._dd_gui_dragging)
+                        refresh_adjustable_style(self)
                 end
                 if options and options.direct then
                         box.goInside = false
                 end
                 box._dd_gui_adjustable = true
+                if DD_GUI.Layout and DD_GUI.Layout.apply_box then
+                        DD_GUI.Layout:apply_box(box)
+                end
                 return box
         end
 
@@ -217,7 +244,8 @@ function DD_GUI.new_adjustable_region(cons, parent, css, options)
                 -- content is raised afterwards, so this never tints it.
                 if box.adjLabel and box.adjLabel.setStyleSheet then
                         box._dd_gui_base_style = css or ""
-                        set_adjustable_drag_outline(box, false)
+                        box._dd_gui_dragging = false
+                        refresh_adjustable_style(box)
                 end
                 box._dd_gui_region = true
                 return box
@@ -239,24 +267,17 @@ local function new_info_box(cons, parent)
         return Geyser.Label:new(cons, parent)
 end
 function define_boxes()
-
-        DD_GUI.BoxCSS = CSSMan.new([[
+        local box_css = DD_GUI.Theme and DD_GUI.Theme:panel_css() or [[
           background-color: rgba(0,0,0,100);
           border-style: solid;
-          border-width: 0px;
+          border-width: 1px;
           border-radius: 0px;
-          border-color: red;
+          border-color: grey;
           margin: 1px;
-        ]])
-        
-        DD_GUI.EnemyBoxCSS = CSSMan.new([[
-          background-color: rgba(0,0,0,100);
-          border-style: solid;
-          border-width: 2px;
-          border-radius: 0px;
-          border-color: red;
-          margin: 0px;
-        ]])
+        ]]
+
+        DD_GUI.BoxCSS = CSSMan.new(box_css)
+        DD_GUI.EnemyBoxCSS = CSSMan.new(box_css)
         
         DD_GUI.EnemyBox = new_info_box({
           name = "DD_GUI.EnemyBox",

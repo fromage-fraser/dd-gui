@@ -152,14 +152,20 @@ function update_vitals()
           CharsheetPFPConsole,
           CharsheetConsole,
           char_image,
-          { fallback = { width = 160, height = 200 } }
+          {
+            fallback = { width = 160, height = 200 },
+            frame = CharsheetImageFrame,
+          }
         )
   else
         DD_GUI.ImageFit:set(
           CharsheetPFPConsole,
           CharsheetConsole,
           def_image,
-          { fallback = { width = 160, height = 200 } }
+          {
+            fallback = { width = 160, height = 200 },
+            frame = CharsheetImageFrame,
+          }
         )
   end
 
@@ -172,9 +178,9 @@ function update_vitals()
 
 CharsheetConsole:cecho(
     "<white>"
-    ..string.format("              Name:  <ansi_white>%s\n",
+    ..string.format("                Name:  <ansi_white>%s\n",
         gmcp.Char.Base.name)
-    ..string.format("              <white>Race:  <ansi_white>%s",
+    ..string.format("                <white>Race:  <ansi_white>%s",
         gmcp.Char.Base.race)
     .."<reset>\n"
  )
@@ -182,14 +188,14 @@ CharsheetConsole:cecho(
  if (gmcp.Char.Base.subclass == "none") then
     CharsheetConsole:cecho(
         "<white>"
-        ..string.format("              <white>Class: <ansi_white>%s",
+        ..string.format("                <white>Class: <ansi_white>%s",
             gmcp.Char.Base.class)
         .."<reset>\n"
     )
 else
     CharsheetConsole:cecho(
         "<white>"
-        ..string.format("              <white>Class: <ansi_white>%s",
+        ..string.format("                <white>Class: <ansi_white>%s",
             gmcp.Char.Base.subclass)
         .."<reset>\n"
     )
@@ -197,7 +203,7 @@ end
 
 CharsheetConsole:cecho(
     "<white>"
-    ..string.format("              <white>Level: <ansi_white>%d <white>Sex: <ansi_white>%s\n",
+    ..string.format("                <white>Level: <ansi_white>%d <white>Sex: <ansi_white>%s\n",
         gmcp.Char.Worth.level, firstToUpper(chsex_string))
     .."<reset>"
 )
@@ -206,7 +212,7 @@ if (gmcp.Char.Base.class == "Shape Shifter") or (gmcp.Char.Base.subclass == "Wer
     if (gmcp.Char.Affect[1][1].name ~= "mist walk") then
     CharsheetConsole:cecho(
       "<white>"
-      ..string.format("              <white>Form:  <ansi_white>%s\n",
+      ..string.format("                <white>Form:  <ansi_white>%s\n",
           firstToUpper(gmcp.Char.Vitals.form))
       .."<reset>"
     )
@@ -216,7 +222,7 @@ end
 if (gmcp.Char.Affect[1][1].name =="mist walk")  then
     CharsheetConsole:cecho(
       "<white>"
-      ..string.format("              <white>Form:  <ansi_white>Mist\n")
+      ..string.format("                <white>Form:  <ansi_white>Mist\n")
       .."<reset>"
     )
 end
@@ -224,7 +230,7 @@ end
 if (gmcp.Char.Base.subclass == "Werewolf") or (gmcp.Char.Base.subclass == "Vampire") then
   CharsheetConsole:cecho(
     "<white>"
-    ..string.format("              <white>Rage:  <red>%s<reset>/<red>%s<reset>\n",
+    ..string.format("                <white>Rage:  <red>%s<reset>/<red>%s<reset>\n",
         gmcp.Char.Vitals.rage,
         gmcp.Char.Vitals.maxrage)
     .."<reset>"
@@ -232,19 +238,19 @@ if (gmcp.Char.Base.subclass == "Werewolf") or (gmcp.Char.Base.subclass == "Vampi
 end
 
 CharsheetConsole:cecho(""
-    ..string.format("\n              <white>Str: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
+    ..string.format("\n                <white>Str: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
         gmcp.Char.Stats.str_mod,
         gmcp.Char.Stats.str)
     ..string.format(" <white>Int: <cyan>%s<reset>(<ansi_cyan>%s<reset>)\n",
         gmcp.Char.Stats.int_mod,
         gmcp.Char.Stats.int)
-    ..string.format("              <white>Wis: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
+    ..string.format("                <white>Wis: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
         gmcp.Char.Stats.wis_mod,
         gmcp.Char.Stats.wis)
     ..string.format(" <white>Dex: <cyan>%s<reset>(<ansi_cyan>%s<reset>)\n",
         gmcp.Char.Stats.dex_mod,
         gmcp.Char.Stats.dex)
-    ..string.format("              <white>Con: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
+    ..string.format("                <white>Con: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
         gmcp.Char.Stats.con_mod,
         gmcp.Char.Stats.con)
     ..string.format(" <white>Fame: <cyan>%s<reset>\n",

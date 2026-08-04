@@ -22,6 +22,14 @@ To uninstall the GUI, you can simply type:
 
 `lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager.
 
+## Layout controls
+
+The interface starts with its movable surfaces locked so normal tabs, compass
+buttons, and console scrollback receive mouse input. Use `layoutgui` to toggle
+layout editing, or `layoutgui on` and `layoutgui off` to choose the state
+explicitly. Leaving layout mode saves the current per-profile positions and
+sizes. Use `resetgui` to restore every region to its default geometry.
+
 
 ## Installation (devs)
 

@@ -29,6 +29,12 @@ function ui_container()
                 DD_GUI.new_adjustable_container(mainconsole_constraints) or
                 Geyser.Container:new(mainconsole_constraints)
 
+        if ui.mainconsole_container.setStyleSheet and DD_GUI.Theme then
+                ui.mainconsole_container:setStyleSheet(
+                        DD_GUI.Theme:panel_css({ background = "rgba(0,0,0,0)" })
+                )
+        end
+
         if ui.mainconsole_container.adjLabel then
                 ui.mainconsole_container.adjLabel:setWheelCallback(
                         "dd_gui_main_console_wheel"

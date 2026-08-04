@@ -1,15 +1,18 @@
-local function compass_background_css(width)
-  local radius = math.max(0, (tonumber(width) or 0) / 2 - 36)
-
+local function compass_surface_css()
+  if DD_GUI.Theme then
+    return DD_GUI.Theme:panel_css({ margin = 0 })
+  end
   return [[
-    background-color: QRadialGradient(cx:.3,cy:1,radius:1,stop:0 rgb(28,0,0),stop:.5 rgb(100,0,0),stop:1 rgb(255,0,0));
-    border-radius: ]] .. tostring(radius) .. [[px;
-    margin: 12px;
+    background-color: rgb(10,10,20);
+    border: 2px solid grey;
+    border-radius: 0px;
+    margin: 0px;
   ]]
 end
 
 function dd_gui_compass_handle_click(event)
-  if not event or event.button ~= "LeftButton" or
+  if not DD_GUI.Layout or not DD_GUI.Layout.enabled or
+     not event or event.button ~= "LeftButton" or
      not compass or not compass.back then
     return
   end
@@ -31,7 +34,8 @@ function dd_gui_compass_handle_click(event)
 end
 
 function dd_gui_compass_handle_move(event)
-  if not compass or not compass.back or not compass.handle_drag then
+  if not DD_GUI.Layout or not DD_GUI.Layout.enabled or
+     not compass or not compass.back or not compass.handle_drag then
     return
   end
 
@@ -49,7 +53,8 @@ function dd_gui_compass_handle_move(event)
 end
 
 function dd_gui_compass_handle_release(event)
-  if not event or event.button ~= "LeftButton" or
+  if not DD_GUI.Layout or not DD_GUI.Layout.enabled or
+     not event or event.button ~= "LeftButton" or
      not compass or not compass.back then
     return
   end
@@ -67,8 +72,7 @@ function dd_gui_compass_handle_release(event)
 end
 
 function build_compass()
-
-local mw, mh = getMainWindowSize()
+  local mw, mh = getMainWindowSize()
 
   local previous_geometry
   if compass and compass.back and compass.back._dd_gui_adjustable then
@@ -86,16 +90,22 @@ local mw, mh = getMainWindowSize()
   local compass_layout_path = ms_path .. "/layout/compass.back.lua"
   local saved_layout = io.exists and io.exists(compass_layout_path)
 
-  -- Vitals can rebuild the compass after the initial bootstrap. Remove the
-  -- previous native widget tree so its drag surface cannot remain visible or
-  -- steal mouse events from the current handle.
   if compass and compass.back and compass.back.delete then
     compass.back:delete()
   end
 
   compass = {
-    dirs = {"n","u","w","look","e","s","d"},
-    ratio = mw / mh
+    dirs = {"n", "u", "w", "look", "e", "s", "d"},
+    ratio = mw / mh,
+    labels = {
+      n = "N",
+      u = "UP",
+      w = "W",
+      look = "LOOK",
+      e = "E",
+      s = "S",
+      d = "DOWN",
+    },
   }
 
   local compass_constraints = {
@@ -119,15 +129,11 @@ local mw, mh = getMainWindowSize()
 
   if compass.back._dd_gui_adjustable and not saved_layout and
      (not previous_geometry or previous_default_size) then
-    -- Preserve the old compass' square default while allowing later resizing.
     compass.back:resize(compass.back.width, compass.back:get_width())
   end
 
   local compass_parent = compass.back
   if compass.back._dd_gui_adjustable then
-    -- The adjustable container's native drag label is covered by the
-    -- compass contents. Keep a full-width top rail above those contents and
-    -- forward its mouse events to the native adjustable handlers.
     local go_inside = compass.back.goInside
     compass.back.goInside = false
     compass.handle = Geyser.Label:new({
@@ -135,15 +141,9 @@ local mw, mh = getMainWindowSize()
       x = 0,
       y = 0,
       width = "100%",
-      height = 14,
+      height = 16,
     }, compass.back)
     compass.back.goInside = go_inside
-    compass.handle:setStyleSheet([[
-      background-color: rgba(0,0,0,0);
-      border: 0px;
-      margin: 0px;
-    ]])
-    compass.handle:echo("")
     compass.handle:setClickCallback("dd_gui_compass_handle_click")
     compass.handle:setReleaseCallback("dd_gui_compass_handle_release")
     compass.handle:setMoveCallback("dd_gui_compass_handle_move")
@@ -155,144 +155,119 @@ local mw, mh = getMainWindowSize()
       width = "100%",
       height = "100%",
     }, compass.back.Inside)
+    compass.surface:setStyleSheet(compass_surface_css())
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(compass.surface, true)
+    end
     compass_parent = compass.back.Inside
   else
-    compass.back:setStyleSheet(compass_background_css(compass.back:get_width()))
+    compass.back:setStyleSheet(compass_surface_css())
   end
 
   compass.box = Geyser.HBox:new({
     name = "compass.box",
-    x = 0,
-    y = 0,
-    width = "100%",
-    height = "100%",
-  },compass_parent)
+    x = "3%",
+    y = "3%",
+    width = "94%",
+    height = "94%",
+  }, compass_parent)
 
-  compass.row1 = Geyser.VBox:new({
-    name = "compass.row1",
-  },compass.box)
-  compass.row2 = Geyser.VBox:new({
-    name = "compass.row2",
-  },compass.box)
-  compass.row3 = Geyser.VBox:new({
-    name = "compass.row3",
-  },compass.box)
+  compass.row1 = Geyser.VBox:new({name = "compass.row1"}, compass.box)
+  compass.row2 = Geyser.VBox:new({name = "compass.row2"}, compass.box)
+  compass.row3 = Geyser.VBox:new({name = "compass.row3"}, compass.box)
 
-  compass.nw = Geyser.Label:new({
-    name = "compass.nw",
-  },compass.row1)
+  compass.nw = Geyser.Label:new({name = "compass.nw"}, compass.row1)
+  compass.w = Geyser.Label:new({name = "compass.w"}, compass.row1)
+  compass.sw = Geyser.Label:new({name = "compass.sw"}, compass.row1)
+  compass.n = Geyser.Label:new({name = "compass.n"}, compass.row2)
+  compass.look = Geyser.Label:new({name = "compass.look"}, compass.row2)
+  compass.s = Geyser.Label:new({name = "compass.s"}, compass.row2)
+  compass.u = Geyser.Label:new({name = "compass.u"}, compass.row3)
+  compass.e = Geyser.Label:new({name = "compass.e"}, compass.row3)
+  compass.d = Geyser.Label:new({name = "compass.d"}, compass.row3)
 
-  compass.nw:setStyleSheet([[
-    background-color: rgba(0,0,0,0%);
-  ]])
-
-  compass.w = Geyser.Label:new({
-    name = "compass.w",
-  },compass.row1)
-
-  compass.sw = Geyser.Label:new({
-    name = "compass.sw",
-  },compass.row1)
-
-  compass.sw:setStyleSheet([[
-    background-color: rgba(0,0,0,0%);
-  ]])
-
-  compass.n = Geyser.Label:new({
-    name = "compass.n",
-  },compass.row2)
-
-  compass.look = Geyser.Label:new({
-    name = "compass.look",
-  },compass.row2)
-
-  compass.s = Geyser.Label:new({
-    name = "compass.s",
-  },compass.row2)
-
-  compass.u = Geyser.Label:new({
-    name = "compass.u",
-  },compass.row3)
-
-  compass.e = Geyser.Label:new({
-    name = "compass.e",
-  },compass.row3)
-
-  compass.d = Geyser.Label:new({
-    name = "compass.d",
-  },compass.row3)
-
-
-function compass.click(name)
-  send(name)
-end
-
-function compass.onEnter(name)
-  compass[name]:setStyleSheet([[
-    border-image: url("]]..getMudletHomeDir()..[[/DD_GUI/compass/]]..name..[[hover.png");
-    margin: 5px;
-  ]])
-end
-
-function compass.onLeave(name)
-  compass[name]:setStyleSheet([[
-    border-image: url("]]..getMudletHomeDir()..[[/DD_GUI/compass/]]..name..[[.png");
-    margin: 5px;
-  ]])
-end
-
-for k,v in pairs(compass.dirs) do
-  compass[v]:setStyleSheet([[
-    border-image: url("]]..getMudletHomeDir()..[[/DD_GUI/compass/]]..v..[[.png");
-    margin: 5px;
-  ]])
-  compass[v]:setClickCallback("compass.click",v)
-  setLabelOnEnter("compass."..v,"compass.onEnter",v)
-  setLabelOnLeave("compass."..v,"compass.onLeave",v)
-end
-
-function compass.refresh()
-  if compass.surface then
-    compass.surface:setStyleSheet(compass_background_css(compass.surface:get_width()))
-  elseif compass.back and compass.back.setStyleSheet then
-    compass.back:setStyleSheet(compass_background_css(compass.back:get_width()))
-  end
-
-  -- Keep the navigation cells above the adjustable drag surface.
-  if compass.box then
-    if compass.box.raiseAll then
-      compass.box:raiseAll()
-    elseif compass.box.raise then
-      compass.box:raise()
+  local theme = DD_GUI.Theme
+  for _, blank in ipairs({"nw", "sw"}) do
+    compass[blank]:setStyleSheet(theme and
+      theme:compass_cell_css(false, true) or
+      [[background-color: rgb(5,5,10); border: 1px solid grey;]])
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(compass[blank], true)
     end
   end
 
-  if compass.handle and compass.handle.raise then
-    compass.handle:raise()
+  function compass.click(name)
+    send(name)
   end
-end
 
-function compass.resize()
-  -- The legacy label stays square.  Adjustable users control both dimensions.
-  if compass.back and not compass.back._dd_gui_adjustable then
-    compass.back:resize(compass.back.width, compass.back:get_width())
+  function compass.onEnter(name)
+    compass[name]:setStyleSheet(theme and
+      theme:compass_cell_css(true, false) or
+      [[background-color: white; color: black; border: 1px solid grey;]])
+    compass[name]:echo(compass.labels[name], "black", "c")
   end
-  compass.refresh()
-end
 
-if not DD_GUI.compass_handlers_registered then
-  registerAnonymousEventHandler("sysWindowResizeEvent", function()
-    if compass and compass.refresh then
-      compass.refresh()
-    end
-  end)
-  registerAnonymousEventHandler("AdjustableContainerReposition", function(_, name)
-    if name == "compass.back" and compass and compass.refresh then
-      compass.refresh()
-    end
-  end)
-  DD_GUI.compass_handlers_registered = true
-end
+  function compass.onLeave(name)
+    compass[name]:setStyleSheet(theme and
+      theme:compass_cell_css(false, false) or
+      [[background-color: black; color: white; border: 1px solid grey;]])
+    compass[name]:echo(compass.labels[name], "white", "c")
+  end
 
-compass.resize()
+  for _, direction in ipairs(compass.dirs) do
+    local cell = compass[direction]
+    compass.onLeave(direction)
+    if theme then
+      theme:style_label(cell, 8, true)
+    else
+      cell:setFontSize(8)
+      cell:setBold(1)
+    end
+    cell:setClickCallback("compass.click", direction)
+    setLabelOnEnter("compass." .. direction, "compass.onEnter", direction)
+    setLabelOnLeave("compass." .. direction, "compass.onLeave", direction)
+  end
+
+  function compass.refresh()
+    if compass.surface then
+      compass.surface:setStyleSheet(compass_surface_css())
+    elseif compass.back and compass.back.setStyleSheet then
+      compass.back:setStyleSheet(compass_surface_css())
+    end
+
+    if compass.box then
+      if compass.box.raiseAll then
+        compass.box:raiseAll()
+      elseif compass.box.raise then
+        compass.box:raise()
+      end
+    end
+
+    if DD_GUI.Layout then
+      DD_GUI.Layout:apply_compass()
+    end
+  end
+
+  function compass.resize()
+    if compass.back and not compass.back._dd_gui_adjustable then
+      compass.back:resize(compass.back.width, compass.back:get_width())
+    end
+    compass.refresh()
+  end
+
+  if not DD_GUI.compass_handlers_registered then
+    registerAnonymousEventHandler("sysWindowResizeEvent", function()
+      if compass and compass.refresh then
+        compass.refresh()
+      end
+    end)
+    registerAnonymousEventHandler("AdjustableContainerReposition", function(_, name)
+      if name == "compass.back" and compass and compass.refresh then
+        compass.refresh()
+      end
+    end)
+    DD_GUI.compass_handlers_registered = true
+  end
+
+  compass.resize()
 end

@@ -103,7 +103,11 @@ function update_travel()
                     EnemyTPConsoleTop,
                     EnemyConsole,
                     room_image,
-                    { fallback = { width = 560, height = 300 } }
+                    {
+                            fallback = { width = 560, height = 300 },
+                            frame = EnemyImageFrame,
+                            align_x = "center",
+                    }
             )
 
             local stripped_room_name = string.gsub(gmcp.Room.Info.name, "\{[a-zA-Z]", "")

@@ -21,12 +21,22 @@ function bootstrap()
         get_custom_content()
         update_travel()
 
+        -- Resizing and moving are opt-in. Normal play leaves the adjustable
+        -- surfaces click-through so tabs, compass controls, and scrollback
+        -- receive mouse input directly.
+        if DD_GUI.Layout then
+                DD_GUI.Layout:apply(false)
+        end
+
         if DD_GUI.raise_info_box_contents then
                 DD_GUI.raise_info_box_contents()
                 -- Geyser completes its initial z-order pass after bootstrap.
                 tempTimer(0.1, function()
                         if DD_GUI.raise_info_box_contents then
                                 DD_GUI.raise_info_box_contents()
+                        end
+                        if DD_GUI.Layout then
+                                DD_GUI.Layout:apply(false)
                         end
                 end)
         end
