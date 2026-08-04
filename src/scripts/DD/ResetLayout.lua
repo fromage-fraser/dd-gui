@@ -163,10 +163,17 @@ function DD_GUI.migrate_layout_defaults()
                 approximately(right_height, window_height, 8) and
                 approximately(bottom_y, window_height * 0.94, 8) and
                 approximately(bottom_height, window_height * 0.06, 8)
-        if previous_outer_layout then
-                reset_adjustable_box(DD_GUI.Top, "0%", "2%", "100%", "34%")
-                reset_adjustable_box(DD_GUI.Right, "-28%", "2%", "28%", "96%")
-                reset_adjustable_box(DD_GUI.Bottom, "0%", "93%", "72%", "5%")
+        local current_outer_layout =
+                approximately(top_y, window_height * 0.02, 8) and
+                approximately(top_height, window_height * 0.34, 8) and
+                approximately(right_y, window_height * 0.02, 8) and
+                approximately(right_height, window_height * 0.96, 8) and
+                approximately(bottom_y, window_height * 0.93, 8) and
+                approximately(bottom_height, window_height * 0.05, 8)
+        if previous_outer_layout or current_outer_layout then
+                reset_adjustable_box(DD_GUI.Top, "0%", "3%", "100%", "33%")
+                reset_adjustable_box(DD_GUI.Right, "-28%", "3%", "28%", "94%")
+                reset_adjustable_box(DD_GUI.Bottom, "0%", "93%", "72%", "4%")
                 changed = true
         end
 
@@ -231,11 +238,11 @@ function DD_GUI.migrate_layout_defaults()
            approximately(affect_width, right_width * 0.91, 8) then
                 reset_adjustable_box(
                         DD_GUI.InventoryBox,
-                        "0%", "35.42%", "89.29%", "35.42%"
+                        "0%", "35.11%", "89.29%", "36.17%"
                 )
                 reset_adjustable_box(
                         DD_GUI.AffectBox,
-                        "0%", "70.83%", "89.29%", "29.17%"
+                        "0%", "71.28%", "89.29%", "28.72%"
                 )
                 changed = true
         end
@@ -293,8 +300,8 @@ function DD_GUI.migrate_layout_defaults()
 
         local defaults = {
                 { ui and ui.mainconsole_container, "4%", "36%", "68%", "57%" },
-                { DD_GUI.Right, "-28%", "2%", "28%", "96%" },
-                { DD_GUI.Bottom, "0%", "93%", "72%", "5%" },
+                { DD_GUI.Right, "-28%", "3%", "28%", "94%" },
+                { DD_GUI.Bottom, "0%", "93%", "72%", "4%" },
                 { DD_GUI.FirstColumn, "5.56%", "0%", "23.36%", "100%" },
                 { DD_GUI.SecondColumn, "28.92%", "0%", "23.36%", "100%" },
                 { DD_GUI.ThirdColumn, "52.28%", "0%", "23.36%", "100%" },
@@ -303,8 +310,8 @@ function DD_GUI.migrate_layout_defaults()
                 { DD_GUI.MapBox, "27%", "0%", "27%", "100%" },
                 { DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%" },
                 { DD_GUI.ChannelBox, "72%", "0%", "25%", "100%" },
-                { DD_GUI.InventoryBox, "0%", "35.42%", "89.29%", "35.42%" },
-                { DD_GUI.AffectBox, "0%", "70.83%", "89.29%", "29.17%" },
+                { DD_GUI.InventoryBox, "0%", "35.11%", "89.29%", "36.17%" },
+                { DD_GUI.AffectBox, "0%", "71.28%", "89.29%", "28.72%" },
         }
 
         for _, default_box in ipairs(defaults) do
@@ -333,9 +340,9 @@ end
 function DD_GUI.reset_layout()
         local defaults = {
                 { ui and ui.mainconsole_container, "4%", "36%", "68%", "57%" },
-                { DD_GUI.Right, "-28%", "2%", "28%", "96%" },
-                { DD_GUI.Top, "0%", "2%", "100%", "34%" },
-                { DD_GUI.Bottom, "0%", "93%", "72%", "5%" },
+                { DD_GUI.Right, "-28%", "3%", "28%", "94%" },
+                { DD_GUI.Top, "0%", "3%", "100%", "33%" },
+                { DD_GUI.Bottom, "0%", "93%", "72%", "4%" },
                 { DD_GUI.FirstColumn, "5.56%", "0%", "23.36%", "100%" },
                 { DD_GUI.SecondColumn, "28.92%", "0%", "23.36%", "100%" },
                 { DD_GUI.ThirdColumn, "52.28%", "0%", "23.36%", "100%" },
@@ -344,8 +351,8 @@ function DD_GUI.reset_layout()
                 { DD_GUI.MapBox, "27%", "0%", "27%", "100%" },
                 { DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%" },
                 { DD_GUI.ChannelBox, "72%", "0%", "25%", "100%" },
-                { DD_GUI.InventoryBox, "0%", "35.42%", "89.29%", "35.42%" },
-                { DD_GUI.AffectBox, "0%", "70.83%", "89.29%", "29.17%" },
+                { DD_GUI.InventoryBox, "0%", "35.11%", "89.29%", "36.17%" },
+                { DD_GUI.AffectBox, "0%", "71.28%", "89.29%", "28.72%" },
         }
 
         for _, default_box in ipairs(defaults) do
