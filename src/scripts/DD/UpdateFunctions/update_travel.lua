@@ -1,5 +1,9 @@
 function update_travel()
 
+    local asset_path = DD_GUI.asset_path or function(relative_path)
+            return ms_path .. "/" .. relative_path
+    end
+
     local vitals = gmcp and gmcp.Char and gmcp.Char.Vitals
     local room = gmcp and gmcp.Room and gmcp.Room.Info
     if type(vitals) ~= "table" or type(room) ~= "table" then
@@ -14,48 +18,48 @@ function update_travel()
             EnemyConsoleHitpointsContainer:hide()
             EnemyConsoleHitpoints:hide()
             EnemyHitpointsLabel:hide()
-            local room_image = ms_path .. "/avatars/default_char.png"
+            local room_image = asset_path("avatars/default_char.png")
             local sector_name = "Unknown"
 
             --Room images based on sector types
             if (tonumber(gmcp.Room.Info.sector) == 0) then
-            room_image = ms_path .. "/environments/0_sect_inside.png"
+            room_image = asset_path("environments/0_sect_inside.png")
             sector_name = "Inside"
             elseif (tonumber(gmcp.Room.Info.sector) == 1) then
-            room_image = ms_path .. "/environments/1_sect_city.png"
+            room_image = asset_path("environments/1_sect_city.png")
             sector_name = "City"
             elseif (tonumber(gmcp.Room.Info.sector) == 2) then
-            room_image = ms_path .. "/environments/2_sect_field.png"
+            room_image = asset_path("environments/2_sect_field.png")
             sector_name = "Field"
             elseif (tonumber(gmcp.Room.Info.sector) == 3) then
-            room_image = ms_path .. "/environments/3_sect_forest.png"
+            room_image = asset_path("environments/3_sect_forest.png")
             sector_name = "Forest"
             elseif (tonumber(gmcp.Room.Info.sector) == 4) then
-            room_image = ms_path .. "/environments/4_sect_hills.png"
+            room_image = asset_path("environments/4_sect_hills.png")
             sector_name = "Hills"
             elseif (tonumber(gmcp.Room.Info.sector) == 5) then
-            room_image = ms_path .. "/environments/5_sect_mountain.png"
+            room_image = asset_path("environments/5_sect_mountain.png")
             sector_name = "Mountain"
             elseif (tonumber(gmcp.Room.Info.sector) == 6) then
-            room_image = ms_path .. "/environments/6_sect_water_swim.png"
+            room_image = asset_path("environments/6_sect_water_swim.png")
             sector_name = "Water (Swimmable)"
             elseif (tonumber(gmcp.Room.Info.sector) == 7) then
-            room_image = ms_path .. "/environments/7_sect_water_noswim.png"
+            room_image = asset_path("environments/7_sect_water_noswim.png")
             sector_name = "Water (Unswimmable)"
             elseif (tonumber(gmcp.Room.Info.sector) == 8) then
-            room_image = ms_path .. "/environments/8_sect_underwater.png"
+            room_image = asset_path("environments/8_sect_underwater.png")
             sector_name = "Underwater"
             elseif (tonumber(gmcp.Room.Info.sector) == 9) then
-            room_image = ms_path .. "/environments/9_sect_air.png"
+            room_image = asset_path("environments/9_sect_air.png")
             sector_name = "Air"
             elseif (tonumber(gmcp.Room.Info.sector) == 10) then
-            room_image = ms_path .. "/environments/10_sect_desert.png"
+            room_image = asset_path("environments/10_sect_desert.png")
             sector_name = "Desert"
             elseif (tonumber(gmcp.Room.Info.sector) == 11) then
-            room_image = ms_path .. "/environments/11_sect_swamp.png"
+            room_image = asset_path("environments/11_sect_swamp.png")
             sector_name = "Swamp"
             elseif (tonumber(gmcp.Room.Info.sector) == 12) then
-            room_image = ms_path .. "/environments/12_sect_underwater_ground.png"
+            room_image = asset_path("environments/12_sect_underwater_ground.png")
             sector_name = "Underwater (Ground)"
             end
 
@@ -66,20 +70,21 @@ function update_travel()
             ri_fn_dotver = string.lower(string.gsub(ri_fn_dotver, " ", "_"))
 
             if (tonumber(gmcp.Room.Info.vnum) ~= 0) then
-                    ri_filename = ms_path
-                    .."/custom_rooms/"
+                    ri_filename = asset_path("custom_rooms/"
                     ..tonumber(gmcp.Room.Info.vnum)
                     .."_"
                     ..ri_fn_dotver
-                    ..".png"
+                    ..".png")
             end
 
-            ri_filename = string.gsub(ri_filename, "'", "_")
-            ri_filename = string.gsub(ri_filename, "<", "_")
-            ri_filename = string.gsub(ri_filename, ">", "_")
-            ri_filename = string.gsub(ri_filename, "{", "_")
+            if ri_filename then
+                    ri_filename = string.gsub(ri_filename, "'", "_")
+                    ri_filename = string.gsub(ri_filename, "<", "_")
+                    ri_filename = string.gsub(ri_filename, ">", "_")
+                    ri_filename = string.gsub(ri_filename, "{", "_")
+            end
 
-            if (file_exists(ri_filename)) then
+            if (ri_filename and file_exists(ri_filename)) then
                     room_image = ri_filename
             end
 

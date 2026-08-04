@@ -40,25 +40,30 @@ function build_charsheet_console()
       DD_GUI.Theme:style_console(CharsheetPFPConsole, 10)
     end
 
-    local chsex_string = 'male'
+    local pfp_filename = DD_GUI.profile_avatar_filename and
+      DD_GUI.profile_avatar_filename()
+    if not pfp_filename then
+      local chsex_string = 'male'
 
-    if (gmcp.Char.Base.sex == 0) then
-      chsex_string = 'neutral'
-    elseif (gmcp.Char.Base.sex == 2) then
-      chsex_string = 'female'
+      if (gmcp.Char.Base.sex == 0) then
+        chsex_string = 'neutral'
+      elseif (gmcp.Char.Base.sex == 2) then
+        chsex_string = 'female'
+      end
+
+      pfp_filename = firstToLower(gmcp.Char.Base.race) .. '_'
+                         ..firstToLower(gmcp.Char.Base.class) .. '_'
+                         ..chsex_string .. '_1.png'
     end
-
-    local pfp_filename = firstToLower(gmcp.Char.Base.race) .. '_'
-                       ..firstToLower(gmcp.Char.Base.class) .. '_'
-                       ..chsex_string .. '_1.png'
     --display(pfp_filename)
 
-    -- Replace the below with your avatar filename and uncomment the below line if you want a custom avatar. Should
-    -- be a 160 x 200 px .png in the ms_path + /avatars/ directory
-    -- pfp_filename = mycustomavatar.png'
+    -- A character-named avatar is selected automatically when it exists.
 
-    local pfp_path = ms_path .. '/avatars/' .. pfp_filename
-    local default_path = ms_path .. '/avatars/default_char.png'
+    local asset_path = DD_GUI.asset_path or function(relative_path)
+      return ms_path .. '/' .. relative_path
+    end
+    local pfp_path = asset_path('avatars/' .. pfp_filename)
+    local default_path = asset_path('avatars/default_char.png')
     if not file_exists(pfp_path) then
       pfp_path = default_path
     end

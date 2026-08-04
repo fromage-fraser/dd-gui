@@ -9,7 +9,7 @@ This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by
 
 To install and use the GUI, connect to the MUD through Mudlet at **dragons-domain.org** on port **8888**. The GUI should automatically install when you connect, and the extra custom content should automatically download after you log in.
 
-You should expect a short delay while content downloads the first time you connect, but subsequent connections for the same character will only download new assets. GUI settings, maps, comms history, and comms tab order are kept with the active Mudlet profile rather than inside the package.
+You should expect a short delay while content downloads the first time you connect. Downloaded sounds, images, layouts, and other custom content are stored in the profile-owned `DD_GUI_Content` directory, separate from the installable package, so uninstalling and reinstalling the GUI does not remove them. Later connections and package updates reuse the existing content and only download new or changed assets. GUI settings, maps, comms history, and comms tab order are kept with the active Mudlet profile rather than inside the package.
 
 If you have any issues with the automated installation and update system for the GUI, you can type the following at your Mudlet command prompt to install it manually:
 
@@ -20,7 +20,7 @@ If you have any issues with the automated installation and update system for the
 
 To uninstall the GUI, you can simply type:
 
-`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager.
+`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed.
 
 ## Layout controls
 
@@ -69,8 +69,8 @@ data. The main panels are:
   leaving the black cell background unchanged. For mapped rooms, movement
   parses the current MUD `[Exits: ...]` line before sending: plain exits are
   open, `(direction)` is closed, and `[direction]` is locked. A locked exit
-  sends `unlock`, `open`, then the movement command; a closed exit sends
-  `open`, then the movement command. The parsed state is kept per room, with
+  sends `unlock`, `open`, then the movement command in sequence; a closed exit
+  sends `open`, then the movement command in sequence. The parsed state is kept per room, with
   Mudlet mapper door data as a fallback when no current Exits line is
   available. If neither source has a state, it sends the normal movement
   command.
@@ -126,7 +126,8 @@ The basic GUI workflow is:
 - Make some changes to the GUI codebase.
 - Run `.\scripts\build-and-upload.ps1` from the repository root. This invokes muddler, builds `build\DD_GUI.mpackage` and `build\DD_GUI.xml`, and uploads both files to the production GUI directory.
 - In the Dragons Domain Mudlet test account, uninstall the existing `DD_GUI`
-  package before installing the new `DD_GUI.mpackage` package.
+  package before installing the new `DD_GUI.mpackage` package. The downloaded
+  content cache is profile-owned and is retained across this replacement.
 - After logging in you should see the latest version of the GUI with any changes you made.
 
 The upload helper reads FTP credentials from the ignored `.dd-gui-ftp.netrc`
@@ -143,26 +144,32 @@ For smaller changes, you may wish to work in Mudlet's built-in text editor so yo
 Currently assets have this storage structure under your Mudlet Profile (which should have a path on Windows like `C:\Users\myusername\.config\mudlet\profiles\TestMudletGuy\`):
 
 ```
-assets\
+DD_GUI_Content\
+|-- audio\
 |-- avatars\
 |-- compass\
 |-- custom_rooms\
 |-- environments\
 |-- mobs\
-`-- maps\
+|-- maps\
+`-- layout\
 ```
 
 Profile pictures for avatars are 160x200 pngs that have the following naming structure (all lowercase):
 `race_class_sex_number.png` e.g. the first image option for a female human mage would be named `human_mage_female_1.png`.
 
-If you want a custom avatar (as a player), put it in the `avatars\` directory under your local profile and change the relevant code in `Scripts->DD->UpdateFunctions->update_vitals`.
+Custom profile avatars are selected automatically when a matching file exists in
+the `DD_GUI_Content\avatars\` directory under the local Mudlet profile. Name the file
+after the character in lowercase, such as `abbadon.png`; the GUI uses it before
+falling back to the race and sex portrait. Form-specific portraits still take
+precedence while shapeshifted.
 
 Compass images you can figure out yourself if you want to change them.  The relevant Lua file is `dd-gui\src\scripts\compass.resize.lua`.
 
 Custom room images use the 56:30 display ratio; 560x300 pngs are recommended and have the naming structure (all lowercase):
 `vnum_name_of_room.png`, e.g. `3054_by_the_temple_altar.png`.
 
-Default sector-type based images use the same 56:30 ratio, are stored in `assets\environments\`, and have the naming structure (all lowercase):
+Default sector-type based images use the same 56:30 ratio, are stored in `DD_GUI_Content\environments\`, and have the naming structure (all lowercase):
 `sectornumber_sect_nameofsectortype.png`, e.g. `9_sect_air.png`.
 
 Custom mobile/enemy images use the 56:30 display ratio; 560x300 pngs are recommended and have the naming structure (all lowercase):

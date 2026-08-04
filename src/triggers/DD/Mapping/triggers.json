@@ -32,7 +32,7 @@
                 "name": "UpdateExitStatus",
                 "patterns": [
                         {
-                                "pattern": "^\\[Exits: (.*)\\]$",
+                                "pattern": "\\[Exits:\\s*(.*)\\]",
                                 "type": "regex"
                         }
                 ]
