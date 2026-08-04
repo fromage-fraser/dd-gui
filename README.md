@@ -47,7 +47,8 @@ data. The main panels are:
 
 - **Room / enemy:** room details and the current enemy, including custom images
   fitted to the 56:30 display frame. Enemy GMCP payloads support both the
-  legacy `isnpc` identifier and the newer `vnum` identifier.
+  legacy nested-array shape with an `isnpc` identifier and the newer flat-array
+  shape with a `vnum` identifier; the enemy hitpoint gauge uses either shape.
 - **Map:** the current room and surrounding map data.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
