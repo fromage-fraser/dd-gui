@@ -317,7 +317,7 @@ function define_boxes()
         DD_GUI.MapBox = new_info_box({
           name = "DD_GUI.MapBox",
           x = "27%", y = "17%",
-          width = "20%",
+          width = "27%",
           height = "83%",
         },DD_GUI.Top)
         DD_GUI.MapBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
@@ -335,8 +335,8 @@ function define_boxes()
         
         DD_GUI.CharsheetBox = new_info_box({
           name = "DD_GUI.CharsheetBox",
-          x = "47%", y = "17%",
-          width = "19%",
+          x = "54%", y = "17%",
+          width = "18%",
           height = "83%",
         },DD_GUI.Top)
         DD_GUI.CharsheetBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
@@ -344,8 +344,8 @@ function define_boxes()
         
         DD_GUI.ChannelBox = new_info_box({
           name = "DD_GUI.ChannelBox",
-          x = "66%", y = "17%",
-          width = "31%",
+          x = "72%", y = "17%",
+          width = "25%",
           height = "83%",
         },DD_GUI.Top)
         DD_GUI.ChannelBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
