@@ -3,7 +3,7 @@ local function compass_surface_css()
     return DD_GUI.Theme:panel_css({ margin = 0 })
   end
   return [[
-    background-color: rgb(10,10,20);
+    background-color: rgb(0,0,0);
     border: 2px solid grey;
     border-radius: 0px;
     margin: 0px;
@@ -190,7 +190,7 @@ function build_compass()
   for _, blank in ipairs({"nw", "sw"}) do
     compass[blank]:setStyleSheet(theme and
       theme:compass_cell_css(false, true) or
-      [[background-color: rgb(5,5,10); border: 1px solid grey;]])
+      [[background-color: rgb(0,0,0); border: 1px solid grey;]])
     if DD_GUI.set_widget_clickthrough then
       DD_GUI.set_widget_clickthrough(compass[blank], true)
     end

@@ -12,7 +12,7 @@ function DD_GUI.Inventory:tab_css(key)
         end
 
         return [[
-                background-color: rgba(20,20,20,170);
+                background-color: rgba(0,0,0,170);
                 border-style: solid;
                 border-width: 1px;
                 border-color: rgb(45,45,45);

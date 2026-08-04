@@ -268,7 +268,7 @@ local function new_info_box(cons, parent)
 end
 function define_boxes()
         local box_css = DD_GUI.Theme and DD_GUI.Theme:panel_css() or [[
-          background-color: rgba(0,0,0,100);
+          background-color: rgb(0,0,0);
           border-style: solid;
           border-width: 1px;
           border-radius: 0px;
@@ -304,6 +304,7 @@ function define_boxes()
           width = "100%", 
           height = "100%"
         }, DD_GUI.MapBox)
+        DD_GUI.Mapper:setColor(0, 0, 0, 255)
         
         
         DD_GUI.CharsheetBox = new_info_box({

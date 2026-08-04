@@ -20,6 +20,9 @@ function bootstrap()
         load_dd_mapper()
         get_custom_content()
         update_travel()
+        if DD_GUI.Mapper and DD_GUI.Mapper.setColor then
+                DD_GUI.Mapper:setColor(0, 0, 0, 255)
+        end
 
         -- Resizing and moving are opt-in. Normal play leaves the adjustable
         -- surfaces click-through so tabs, compass controls, and scrollback

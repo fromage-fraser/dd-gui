@@ -55,7 +55,7 @@ function build_enemy_console()
     end
 
     EnemyConsoleHitpointsContainerCSS = CSSMan.new([[
-      background-color: rgba(89,0,0,100);
+      background-color: rgb(0,0,0);
       border-style: solid;
       border-width: 0px;
       border-radius: 5px;
@@ -72,7 +72,7 @@ function build_enemy_console()
 
     local theme = DD_GUI.Theme
     EnemyConsoleHitpointsGaugeBackCSS = CSSMan.new(theme and
-      theme:gauge_back_css() or [[background-color: rgb(80,0,0);]])
+      theme:gauge_back_css() or [[background-color: rgb(0,0,0);]])
     EnemyConsoleHitpointsGaugeFrontCSS = CSSMan.new(theme and
       theme:gauge_front_css(theme.colors.hp) or
       [[background-color: rgb(180,0,0);]])
@@ -90,7 +90,7 @@ function build_enemy_console()
         height = "100%",
       }, EnemyConsoleHitpoints)
       separator:setStyleSheet([[
-        background-color: rgba(5,8,18,185);
+        background-color: rgba(0,0,0,185);
         border: 0px;
       ]])
       if DD_GUI.set_widget_clickthrough then
