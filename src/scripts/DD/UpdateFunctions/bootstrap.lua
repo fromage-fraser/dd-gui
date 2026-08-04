@@ -52,10 +52,6 @@ function DD_GUI.refresh_data()
                 run_update(update_travel)
         end
 
-        if gmcp.Comm and type(gmcp.Comm.Channel) == "table" then
-                run_update(update_comms)
-        end
-
         if type(char.Channels) == "table" then
                 run_update(update_channel_status)
         end

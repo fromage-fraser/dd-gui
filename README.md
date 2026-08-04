@@ -58,6 +58,8 @@ data. The main panels are:
   speaker and channel, use the channel's default colour, and channel tabs can
   be dragged to change their order. The order is saved per profile, as is the
   comms history, which is restored after a package reinstall or GUI rebuild.
+  Communications are discrete GMCP events and are consumed once; rebuilding
+  the GUI restores the saved history without replaying the last event.
 - **Inventory / Equipped:** inventory is read from `Char.Items`, including
   quantities; visual item effects are stripped to keep rows compact. `Equipped`
   is a paper-doll view of every wear slot from `Char.Worn`, showing `[empty]`
