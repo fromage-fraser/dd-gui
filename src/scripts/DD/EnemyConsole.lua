@@ -21,7 +21,7 @@ function build_enemy_console()
       height="69%",
     }, EnemyConsole)
     EnemyImageFrame:setStyleSheet(DD_GUI.Theme and
-      DD_GUI.Theme:image_frame_css() or [[border: 1px solid grey;]])
+      DD_GUI.Theme:image_frame_css() or [[border: 0px;]])
     if DD_GUI.set_widget_clickthrough then
       DD_GUI.set_widget_clickthrough(EnemyImageFrame, true)
     end

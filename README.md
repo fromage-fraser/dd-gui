@@ -67,10 +67,13 @@ data. The main panels are:
   clickable navigation compass. The compass includes `EQ` for equipment and
   `SCAN` for scanning. Movement buttons briefly highlight their borders while
   leaving the black cell background unchanged. For mapped rooms, movement
-  checks Mudlet's door status before sending: a locked exit sends `unlock`,
-  `open`, then the movement command; a closed exit sends `open`, then the
-  movement command. If the room or door state is unavailable, it sends the
-  normal movement command.
+  parses the current MUD `[Exits: ...]` line before sending: plain exits are
+  open, `(direction)` is closed, and `[direction]` is locked. A locked exit
+  sends `unlock`, `open`, then the movement command; a closed exit sends
+  `open`, then the movement command. The parsed state is kept per room, with
+  Mudlet mapper door data as a fallback when no current Exits line is
+  available. If neither source has a state, it sends the normal movement
+  command.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. If a manual rebuild is needed, run `lua bootstrap()` in Mudlet.

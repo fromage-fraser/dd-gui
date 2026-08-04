@@ -27,6 +27,14 @@
                                 "type": "regex"
                         }
                 ]
-        
+        },
+        {
+                "name": "UpdateExitStatus",
+                "patterns": [
+                        {
+                                "pattern": "^\\[Exits: (.*)\\]$",
+                                "type": "regex"
+                        }
+                ]
         }
 ]

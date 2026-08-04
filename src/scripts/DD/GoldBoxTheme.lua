@@ -112,12 +112,11 @@ end
 function Theme:image_frame_css()
         return string.format([[
                 background-color: rgba(0,0,0,0);
-                border-style: solid;
-                border-width: 2px;
-                border-color: %s;
+                border-style: none;
+                border-width: 0px;
                 border-radius: 0px;
                 margin: 0px;
-        ]], self.colors.frame)
+        ]])
 end
 
 function Theme:compass_cell_css(hovered, blank)
