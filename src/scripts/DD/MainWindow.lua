@@ -32,7 +32,7 @@ function ui_container()
         local mainconsole_constraints = {
                 name = "DD_GUI.MainConsole",
                 x = "4%", y = "36%",
-                width = "68%", height = "58%",
+                width = "68%", height = "57%",
         }
 
         ui.mainconsole_container = DD_GUI.new_adjustable_container and

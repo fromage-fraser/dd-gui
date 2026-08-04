@@ -402,18 +402,18 @@ function define_boxes()
         
         DD_GUI.EnemyBox = new_info_box({
           name = "DD_GUI.EnemyBox",
-          x = "4%", y = "2%",
+          x = "4%", y = "0%",
           width = "23%",
-          height = "98%",
+          height = "100%",
         },DD_GUI.Top)
         DD_GUI.EnemyBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.EnemyBox:echo("<center>GUI.EnemyBox")
         
         DD_GUI.MapBox = new_info_box({
           name = "DD_GUI.MapBox",
-          x = "27%", y = "2%",
+          x = "27%", y = "0%",
           width = "27%",
-          height = "98%",
+          height = "100%",
         },DD_GUI.Top)
         DD_GUI.MapBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.MapBox:echo("<center>GUI.MapBox")
@@ -430,36 +430,36 @@ function define_boxes()
         
         DD_GUI.CharsheetBox = new_info_box({
           name = "DD_GUI.CharsheetBox",
-          x = "54%", y = "2%",
+          x = "54%", y = "0%",
           width = "18%",
-          height = "98%",
+          height = "100%",
         },DD_GUI.Top)
         DD_GUI.CharsheetBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.CharsheetBox:echo("<center>GUI.CharsheetBox")
         
         DD_GUI.ChannelBox = new_info_box({
           name = "DD_GUI.ChannelBox",
-          x = "72%", y = "2%",
+          x = "72%", y = "0%",
           width = "25%",
-          height = "98%",
+          height = "100%",
         },DD_GUI.Top)
         DD_GUI.ChannelBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.ChannelBox:echo("<center>GUI.ChannelBox")
         
         DD_GUI.InventoryBox = new_info_box({
           name = "DD_GUI.InventoryBox",
-          x = "0%", y = "36%",
+          x = "0%", y = "35.42%",
           width = "89.29%",
-          height = "34%",
+          height = "35.42%",
         },DD_GUI.Right)
         DD_GUI.InventoryBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.InventoryBox:echo("<center>GUI.InventoryBox")
         
         DD_GUI.AffectBox = new_info_box({
           name = "DD_GUI.AffectBox",
-          x = "0%", y = "70%",
+          x = "0%", y = "70.83%",
           width = "89.29%",
-          height = "30%",
+          height = "29.17%",
         },DD_GUI.Right)
         DD_GUI.AffectBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.AffectBox:echo("<center>GUI.AffectBox")
