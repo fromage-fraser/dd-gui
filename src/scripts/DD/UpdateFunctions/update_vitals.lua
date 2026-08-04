@@ -23,6 +23,9 @@ function update_vitals()
         build_enemy_box()
         build_enemy_console()
         build_compass()
+        if DD_GUI.migrate_layout_defaults then
+                DD_GUI.migrate_layout_defaults()
+        end
 
         if DD_GUI.raise_info_box_contents then
                 DD_GUI.raise_info_box_contents()
