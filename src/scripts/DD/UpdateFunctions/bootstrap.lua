@@ -112,6 +112,26 @@ local function dd_gui_show_current_roots()
         }) do
                 dd_gui_show_widget(widget)
         end
+
+        -- Gauge columns are direct children of the bottom root and can retain
+        -- a hidden state when Mudlet reuses named Geyser widgets during a
+        -- reconnect or package rebuild.
+        for _, widget in ipairs({
+                DD_GUI and DD_GUI.FirstColumn,
+                DD_GUI and DD_GUI.SecondColumn,
+                DD_GUI and DD_GUI.ThirdColumn,
+                DD_GUI and DD_GUI.FourthColumn,
+                DD_GUI and DD_GUI.Hitpoints,
+                DD_GUI and DD_GUI.Mana,
+                DD_GUI and DD_GUI.Xp,
+                DD_GUI and DD_GUI.Moves,
+                HitpointsLabel,
+                ManaLabel,
+                XpLabel,
+                MovesLabel,
+        }) do
+                dd_gui_show_widget(widget)
+        end
 end
 
 function bootstrap()
