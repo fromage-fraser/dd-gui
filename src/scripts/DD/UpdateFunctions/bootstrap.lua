@@ -121,6 +121,12 @@ local function dd_gui_show_current_roots()
                 DD_GUI and DD_GUI.SecondColumn,
                 DD_GUI and DD_GUI.ThirdColumn,
                 DD_GUI and DD_GUI.FourthColumn,
+                DD_GUI and DD_GUI.EnemyBox,
+                DD_GUI and DD_GUI.MapBox,
+                DD_GUI and DD_GUI.CharsheetBox,
+                DD_GUI and DD_GUI.ChannelBox,
+                DD_GUI and DD_GUI.InventoryBox,
+                DD_GUI and DD_GUI.AffectBox,
                 DD_GUI and DD_GUI.Hitpoints,
                 DD_GUI and DD_GUI.Mana,
                 DD_GUI and DD_GUI.Xp,
@@ -133,6 +139,8 @@ local function dd_gui_show_current_roots()
                 dd_gui_show_widget(widget)
         end
 end
+
+DD_GUI.show_current_roots = dd_gui_show_current_roots
 
 function bootstrap()
         local package_version = dd_gui_installed_version()
