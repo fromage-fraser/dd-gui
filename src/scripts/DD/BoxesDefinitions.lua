@@ -138,7 +138,9 @@ local function raise_data_surfaces()
                 InventoryConsole,
                 EquippedConsole,
                 DD_GUI and DD_GUI.Inventory and DD_GUI.Inventory.stats_label,
+                DD_GUI and DD_GUI.InventoryPanelOutline,
                 AffectsConsole,
+                DD_GUI and DD_GUI.AffectPanelOutline,
         }) do
                 raise_widget(widget)
         end
@@ -365,6 +367,93 @@ local function new_info_box(cons, parent)
 
         return Geyser.Label:new(cons, parent)
 end
+
+local function panel_outline_css()
+        if DD_GUI.Theme and DD_GUI.Theme.panel_css then
+                return DD_GUI.Theme:panel_css({
+                        background = "rgba(0,0,0,0)",
+                        margin = 0,
+                })
+        end
+
+        return [[
+                background-color: rgba(0,0,0,0);
+                border-style: solid;
+                border-width: 2px;
+                border-color: rgb(151,27,39);
+                border-radius: 0px;
+                margin: 0px;
+        ]]
+end
+
+local function panel_without_outline_css()
+        return [[
+                background-color: rgba(0,0,0,0);
+                border-style: none;
+                border-width: 0px;
+                border-color: rgba(0,0,0,0);
+                border-radius: 0px;
+                margin: 0px;
+        ]]
+end
+
+local function ensure_panel_outline(panel, name)
+        if not panel then
+                return nil
+        end
+
+        -- Affects' native adjustable frame can be replaced during tab
+        -- rebuilds. Keep a transparent child outline tied to the panel so
+        -- its border survives those repaints and follows user resizing.
+        local outline = panel._dd_gui_panel_outline
+        if outline and outline.container ~= panel then
+                if type(outline.delete) == "function" then
+                        pcall(function() outline:delete() end)
+                end
+                outline = nil
+        end
+        if not outline then
+                local constraints = {
+                        name = name,
+                        x = "0%",
+                        y = "0%",
+                        width = "100%",
+                        height = "100%",
+                }
+
+                -- Adjustable.Container normally redirects children into its
+                -- padded Inside container. Temporarily bypass that redirect
+                -- so this transparent frame sits on the panel's true outer
+                -- bounds and has no inset gap.
+                local go_inside = panel.goInside
+                panel.goInside = false
+                outline = Geyser.Label:new(constraints, panel)
+                panel.goInside = go_inside
+                panel._dd_gui_panel_outline = outline
+        end
+
+        outline:setStyleSheet(panel_outline_css())
+        outline:show()
+        if DD_GUI.set_widget_clickthrough then
+                DD_GUI.set_widget_clickthrough(outline, true)
+        end
+
+        -- The explicit outline is the single visible frame for these two
+        -- panels. Remove the adjustable surface border so a repaint cannot
+        -- create a second line or leave one panel frameless.
+        if panel.adjLabel then
+                panel._dd_gui_base_style = panel_without_outline_css()
+                if DD_GUI.refresh_adjustable_style then
+                        DD_GUI.refresh_adjustable_style(panel)
+                else
+                        panel.adjLabel:setStyleSheet(panel._dd_gui_base_style)
+                end
+        end
+        return outline
+end
+
+DD_GUI.ensure_panel_outline = ensure_panel_outline
+
 function define_boxes()
         local box_css = DD_GUI.Theme and DD_GUI.Theme:panel_css() or [[
           background-color: rgb(0,0,0);
@@ -441,5 +530,14 @@ function define_boxes()
         },DD_GUI.Right)
         DD_GUI.AffectBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.AffectBox:echo("<center>GUI.AffectBox")
+
+        DD_GUI.InventoryPanelOutline = ensure_panel_outline(
+                DD_GUI.InventoryBox,
+                "DD_GUI.InventoryPanelOutline"
+        )
+        DD_GUI.AffectPanelOutline = ensure_panel_outline(
+                DD_GUI.AffectBox,
+                "DD_GUI.AffectPanelOutline"
+        )
         
 end

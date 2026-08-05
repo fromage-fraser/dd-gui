@@ -21,35 +21,17 @@ function update_vitals()
         lost_focus = true
       end
 
-    if lost_focus == true then
-    if hasFocus() then
-        set_borders()
-        ui_container()
-        create_background()
-        define_boxes()
-        build_gauges()
-        build_affects_box()
-        build_affects_console()
-        build_inventory_box()
-        build_inventory_console()
-        build_channel_box()
-        build_channel_console()
-        build_charsheet_box()
-        build_charsheet_console()
-        build_enemy_box()
-        build_enemy_console()
-        build_compass()
-        if DD_GUI.migrate_layout_defaults then
-                DD_GUI.migrate_layout_defaults()
-        end
-
-        if DD_GUI.raise_info_box_contents then
-                DD_GUI.raise_info_box_contents()
-        end
-
+    if lost_focus == true and hasFocus() then
+        -- Focus recovery used to duplicate bootstrap's widget construction.
+        -- That path could leave named adjustable panels hidden while their
+        -- child consoles remained visible. Reuse the idempotent bootstrap so
+        -- all roots, borders, and gauge columns are restored together.
         lost_focus = false
+        if type(bootstrap) == "function" then
+                bootstrap()
+                return
+        end
     end
-  end
 
   local hp      = gmcp.Char.Vitals.hp
   local maxhp   = gmcp.Char.Vitals.maxhp
