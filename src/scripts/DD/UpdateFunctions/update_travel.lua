@@ -12,6 +12,13 @@ function update_travel()
 
     if (tonumber(vitals.position) ~= 6) then
 
+            -- Travel mode has three lines of room metadata. The info console
+            -- shares the panel with the combat summary, so give it the
+            -- unused lower space while the enemy gauge is hidden.
+            if EnemyInfoConsole and EnemyInfoConsole.resize then
+                    EnemyInfoConsole:resize("92%", "22%")
+            end
+
             EnemyConsole:clear()
             DD_GUI.EnemyBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
             EnemyInfoConsole:clear()
@@ -134,7 +141,7 @@ function update_travel()
                     stripped_room_name = replace_char(30, stripped_room_name, '.')
             end
 
-            trimmed_area_name = gmcp.Room.Info.area
+            local trimmed_area_name = tostring(gmcp.Room.Info.area or "Unknown")
 
             if (#trimmed_area_name) > 14 then
                     for i = #trimmed_area_name, 15, -1 do
@@ -145,6 +152,30 @@ function update_travel()
             end
 
             EnemyInfoConsole:clear()
+            local room_flags = {}
+            local raw_flags = gmcp.Room.Info.flags
+            if type(raw_flags) == "string" then
+                    for _, value in ipairs(split_str(raw_flags)) do
+                            if value ~= "" and value ~= "no_mob" then
+                                    value = firstToUpper(value)
+                                    value = string.gsub(value, "_", " ")
+                                    table.insert(room_flags, value)
+                            end
+                    end
+            elseif type(raw_flags) == "table" then
+                    for _, value in ipairs(raw_flags) do
+                            value = tostring(value)
+                            if value ~= "" and value ~= "no_mob" then
+                                    value = firstToUpper(value)
+                                    value = string.gsub(value, "_", " ")
+                                    table.insert(room_flags, value)
+                            end
+                    end
+            end
+
+            local room_flags_text = #room_flags > 0 and
+                    table.concat(room_flags, ", ") or "None"
+
             EnemyInfoConsole:cecho(
             string.format("<white>Area: <ansi_white>%-15s",
             trimmed_area_name)
@@ -152,27 +183,8 @@ function update_travel()
             sector_name)
             ..string.format("<white>Room: <ansi_white>%-30s\n",
             stripped_room_name)
+            ..string.format("<white>Room flags: <ansi_white>%s",
+            room_flags_text)
             )
-
-            if (gmcp.Room.Info.flags ~= "") and not (string.find(gmcp.Room.Info.flags, "^no_mob$")) then
-                    EnemyInfoConsole:cecho("<white>Room flags: ")
-
-                    local rflags = split_str(gmcp.Room.Info.flags)
-                    local last_flag_index = #rflags
-
-                    for index, value in ipairs(rflags) do
-                            if (value ~= "no_mob") then
-                                    value = firstToUpper(value)
-                                    value = string.gsub(value, "_", " ")
-                                    EnemyInfoConsole:cecho(
-                                    string.format("<ansi_white>%s",
-                                            value)
-                                    )
-                                    if (last_flag_index ~= index) then
-                                            EnemyInfoConsole:cecho(", ")
-                                    end
-                            end
-                    end
-            end
     end
 end

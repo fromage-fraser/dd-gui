@@ -51,6 +51,9 @@ data. The main panels are:
   fitted to the 56:30 display frame. Enemy GMCP payloads support both the
   legacy nested-array shape with an `isnpc` identifier and the newer flat-array
   shape with a `vnum` identifier; the enemy hitpoint gauge uses either shape.
+  Travel mode keeps the room summary visible as `Area` and `Type` on the first
+  line, `Room` on the second, and `Room flags` on the third; empty visible flags
+  are shown as `None`.
 - **Map:** the current room and surrounding map data.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.

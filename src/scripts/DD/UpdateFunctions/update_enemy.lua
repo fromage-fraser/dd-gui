@@ -29,6 +29,9 @@ function update_enemy()
            (tonumber(gmcp.Char.Vitals.position) == 6) then
 
                 DD_GUI.EnemyBox:setStyleSheet(DD_GUI.EnemyBoxCSS:getCSS())
+                if EnemyInfoConsole and EnemyInfoConsole.resize then
+                        EnemyInfoConsole:resize("92%", "14%")
+                end
                 EnemyConsoleHitpointsContainer:show()
                 EnemyConsoleHitpoints:show()
                 EnemyHitpointsLabel:show()
