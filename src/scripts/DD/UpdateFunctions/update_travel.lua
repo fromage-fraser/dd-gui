@@ -65,27 +65,28 @@ function update_travel()
 
             -- Custom room images.  If a custom room image exists, use it.
 
-            local ri_filename
-            local ri_fn_dotver = string.lower(string.gsub(gmcp.Room.Info.name, "/", "_"))
-            ri_fn_dotver = string.lower(string.gsub(ri_fn_dotver, " ", "_"))
+            local custom_room_path
+            local room_name = string.lower(tostring(gmcp.Room.Info.name or ""))
+            room_name = string.gsub(room_name, "/", "_")
+            room_name = string.gsub(room_name, " ", "_")
+            -- Sanitize the relative filename before asset_path() checks the
+            -- profile-owned content directory. Sanitizing the resolved path
+            -- afterward makes asset_path() fall back to the package folder.
+            room_name = string.gsub(room_name, "'", "_")
+            room_name = string.gsub(room_name, "<", "_")
+            room_name = string.gsub(room_name, ">", "_")
+            room_name = string.gsub(room_name, "{", "_")
 
             if (tonumber(gmcp.Room.Info.vnum) ~= 0) then
-                    ri_filename = asset_path("custom_rooms/"
+                    custom_room_path = asset_path("custom_rooms/"
                     ..tonumber(gmcp.Room.Info.vnum)
                     .."_"
-                    ..ri_fn_dotver
+                    ..room_name
                     ..".png")
             end
 
-            if ri_filename then
-                    ri_filename = string.gsub(ri_filename, "'", "_")
-                    ri_filename = string.gsub(ri_filename, "<", "_")
-                    ri_filename = string.gsub(ri_filename, ">", "_")
-                    ri_filename = string.gsub(ri_filename, "{", "_")
-            end
-
-            if (ri_filename and file_exists(ri_filename)) then
-                    room_image = ri_filename
+            if (custom_room_path and file_exists(custom_room_path)) then
+                    room_image = custom_room_path
             end
 
             --display(ri_filename)

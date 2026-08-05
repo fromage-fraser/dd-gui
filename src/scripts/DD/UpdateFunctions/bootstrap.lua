@@ -101,6 +101,22 @@ local function dd_gui_hide_previous_roots()
         }) do
                 dd_gui_hide_widget(widget)
         end
+
+        -- Remove panel overlays from the previous package tree before a
+        -- versioned rebuild. The replacement tree creates exactly one frame
+        -- for each right-column panel.
+        for _, key in ipairs({
+                "InventoryPanelOutline",
+                "AffectPanelOutline",
+        }) do
+                if DD_GUI and DD_GUI[key] then
+                        local outline = DD_GUI[key]
+                        if type(outline.delete) == "function" then
+                                pcall(function() outline:delete() end)
+                        end
+                        DD_GUI[key] = nil
+                end
+        end
 end
 
 local function dd_gui_show_current_roots()
@@ -137,6 +153,32 @@ local function dd_gui_show_current_roots()
                 MovesLabel,
         }) do
                 dd_gui_show_widget(widget)
+        end
+
+        if DD_GUI.ensure_panel_outline then
+                DD_GUI.InventoryPanelOutline = DD_GUI.ensure_panel_outline(
+                        DD_GUI.InventoryBox,
+                        "DD_GUI.InventoryPanelOutline"
+                )
+                DD_GUI.AffectPanelOutline = DD_GUI.ensure_panel_outline(
+                        DD_GUI.AffectBox,
+                        "DD_GUI.AffectPanelOutline"
+                )
+        end
+
+        local panel_css = DD_GUI and DD_GUI.BoxCSS
+        if panel_css and type(panel_css.getCSS) == "function" then
+                local css = panel_css:getCSS()
+                for _, panel in ipairs({
+                        DD_GUI and DD_GUI.EnemyBox,
+                        DD_GUI and DD_GUI.MapBox,
+                        DD_GUI and DD_GUI.CharsheetBox,
+                        DD_GUI and DD_GUI.ChannelBox,
+                }) do
+                        if panel and type(panel.setStyleSheet) == "function" then
+                                pcall(function() panel:setStyleSheet(css) end)
+                        end
+                end
         end
 end
 
