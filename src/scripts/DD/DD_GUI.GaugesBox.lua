@@ -45,6 +45,7 @@ local function new_status_gauge(name, parent, label_text, color, value, maximum)
       name = name,
       x = "0%", y = "15%",
       width = "100%", height = "70%",
+      strict = true,
     }, parent)
 
     gauge.back:setStyleSheet(theme and theme:gauge_back_css() or [[

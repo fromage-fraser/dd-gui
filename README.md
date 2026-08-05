@@ -81,8 +81,10 @@ data. The main panels are:
   sends `open`, then the movement command in sequence. The parsed state is kept per room, with
   Mudlet mapper door data as a fallback when no current Exits line is
   available. If neither source has a state, it sends the normal movement
-  command. Enemy hitpoints are rendered in a dedicated overlay below the
-  enemy text, so the red gauge remains visible when the enemy console refreshes.
+  command. Status gauges clamp GMCP current values to their reported maximums
+  and keep their fills inside their parent panels. Enemy hitpoints are rendered
+  in a dedicated overlay below the enemy text, so the red gauge remains visible
+  when the enemy console refreshes.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. `bootstrap()` is idempotent for the installed package version, so

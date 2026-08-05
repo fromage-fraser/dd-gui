@@ -10,6 +10,16 @@ local function current_affect_name()
     return tostring(affects[1][1].name or "")
 end
 
+local function normalized_gauge_value(value, maximum)
+    value = tonumber(value) or 0
+    maximum = tonumber(maximum) or 0
+    if maximum <= 0 then
+        return 0
+    end
+
+    return math.max(0, math.min(1000, (value * 1000) / maximum))
+end
+
 function update_vitals()
     if not gmcp or not gmcp.Char or type(gmcp.Char.Vitals) ~= "table" or
        type(gmcp.Char.Base) ~= "table" or type(gmcp.Char.Stats) ~= "table" or
@@ -33,29 +43,31 @@ function update_vitals()
         end
     end
 
-  local hp      = gmcp.Char.Vitals.hp
-  local maxhp   = gmcp.Char.Vitals.maxhp
-  local mana    = gmcp.Char.Vitals.mana
-  local maxmana = gmcp.Char.Vitals.maxmana
-  local move    = gmcp.Char.Vitals.move
-  local maxmove = gmcp.Char.Vitals.maxmove
+  local hp      = tonumber(gmcp.Char.Vitals.hp) or 0
+  local maxhp   = tonumber(gmcp.Char.Vitals.maxhp) or 0
+  local mana    = tonumber(gmcp.Char.Vitals.mana) or 0
+  local maxmana = tonumber(gmcp.Char.Vitals.maxmana) or 0
+  local move    = tonumber(gmcp.Char.Vitals.move) or 0
+  local maxmove = tonumber(gmcp.Char.Vitals.maxmove) or 0
 
-  if (gmcp.Char.Vitals.hp > gmcp.Char.Vitals.maxhp) then
+  if (hp > maxhp) then
       hp = maxhp
   end
-  if (gmcp.Char.Vitals.mana > gmcp.Char.Vitals.maxmana) then
+  if (mana > maxmana) then
       mana = maxmana
   end
-  if (gmcp.Char.Vitals.move > gmcp.Char.Vitals.maxmove) then
+  if (move > maxmove) then
       move = maxmove
   end
   --GUI.Hitpoints:setValue((100/tonumber(gmcp.Char.Vitals.maxhp))*tonumber(gmcp.Char.Vitals.hp),100,tonumber(gmcp.Char.Vitals.hp))
-  DD_GUI.Hitpoints:setValue(((hp * 1000) / maxhp),1000)
-  DD_GUI.Mana:setValue(((mana * 1000) / maxmana),1000)
-  DD_GUI.Moves:setValue(((move * 1000) / maxmove),1000)
+  DD_GUI.Hitpoints:setValue(normalized_gauge_value(hp, maxhp),1000)
+  DD_GUI.Mana:setValue(normalized_gauge_value(mana, maxmana),1000)
+  DD_GUI.Moves:setValue(normalized_gauge_value(move, maxmove),1000)
   --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
-  if (tonumber(gmcp.Char.Worth.xptnl) > 0 ) then
-      DD_GUI.Xp:setValue((((gmcp.Char.Worth.xplvl - gmcp.Char.Worth.xptnl) * 1000) / gmcp.Char.Worth.xplvl), 1000)
+  local xplvl = tonumber(gmcp.Char.Worth.xplvl) or 0
+  local xptnl = tonumber(gmcp.Char.Worth.xptnl) or 0
+  if xptnl > 0 then
+      DD_GUI.Xp:setValue(normalized_gauge_value(xplvl - xptnl, xplvl),1000)
   else
       DD_GUI.Xp:setValue(1000, 1000)
   end
