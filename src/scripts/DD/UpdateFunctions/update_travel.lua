@@ -12,6 +12,26 @@ function update_travel()
 
     if (tonumber(vitals.position) ~= 6) then
 
+            local room_changed = false
+            if DD_GUI.enemy_panel_room_changed then
+                    room_changed = DD_GUI.enemy_panel_room_changed(
+                            gmcp.Room.Info.vnum
+                    )
+            end
+            DD_GUI.enemy_panel_mode = "travel"
+            if DD_GUI.cancel_enemy_panel_flash then
+                    DD_GUI.cancel_enemy_panel_flash()
+            end
+            if DD_GUI.set_enemy_panel_border then
+                    DD_GUI.set_enemy_panel_border(
+                            DD_GUI.Theme and DD_GUI.Theme.colors.frame or
+                                    "rgb(151,27,39)"
+                    )
+            end
+            if room_changed and DD_GUI.flash_enemy_panel then
+                    DD_GUI.flash_enemy_panel()
+            end
+
             -- Travel mode has three lines of room metadata. The info console
             -- shares the panel with the combat summary, so give it the
             -- unused lower space while the enemy gauge is hidden.
@@ -20,7 +40,12 @@ function update_travel()
             end
 
             EnemyConsole:clear()
-            DD_GUI.EnemyBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
+            if DD_GUI.set_enemy_panel_border then
+                    DD_GUI.set_enemy_panel_border(
+                            DD_GUI.Theme and DD_GUI.Theme.colors.frame or
+                                    "rgb(151,27,39)"
+                    )
+            end
             EnemyInfoConsole:clear()
             EnemyConsoleHitpointsContainer:hide()
             EnemyConsoleHitpoints:hide()

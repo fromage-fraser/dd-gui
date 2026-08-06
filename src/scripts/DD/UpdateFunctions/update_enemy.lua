@@ -28,7 +28,23 @@ function update_enemy()
         if type(enemy) == "table" and
            (tonumber(gmcp.Char.Vitals.position) == 6) then
 
-                DD_GUI.EnemyBox:setStyleSheet(DD_GUI.EnemyBoxCSS:getCSS())
+                if DD_GUI.cancel_enemy_defeat_transition then
+                        DD_GUI.cancel_enemy_defeat_transition()
+                end
+                if DD_GUI.cancel_enemy_panel_flash then
+                        DD_GUI.cancel_enemy_panel_flash()
+                end
+                DD_GUI.enemy_panel_mode = "combat"
+                local room = gmcp.Room and gmcp.Room.Info
+                if type(room) == "table" and room.vnum ~= nil then
+                        DD_GUI.enemy_panel_room_vnum = tostring(room.vnum)
+                end
+                if DD_GUI.set_enemy_panel_border then
+                        DD_GUI.set_enemy_panel_border(
+                                DD_GUI.Theme and DD_GUI.Theme.colors.bright_frame or
+                                        "rgb(205,48,60)"
+                        )
+                end
                 if EnemyInfoConsole and EnemyInfoConsole.resize then
                         EnemyInfoConsole:resize("92%", "14%")
                 end

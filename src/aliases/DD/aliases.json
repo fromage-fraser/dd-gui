@@ -4,6 +4,10 @@
                 "regex": "^ugui$"
         },
         {
+                "name": "reinstallgui",
+                "regex": "^reinstallgui$"
+        },
+        {
                 "name": "gcc",
                 "regex": "^gcc$"
         },

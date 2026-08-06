@@ -11,6 +11,7 @@ Theme.colors = {
         panel_alt = "rgb(0,0,0)",
         frame = "rgb(151,27,39)",
         bright_frame = "rgb(205,48,60)",
+        frame_flash = "rgb(181,37,49)",
         dark_frame = "rgb(72,10,18)",
         gold = "rgb(196,161,78)",
         bright_gold = "rgb(239,210,118)",

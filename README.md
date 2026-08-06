@@ -20,7 +20,7 @@ If you have any issues with the automated installation and update system for the
 
 To uninstall the GUI, you can simply type:
 
-`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed.
+`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed. To safely uninstall and reinstall the latest remote package, use `reinstallgui`; it lets the alias return, then waits three seconds between the two operations so Mudlet can finish removing the old package.
 
 ## Layout controls
 
@@ -53,7 +53,9 @@ data. The main panels are:
   shape with a `vnum` identifier; the enemy hitpoint gauge uses either shape.
   Travel mode keeps the room summary visible as `Area` and `Type` on the first
   line, `Room` on the second, and `Room flags` on the third; empty visible flags
-  are shown as `None`.
+  are shown as `None`. The panel border is brighter while fighting, briefly
+  pulses brighter when entering a new room, and plays a short shattering-fall
+  transition when combat ends before returning to the room view.
 - **Map:** the current room and surrounding map data.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
@@ -118,6 +120,7 @@ These aliases are available from the Mudlet command line:
 | `ddmap on` / `ddmap off` | Enable or disable the Dragons Domain custom mapper. |
 | `ignores` | Add the Dragons Domain portal message to the mapper's ignore patterns. |
 | `ugui` | Uninstall the `DD_GUI` package. |
+| `reinstallgui` | Defer the uninstall, wait three seconds, and reinstall the latest remote package without removing downloaded custom content. |
 
 
 ## Keyboard controls
