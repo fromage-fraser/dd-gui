@@ -102,15 +102,20 @@ function DD_GUI.start_enemy_combat_pulse()
   local middle = colors.frame_flash or "rgb(181,37,49)"
   local soft = blend_rgb(regular, middle, 0.5)
   local high = blend_rgb(middle, bright, 0.5)
+  local peak = blend_rgb(
+    bright,
+    colors.white or "rgb(255,255,255)",
+    0.18
+  )
   local pulse_stages = {
-    {color = regular, duration = 0.70},
-    {color = soft, duration = 0.20},
-    {color = middle, duration = 0.25},
-    {color = high, duration = 0.25},
-    {color = bright, duration = 0.32},
-    {color = high, duration = 0.25},
-    {color = middle, duration = 0.25},
-    {color = soft, duration = 0.20},
+    {color = regular, duration = 0.64},
+    {color = soft, duration = 0.19},
+    {color = middle, duration = 0.23},
+    {color = high, duration = 0.23},
+    {color = peak, duration = 0.30},
+    {color = high, duration = 0.23},
+    {color = middle, duration = 0.23},
+    {color = soft, duration = 0.19},
   }
 
   DD_GUI.enemy_combat_pulse_active = true
