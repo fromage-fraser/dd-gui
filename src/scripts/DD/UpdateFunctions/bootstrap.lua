@@ -49,29 +49,7 @@ function DD_GUI.refresh_data()
         if position == 6 and has_enemy then
                 run_update(update_enemy)
         elseif type(room) == "table" and type(vitals) == "table" then
-                local same_room = DD_GUI.enemy_panel_same_room and
-                        DD_GUI.enemy_panel_same_room(room)
-                local transition_started = false
-
-                if DD_GUI.enemy_defeat_active then
-                        if not same_room and DD_GUI.cancel_enemy_defeat_transition then
-                                DD_GUI.cancel_enemy_defeat_transition()
-                        else
-                                transition_started = true
-                        end
-                elseif position ~= 6 and
-                       DD_GUI.enemy_panel_mode == "combat" and same_room and
-                       DD_GUI.start_enemy_defeat_transition then
-                        transition_started = DD_GUI.start_enemy_defeat_transition(
-                                function()
-                                        run_update(update_travel)
-                                end
-                        ) == true
-                end
-
-                if not transition_started then
-                        run_update(update_travel)
-                end
+                run_update(update_travel)
         end
 
         if type(char.Channels) == "table" then
