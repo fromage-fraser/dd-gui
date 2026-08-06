@@ -66,6 +66,28 @@ function DD_GUI.cancel_enemy_combat_pulse()
   DD_GUI.enemy_combat_pulse_active = false
 end
 
+local function rgb_channels(color)
+  local red, green, blue = tostring(color):match(
+    "^rgb%s*%(%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*%)$"
+  )
+  return tonumber(red), tonumber(green), tonumber(blue)
+end
+
+local function blend_rgb(from, to, amount)
+  local from_red, from_green, from_blue = rgb_channels(from)
+  local to_red, to_green, to_blue = rgb_channels(to)
+  if not from_red or not to_red then
+    return to
+  end
+
+  return string.format(
+    "rgb(%d,%d,%d)",
+    math.floor(from_red + (to_red - from_red) * amount + 0.5),
+    math.floor(from_green + (to_green - from_green) * amount + 0.5),
+    math.floor(from_blue + (to_blue - from_blue) * amount + 0.5)
+  )
+end
+
 function DD_GUI.start_enemy_combat_pulse()
   if DD_GUI.enemy_combat_pulse_active then
     return
@@ -77,6 +99,19 @@ function DD_GUI.start_enemy_combat_pulse()
   local colors = theme and theme.colors or {}
   local bright = colors.bright_frame or "rgb(205,48,60)"
   local regular = colors.frame or "rgb(151,27,39)"
+  local middle = colors.frame_flash or "rgb(181,37,49)"
+  local soft = blend_rgb(regular, middle, 0.5)
+  local high = blend_rgb(middle, bright, 0.5)
+  local pulse_stages = {
+    {color = regular, duration = 0.70},
+    {color = soft, duration = 0.20},
+    {color = middle, duration = 0.25},
+    {color = high, duration = 0.25},
+    {color = bright, duration = 0.32},
+    {color = high, duration = 0.25},
+    {color = middle, duration = 0.25},
+    {color = soft, duration = 0.20},
+  }
 
   DD_GUI.enemy_combat_pulse_active = true
   if not tempTimer then
@@ -84,6 +119,7 @@ function DD_GUI.start_enemy_combat_pulse()
     return
   end
 
+  local stage = 1
   local function pulse()
     if DD_GUI.enemy_combat_pulse_token ~= token or
        DD_GUI.enemy_panel_mode ~= "combat" then
@@ -91,17 +127,10 @@ function DD_GUI.start_enemy_combat_pulse()
       return
     end
 
-    DD_GUI.set_enemy_panel_border(bright)
-    tempTimer(0.18, function()
-      if DD_GUI.enemy_combat_pulse_token ~= token or
-         DD_GUI.enemy_panel_mode ~= "combat" then
-        DD_GUI.enemy_combat_pulse_active = false
-        return
-      end
-
-      DD_GUI.set_enemy_panel_border(regular)
-      tempTimer(0.82, pulse)
-    end)
+    local current = pulse_stages[stage]
+    DD_GUI.set_enemy_panel_border(current.color)
+    stage = stage % #pulse_stages + 1
+    tempTimer(current.duration, pulse)
   end
 
   pulse()

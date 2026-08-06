@@ -53,10 +53,10 @@ data. The main panels are:
   shape with a `vnum` identifier; the enemy hitpoint gauge uses either shape.
   Travel mode keeps the room summary visible as `Area` and `Type` on the first
   line, `Room` on the second, and `Room flags` on the third; empty visible flags
-  are shown as `None`. The panel border pulses brighter while fighting and
-  briefly pulses brighter when entering a new room before returning to its
-  regular colour. When combat ends, the panel plays a short shattering-fall
-  transition before returning to the room view.
+  are shown as `None`. The panel border moves through a slower, multi-step red
+  pulse while fighting and briefly pulses brighter when entering a new room
+  before returning to its regular colour. When combat ends, the panel plays a
+  short shattering-fall transition before returning to the room view.
 - **Map:** the current room and surrounding map data.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
