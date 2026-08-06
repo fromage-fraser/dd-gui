@@ -30,6 +30,33 @@ local function legacy_mapper_save_path()
         return string.gsub(package_path .. "/maps/dragons_domain_mapper.dat", "\\", "/")
 end
 
+local map_info_accent_name = "DD_GUI.MapTitleAccent"
+
+function DD_GUI.apply_mapper_theme()
+        if type(setConfig) == "function" then
+                pcall(function()
+                        setConfig("mapInfoColor", {0, 0, 0, 255})
+                end)
+        end
+
+        if type(registerMapInfo) ~= "function" or
+           type(enableMapInfo) ~= "function" then
+                return
+        end
+
+        local frame = DD_GUI.Theme and DD_GUI.Theme.map_info_frame or
+                {151, 27, 39}
+        local rule = string.rep(string.char(226, 148, 128), 38)
+
+        pcall(function()
+                registerMapInfo(map_info_accent_name, function()
+                        return rule, false, false, frame[1], frame[2], frame[3]
+                end)
+                enableMapInfo("Short")
+                enableMapInfo(map_info_accent_name)
+        end)
+end
+
 function save_dd_mapper()
         local saved, error_message = saveMap(dd_mapper_save_path())
         if not saved then

@@ -26,6 +26,8 @@ Theme.colors = {
         moves = "rgb(38,139,126)",
 }
 
+Theme.map_info_frame = {151, 27, 39}
+
 function Theme:panel_css(options)
         options = options or {}
         local background = options.background or self.colors.ink
@@ -212,6 +214,84 @@ function Theme:style_console(console, size)
         if type(console.setColor) == "function" then
                 pcall(function() console:setColor(0, 0, 0) end)
         end
+end
+
+function Theme:profile_style_sheet()
+        local c = self.colors
+
+        return string.format([[
+                TConsole QScrollBar:vertical {
+                        background: %s;
+                        width: 8px;
+                        margin: 0px;
+                        border-left: 1px solid %s;
+                }
+                TConsole QScrollBar::handle:vertical {
+                        background: %s;
+                        min-height: 18px;
+                        border: 1px solid %s;
+                }
+                TConsole QScrollBar::handle:vertical:hover {
+                        background: %s;
+                }
+                TConsole QScrollBar::add-line:vertical,
+                TConsole QScrollBar::sub-line:vertical {
+                        background: %s;
+                        height: 0px;
+                        border: none;
+                }
+                TConsole QScrollBar::add-page:vertical,
+                TConsole QScrollBar::sub-page:vertical {
+                        background: %s;
+                }
+
+                TConsole QScrollBar:horizontal {
+                        background: %s;
+                        height: 8px;
+                        margin: 0px;
+                        border-top: 1px solid %s;
+                }
+                TConsole QScrollBar::handle:horizontal {
+                        background: %s;
+                        min-width: 18px;
+                        border: 1px solid %s;
+                }
+                TConsole QScrollBar::handle:horizontal:hover {
+                        background: %s;
+                }
+                TConsole QScrollBar::add-line:horizontal,
+                TConsole QScrollBar::sub-line:horizontal {
+                        background: %s;
+                        width: 0px;
+                        border: none;
+                }
+                TConsole QScrollBar::add-page:horizontal,
+                TConsole QScrollBar::sub-page:horizontal {
+                        background: %s;
+                }
+        ]],
+                c.ink, c.dark_frame, c.frame, c.bright_frame, c.bright_frame,
+                c.ink, c.ink,
+                c.ink, c.dark_frame, c.frame, c.bright_frame, c.bright_frame,
+                c.ink, c.ink
+        )
+end
+
+function Theme:apply_profile_style()
+        if type(setProfileStyleSheet) ~= "function" then
+                return false
+        end
+
+        local ok, err = pcall(function()
+                setProfileStyleSheet(self:profile_style_sheet())
+        end)
+        if not ok then
+                DD_GUI.profile_style_error = tostring(err)
+                return false
+        end
+
+        DD_GUI.profile_style_error = nil
+        return true
 end
 
 local function set_clickthrough(widget, enabled)
