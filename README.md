@@ -20,7 +20,7 @@ If you have any issues with the automated installation and update system for the
 
 To uninstall the GUI, you can simply type:
 
-`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed. To safely uninstall and reinstall the latest remote package, use `reinstallgui`; it lets the alias return, then waits three seconds between the two operations so Mudlet can finish removing the old package.
+`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed. To safely uninstall and reinstall the latest remote package, use `reinstallgui`; it lets the alias return, waits three seconds between the two operations so Mudlet can finish removing the old package, then reports the installed package version.
 
 ## Layout controls
 
@@ -121,7 +121,7 @@ These aliases are available from the Mudlet command line:
 | `ddmap on` / `ddmap off` | Enable or disable the Dragons Domain custom mapper. |
 | `ignores` | Add the Dragons Domain portal message to the mapper's ignore patterns. |
 | `ugui` | Uninstall the `DD_GUI` package. |
-| `reinstallgui` | Defer the uninstall, wait three seconds, and reinstall the latest remote package without removing downloaded custom content. |
+| `reinstallgui` | Defer the uninstall, wait three seconds, reinstall the latest remote package, and report its installed version without removing downloaded custom content. |
 
 
 ## Keyboard controls
