@@ -89,6 +89,11 @@ data. The main panels are:
   in a dedicated overlay below the enemy text, so the red gauge remains visible
   when the enemy console refreshes.
 
+The main MUD console and panel consoles use the profile's shared dark scrollbar
+style: narrow black tracks, dark-red edges, and red handles. The mapper's native
+room title uses an opaque black background with white text and a short red rule
+underneath, so it belongs visually with the rest of the interface.
+
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. `bootstrap()` is idempotent for the installed package version, so
 running `lua bootstrap()` after reconnect refreshes the existing widgets

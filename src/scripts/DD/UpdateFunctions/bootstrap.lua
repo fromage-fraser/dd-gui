@@ -187,6 +187,10 @@ DD_GUI.show_current_roots = dd_gui_show_current_roots
 function bootstrap()
         local package_version = dd_gui_installed_version()
 
+        if DD_GUI.Theme and DD_GUI.Theme.apply_profile_style then
+                DD_GUI.Theme:apply_profile_style()
+        end
+
         if DD_GUI.bootstrap_ready and
            DD_GUI.bootstrap_version == package_version then
                 if DD_GUI.bootstrap_refresh_timer then
@@ -198,6 +202,9 @@ function bootstrap()
                 DD_GUI.refresh_data()
                 if DD_GUI.raise_info_box_contents then
                         DD_GUI.raise_info_box_contents()
+                end
+                if DD_GUI.apply_mapper_theme then
+                        DD_GUI.apply_mapper_theme()
                 end
                 if DD_GUI.Layout then
                         DD_GUI.Layout:apply(false)
@@ -230,6 +237,9 @@ function bootstrap()
         end
         initialise_mapper()
         load_dd_mapper()
+        if DD_GUI.apply_mapper_theme then
+                DD_GUI.apply_mapper_theme()
+        end
         get_custom_content()
         if DD_GUI.Mapper and DD_GUI.Mapper.setColor then
                 DD_GUI.Mapper:setColor(0, 0, 0, 255)
