@@ -25,10 +25,12 @@ end
 function DD_GUI.cancel_enemy_panel_flash()
   DD_GUI.enemy_panel_flash_token =
     (DD_GUI.enemy_panel_flash_token or 0) + 1
+  DD_GUI.enemy_panel_flash_active = false
 end
 
 function DD_GUI.flash_enemy_panel()
   if not tempTimer then
+    DD_GUI.enemy_panel_flash_active = false
     DD_GUI.set_enemy_panel_border(
       DD_GUI.Theme and DD_GUI.Theme.colors.frame or "rgb(151,27,39)"
     )
@@ -43,17 +45,66 @@ function DD_GUI.flash_enemy_panel()
   local middle = colors.frame_flash or "rgb(181,37,49)"
   local regular = colors.frame or "rgb(151,27,39)"
 
+  DD_GUI.enemy_panel_flash_active = true
   DD_GUI.set_enemy_panel_border(bright)
-  tempTimer(0.08, function()
+  tempTimer(0.12, function()
     if DD_GUI.enemy_panel_flash_token == token then
       DD_GUI.set_enemy_panel_border(middle)
     end
   end)
-  tempTimer(0.16, function()
+  tempTimer(0.42, function()
     if DD_GUI.enemy_panel_flash_token == token then
+      DD_GUI.enemy_panel_flash_active = false
       DD_GUI.set_enemy_panel_border(regular)
     end
   end)
+end
+
+function DD_GUI.cancel_enemy_combat_pulse()
+  DD_GUI.enemy_combat_pulse_token =
+    (DD_GUI.enemy_combat_pulse_token or 0) + 1
+  DD_GUI.enemy_combat_pulse_active = false
+end
+
+function DD_GUI.start_enemy_combat_pulse()
+  if DD_GUI.enemy_combat_pulse_active then
+    return
+  end
+
+  DD_GUI.cancel_enemy_combat_pulse()
+  local token = DD_GUI.enemy_combat_pulse_token
+  local theme = DD_GUI.Theme
+  local colors = theme and theme.colors or {}
+  local bright = colors.bright_frame or "rgb(205,48,60)"
+  local regular = colors.frame or "rgb(151,27,39)"
+
+  DD_GUI.enemy_combat_pulse_active = true
+  if not tempTimer then
+    DD_GUI.set_enemy_panel_border(bright)
+    return
+  end
+
+  local function pulse()
+    if DD_GUI.enemy_combat_pulse_token ~= token or
+       DD_GUI.enemy_panel_mode ~= "combat" then
+      DD_GUI.enemy_combat_pulse_active = false
+      return
+    end
+
+    DD_GUI.set_enemy_panel_border(bright)
+    tempTimer(0.18, function()
+      if DD_GUI.enemy_combat_pulse_token ~= token or
+         DD_GUI.enemy_panel_mode ~= "combat" then
+        DD_GUI.enemy_combat_pulse_active = false
+        return
+      end
+
+      DD_GUI.set_enemy_panel_border(regular)
+      tempTimer(0.82, pulse)
+    end)
+  end
+
+  pulse()
 end
 
 function DD_GUI.enemy_panel_room_changed(vnum)
@@ -71,6 +122,31 @@ function DD_GUI.enemy_panel_same_room(room)
 
   return DD_GUI.enemy_panel_room_vnum ~= nil and
     tostring(room.vnum) == tostring(DD_GUI.enemy_panel_room_vnum)
+end
+
+function DD_GUI.maybe_start_enemy_defeat_transition()
+  local room = gmcp and gmcp.Room and gmcp.Room.Info
+  local same_room = DD_GUI.enemy_panel_same_room and
+    DD_GUI.enemy_panel_same_room(room)
+
+  if DD_GUI.enemy_defeat_active then
+    if not same_room and DD_GUI.cancel_enemy_defeat_transition then
+      DD_GUI.cancel_enemy_defeat_transition()
+      return false
+    end
+    return true
+  end
+
+  if DD_GUI.enemy_panel_mode ~= "combat" or not same_room or
+     not DD_GUI.start_enemy_defeat_transition then
+    return false
+  end
+
+  return DD_GUI.start_enemy_defeat_transition(function()
+    if type(update_travel) == "function" then
+      pcall(update_travel)
+    end
+  end) == true
 end
 
 local function shatter_css(alpha)
@@ -124,13 +200,16 @@ function DD_GUI.start_enemy_defeat_transition(on_complete)
   local layer = EnemyShatterLayer
   local layer_width = math.max(1, tonumber(layer:get_width()) or 0)
   local layer_height = math.max(1, tonumber(layer:get_height()) or 0)
-  local columns = 5
-  local rows = 3
+  local columns = 6
+  local rows = 4
   local cell_width = layer_width / columns
   local cell_height = layer_height / rows
   local symbols = {"/", "\\", "+", "-", "*"}
 
   DD_GUI.cancel_enemy_panel_flash()
+  if DD_GUI.cancel_enemy_combat_pulse then
+    DD_GUI.cancel_enemy_combat_pulse()
+  end
   DD_GUI.set_enemy_panel_border(
     DD_GUI.Theme and DD_GUI.Theme.colors.bright_frame or
       "rgb(205,48,60)"
@@ -178,7 +257,7 @@ function DD_GUI.start_enemy_defeat_transition(on_complete)
 
   layer:raiseAll()
   local frame = 0
-  local frame_count = 8
+  local frame_count = 12
 
   local function finish()
     if DD_GUI.enemy_defeat_token ~= token then
@@ -186,6 +265,7 @@ function DD_GUI.start_enemy_defeat_transition(on_complete)
     end
 
     DD_GUI.enemy_defeat_active = false
+    DD_GUI.enemy_panel_mode = "travel"
     remove_enemy_shatter_shards()
     layer:hide()
     if type(on_complete) == "function" then
@@ -217,9 +297,9 @@ function DD_GUI.start_enemy_defeat_transition(on_complete)
     end
 
     if frame >= frame_count then
-      tempTimer(0.05, finish)
+      tempTimer(0.08, finish)
     else
-      tempTimer(0.06, animate)
+      tempTimer(0.07, animate)
     end
   end
 
@@ -230,6 +310,9 @@ end
 function build_enemy_console()
   if DD_GUI.cancel_enemy_defeat_transition then
     DD_GUI.cancel_enemy_defeat_transition()
+  end
+  if DD_GUI.cancel_enemy_combat_pulse then
+    DD_GUI.cancel_enemy_combat_pulse()
   end
   if EnemyShatterLayer and EnemyShatterLayer.delete then
     pcall(function() EnemyShatterLayer:delete() end)
@@ -350,13 +433,16 @@ function build_enemy_console()
       DD_GUI.set_widget_clickthrough(EnemyHitpointsLabel, true)
     end
 
+    -- This must be a sibling of the native MiniConsole rather than its
+    -- child. MiniConsole can repaint over child widgets during a refresh,
+    -- making the defeat animation appear to skip straight to travel mode.
     EnemyShatterLayer = Geyser.Container:new({
       name = "DD_GUI.EnemyShatterLayer",
-      x = "0%",
-      y = "0%",
-      width = "100%",
-      height = "69%",
-    }, EnemyConsole)
+      x = "4%",
+      y = "6%",
+      width = "92%",
+      height = "63%",
+    }, DD_GUI.EnemyBox)
     if DD_GUI.set_widget_clickthrough then
       DD_GUI.set_widget_clickthrough(EnemyShatterLayer, true)
     end

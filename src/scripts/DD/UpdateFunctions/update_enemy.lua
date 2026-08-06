@@ -24,22 +24,30 @@ function update_enemy()
 
         local enemies = gmcp and gmcp.Char and gmcp.Char.Enemies
         local enemy = first_enemy(enemies)
+        local position = gmcp and gmcp.Char and gmcp.Char.Vitals and
+                tonumber(gmcp.Char.Vitals.position)
 
         if type(enemy) == "table" and
-           (tonumber(gmcp.Char.Vitals.position) == 6) then
+           position == 6 then
 
+                local entering_combat = DD_GUI.enemy_panel_mode ~= "combat"
                 if DD_GUI.cancel_enemy_defeat_transition then
                         DD_GUI.cancel_enemy_defeat_transition()
                 end
-                if DD_GUI.cancel_enemy_panel_flash then
+                if entering_combat and DD_GUI.cancel_enemy_panel_flash then
                         DD_GUI.cancel_enemy_panel_flash()
+                end
+                if entering_combat and DD_GUI.cancel_enemy_combat_pulse then
+                        DD_GUI.cancel_enemy_combat_pulse()
                 end
                 DD_GUI.enemy_panel_mode = "combat"
                 local room = gmcp.Room and gmcp.Room.Info
                 if type(room) == "table" and room.vnum ~= nil then
                         DD_GUI.enemy_panel_room_vnum = tostring(room.vnum)
                 end
-                if DD_GUI.set_enemy_panel_border then
+                if DD_GUI.start_enemy_combat_pulse then
+                        DD_GUI.start_enemy_combat_pulse()
+                elseif DD_GUI.set_enemy_panel_border then
                         DD_GUI.set_enemy_panel_border(
                                 DD_GUI.Theme and DD_GUI.Theme.colors.bright_frame or
                                         "rgb(205,48,60)"
@@ -129,5 +137,8 @@ function update_enemy()
                                 EnemyHitpointsLabel:raise()
                         end
                 end
+        elseif DD_GUI.maybe_start_enemy_defeat_transition and
+               DD_GUI.maybe_start_enemy_defeat_transition() then
+                return
         end
 end

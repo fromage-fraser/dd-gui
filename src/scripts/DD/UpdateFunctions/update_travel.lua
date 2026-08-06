@@ -12,6 +12,12 @@ function update_travel()
 
     if (tonumber(vitals.position) ~= 6) then
 
+            if DD_GUI.maybe_start_enemy_defeat_transition and
+               DD_GUI.maybe_start_enemy_defeat_transition() then
+                    return
+            end
+
+            local previous_mode = DD_GUI.enemy_panel_mode
             local room_changed = false
             if DD_GUI.enemy_panel_room_changed then
                     room_changed = DD_GUI.enemy_panel_room_changed(
@@ -19,17 +25,22 @@ function update_travel()
                     )
             end
             DD_GUI.enemy_panel_mode = "travel"
-            if DD_GUI.cancel_enemy_panel_flash then
-                    DD_GUI.cancel_enemy_panel_flash()
+            if previous_mode == "combat" then
+                    if DD_GUI.cancel_enemy_combat_pulse then
+                            DD_GUI.cancel_enemy_combat_pulse()
+                    end
+                    if DD_GUI.cancel_enemy_panel_flash then
+                            DD_GUI.cancel_enemy_panel_flash()
+                    end
             end
-            if DD_GUI.set_enemy_panel_border then
+            if room_changed and DD_GUI.flash_enemy_panel then
+                    DD_GUI.flash_enemy_panel()
+            elseif not DD_GUI.enemy_panel_flash_active and
+                   DD_GUI.set_enemy_panel_border then
                     DD_GUI.set_enemy_panel_border(
                             DD_GUI.Theme and DD_GUI.Theme.colors.frame or
                                     "rgb(151,27,39)"
                     )
-            end
-            if room_changed and DD_GUI.flash_enemy_panel then
-                    DD_GUI.flash_enemy_panel()
             end
 
             -- Travel mode has three lines of room metadata. The info console
@@ -40,7 +51,8 @@ function update_travel()
             end
 
             EnemyConsole:clear()
-            if DD_GUI.set_enemy_panel_border then
+            if not DD_GUI.enemy_panel_flash_active and
+               DD_GUI.set_enemy_panel_border then
                     DD_GUI.set_enemy_panel_border(
                             DD_GUI.Theme and DD_GUI.Theme.colors.frame or
                                     "rgb(151,27,39)"
