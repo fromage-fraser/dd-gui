@@ -105,8 +105,9 @@ data. The main panels are:
   border-only pressed highlight.
 
 The main MUD console and panel consoles use the profile's shared scrollbar
-style: narrow black tracks carry a repeating vertical chain, while the moving
-thumb is rendered as a small square joiner. The mapper's native room title uses
+style: narrow black tracks have restrained dark-red edges, while the moving
+thumb is rendered as a small red square joiner against the black track. The
+mapper's native room title uses
 an opaque black background with white text and a short red rule underneath, so
 it belongs visually with the rest of the interface.
 

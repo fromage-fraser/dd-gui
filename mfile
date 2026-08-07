@@ -1,6 +1,6 @@
 {
   "package": "DD_GUI",
-  "version": "0.0.77",
+  "version": "0.0.81",
   "author": "nerble",
   "title": "Mudlet GUI for Dragons Domain MUD",
   "outputFile": true

@@ -228,19 +228,12 @@ function Theme:profile_style_sheet()
                         :gsub('"', '\\"') .. '")'
         end
 
-        local vertical_chain = stylesheet_url(
-                DD_GUI.asset_path and DD_GUI.asset_path("frame/vertical.png"))
-        local horizontal_chain = stylesheet_url(
-                DD_GUI.asset_path and DD_GUI.asset_path("frame/horizontal.png"))
         local joiner = stylesheet_url(
                 DD_GUI.asset_path and DD_GUI.asset_path("frame/node.png"))
 
         return string.format([[
                 TConsole QScrollBar:vertical {
                         background-color: %s;
-                        background-image: %s;
-                        background-repeat: repeat-y;
-                        background-position: center;
                         width: 10px;
                         margin: 0px;
                         border-left: 1px solid %s;
@@ -274,9 +267,6 @@ function Theme:profile_style_sheet()
 
                 TConsole QScrollBar:horizontal {
                         background-color: %s;
-                        background-image: %s;
-                        background-repeat: repeat-x;
-                        background-position: center;
                         height: 10px;
                         margin: 0px;
                         border-top: 1px solid %s;
@@ -311,10 +301,9 @@ function Theme:profile_style_sheet()
                         background: %s;
                 }
         ]],
-                c.ink, vertical_chain, c.dark_frame, c.dark_frame,
+                c.ink, c.dark_frame, c.dark_frame,
                 c.ink, joiner, c.ink, joiner,
-                c.ink,
-                c.ink, horizontal_chain, c.dark_frame, c.dark_frame,
+                c.ink, c.dark_frame, c.dark_frame,
                 c.ink, joiner, c.ink, joiner,
                 c.ink
         )

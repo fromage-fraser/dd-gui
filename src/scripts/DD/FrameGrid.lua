@@ -227,20 +227,25 @@ function FrameGrid:collect_regions()
         end
 
         -- The gauge columns have deliberate gaps between them, so frame the
-        -- whole band using their actual left and right edges. The Bottom
-        -- container still owns its original width; only its vertical track is
-        -- adjusted by the shared horizontal splitter. Keep the vertical
-        -- edges: they are the chain that visually closes the gauge row.
+        -- whole band using the main console's shared left and right edges.
+        -- The fourth column intentionally leaves a small internal pad; using
+        -- its right edge here would create a second vertical chain just
+        -- before the main-console/right-column junction.
         local first = widget_bounds(DD_GUI.FirstColumn)
         local fourth = widget_bounds(DD_GUI.FourthColumn)
         local bottom = widget_bounds(DD_GUI.Bottom)
+        local main_console = widget_bounds(ui and ui.mainconsole_container)
         if first and fourth and bottom then
+                local left = main_console and main_console.x or first.x
+                local right = main_console and
+                        (main_console.x + main_console.width) or
+                        (fourth.x + fourth.width)
                 add_region(self, "GaugesBand", DD_GUI.Bottom, {
                         synthetic = true,
                         bounds = {
-                                x = first.x,
+                                x = left,
                                 y = bottom.y,
-                                width = math.max(4, fourth.x + fourth.width - first.x),
+                                width = math.max(4, right - left),
                                 height = bottom.height,
                         },
                 })

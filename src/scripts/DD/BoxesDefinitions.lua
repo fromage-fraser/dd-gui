@@ -500,9 +500,9 @@ function define_boxes()
         --main = Geyser.Container:new({x=0,y=88,width="93%",height="100%",name="mapper container"})
         DD_GUI.Mapper = Geyser.Mapper:new({
           name = "DD_GUI.Mapper",
-          x = "0", y = "0", -- edit here if you want to move it
-          width = "100%", 
-          height = "100%"
+          x = "2%", y = "2%",
+          width = "96%",
+          height = "96%"
         }, DD_GUI.MapBox)
         DD_GUI.Mapper:setColor(0, 0, 0, 255)
         
