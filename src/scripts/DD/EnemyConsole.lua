@@ -11,6 +11,72 @@ function DD_GUI.set_enemy_panel_border(border)
   end
 end
 
+local function rgb_channels(color)
+  local red, green, blue = tostring(color):match(
+    "^rgb%s*%(%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*%)$"
+  )
+  return tonumber(red), tonumber(green), tonumber(blue)
+end
+
+local function blend_rgb(from, to, amount)
+  local from_red, from_green, from_blue = rgb_channels(from)
+  local to_red, to_green, to_blue = rgb_channels(to)
+  if not from_red or not to_red then
+    return to
+  end
+
+  return string.format(
+    "rgb(%d,%d,%d)",
+    math.floor(from_red + (to_red - from_red) * amount + 0.5),
+    math.floor(from_green + (to_green - from_green) * amount + 0.5),
+    math.floor(from_blue + (to_blue - from_blue) * amount + 0.5)
+  )
+end
+
+local function panel_pulse_palette(colors)
+  local bright = colors.bright_frame or "rgb(205,48,60)"
+  local regular = colors.frame or "rgb(151,27,39)"
+  local middle = colors.frame_flash or "rgb(181,37,49)"
+  local black = "rgb(0,0,0)"
+
+  return {
+    black = black,
+    ember = blend_rgb(black, regular, 0.18),
+    glow = blend_rgb(black, regular, 0.38),
+    dim = blend_rgb(black, regular, 0.62),
+    base = blend_rgb(black, regular, 0.82),
+    low = blend_rgb(regular, middle, 0.25),
+    soft = blend_rgb(regular, middle, 0.5),
+    middle = middle,
+    high = blend_rgb(middle, bright, 0.5),
+    very_high = blend_rgb(bright, colors.white or "rgb(255,255,255)", 0.08),
+    peak = blend_rgb(
+      bright,
+      colors.white or "rgb(255,255,255)",
+      0.18
+    ),
+    regular = regular,
+  }
+end
+
+local pulse_stage_names = {
+  "black", "ember", "glow", "dim", "base", "low", "soft", "middle",
+  "high", "very_high", "peak", "very_high", "high", "middle", "soft",
+  "low", "base", "dim", "glow", "ember",
+}
+
+local function build_panel_pulse_stages(colors, durations)
+  local palette = panel_pulse_palette(colors)
+  local stages = {}
+  for index, name in ipairs(pulse_stage_names) do
+    stages[index] = {
+      color = palette[name],
+      duration = durations[index],
+    }
+  end
+  return stages, palette.regular
+end
+
 local function enemy_hitpoint_widgets()
   return {
     EnemyConsoleHitpointsContainer,
@@ -50,51 +116,42 @@ function DD_GUI.flash_enemy_panel()
   local token = DD_GUI.enemy_panel_flash_token
   local theme = DD_GUI.Theme
   local colors = theme and theme.colors or {}
-  local bright = colors.bright_frame or "rgb(205,48,60)"
-  local middle = colors.frame_flash or "rgb(181,37,49)"
-  local regular = colors.frame or "rgb(151,27,39)"
+  local room_stages, regular = build_panel_pulse_stages(colors, {
+    0.18, 0.08, 0.10, 0.12, 0.12, 0.12, 0.12, 0.14, 0.14, 0.12,
+    0.18, 0.12, 0.14, 0.14, 0.12, 0.12, 0.12, 0.10, 0.08, 0.06,
+  })
 
   DD_GUI.enemy_panel_flash_active = true
-  DD_GUI.set_enemy_panel_border(bright)
-  tempTimer(0.12, function()
-    if DD_GUI.enemy_panel_flash_token == token then
-      DD_GUI.set_enemy_panel_border(middle)
+  local stage = 1
+  local function pulse()
+    if DD_GUI.enemy_panel_flash_token ~= token then
+      return
     end
-  end)
-  tempTimer(0.42, function()
-    if DD_GUI.enemy_panel_flash_token == token then
-      DD_GUI.enemy_panel_flash_active = false
-      DD_GUI.set_enemy_panel_border(regular)
-    end
-  end)
+
+    local current = room_stages[stage]
+    DD_GUI.set_enemy_panel_border(current.color)
+    stage = stage + 1
+    tempTimer(current.duration, function()
+      if DD_GUI.enemy_panel_flash_token ~= token then
+        return
+      end
+
+      if stage > #room_stages then
+        DD_GUI.enemy_panel_flash_active = false
+        DD_GUI.set_enemy_panel_border(regular)
+      else
+        pulse()
+      end
+    end)
+  end
+
+  pulse()
 end
 
 function DD_GUI.cancel_enemy_combat_pulse()
   DD_GUI.enemy_combat_pulse_token =
     (DD_GUI.enemy_combat_pulse_token or 0) + 1
   DD_GUI.enemy_combat_pulse_active = false
-end
-
-local function rgb_channels(color)
-  local red, green, blue = tostring(color):match(
-    "^rgb%s*%(%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*%)$"
-  )
-  return tonumber(red), tonumber(green), tonumber(blue)
-end
-
-local function blend_rgb(from, to, amount)
-  local from_red, from_green, from_blue = rgb_channels(from)
-  local to_red, to_green, to_blue = rgb_channels(to)
-  if not from_red or not to_red then
-    return to
-  end
-
-  return string.format(
-    "rgb(%d,%d,%d)",
-    math.floor(from_red + (to_red - from_red) * amount + 0.5),
-    math.floor(from_green + (to_green - from_green) * amount + 0.5),
-    math.floor(from_blue + (to_blue - from_blue) * amount + 0.5)
-  )
 end
 
 function DD_GUI.start_enemy_combat_pulse()
@@ -106,49 +163,16 @@ function DD_GUI.start_enemy_combat_pulse()
   local token = DD_GUI.enemy_combat_pulse_token
   local theme = DD_GUI.Theme
   local colors = theme and theme.colors or {}
-  local bright = colors.bright_frame or "rgb(205,48,60)"
-  local regular = colors.frame or "rgb(151,27,39)"
-  local middle = colors.frame_flash or "rgb(181,37,49)"
-  local black = "rgb(0,0,0)"
-  local ember = blend_rgb(black, regular, 0.18)
-  local glow = blend_rgb(black, regular, 0.38)
-  local dim = blend_rgb(black, regular, 0.62)
-  local base = blend_rgb(black, regular, 0.82)
-  local low = blend_rgb(regular, middle, 0.25)
-  local soft = blend_rgb(regular, middle, 0.5)
-  local high = blend_rgb(middle, bright, 0.5)
-  local very_high = blend_rgb(bright, colors.white or "rgb(255,255,255)", 0.08)
-  local peak = blend_rgb(
-    bright,
-    colors.white or "rgb(255,255,255)",
-    0.18
-  )
-  local pulse_stages = {
-    {color = black, duration = 0.26},
-    {color = ember, duration = 0.12},
-    {color = glow, duration = 0.14},
-    {color = dim, duration = 0.16},
-    {color = base, duration = 0.16},
-    {color = low, duration = 0.16},
-    {color = soft, duration = 0.16},
-    {color = middle, duration = 0.18},
-    {color = high, duration = 0.18},
-    {color = very_high, duration = 0.16},
-    {color = peak, duration = 0.22},
-    {color = very_high, duration = 0.16},
-    {color = high, duration = 0.18},
-    {color = middle, duration = 0.18},
-    {color = soft, duration = 0.16},
-    {color = low, duration = 0.16},
-    {color = base, duration = 0.16},
-    {color = dim, duration = 0.16},
-    {color = glow, duration = 0.14},
-    {color = ember, duration = 0.12},
-  }
+  local pulse_stages = build_panel_pulse_stages(colors, {
+    0.14, 0.07, 0.08, 0.10, 0.10, 0.10, 0.10, 0.12, 0.12, 0.10,
+    0.15, 0.10, 0.12, 0.12, 0.10, 0.10, 0.10, 0.07, 0.07, 0.04,
+  })
 
   DD_GUI.enemy_combat_pulse_active = true
   if not tempTimer then
-    DD_GUI.set_enemy_panel_border(bright)
+    DD_GUI.set_enemy_panel_border(
+      DD_GUI.Theme and DD_GUI.Theme.colors.bright_frame or "rgb(205,48,60)"
+    )
     return
   end
 
