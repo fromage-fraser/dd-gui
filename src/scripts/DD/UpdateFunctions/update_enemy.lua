@@ -30,8 +30,21 @@ function update_enemy()
         if type(enemy) == "table" and
            position == 6 then
 
+                local transition_in_progress = DD_GUI.enemy_defeat_active or
+                        DD_GUI.enemy_defeat_phase == "replacement"
+                if transition_in_progress and DD_GUI.enemy_panel_same_room then
+                        local room = gmcp and gmcp.Room and gmcp.Room.Info
+                        if not DD_GUI.enemy_panel_same_room(room) then
+                                if DD_GUI.cancel_enemy_defeat_transition then
+                                        DD_GUI.cancel_enemy_defeat_transition()
+                                end
+                                transition_in_progress = false
+                        end
+                end
+
                 local entering_combat = DD_GUI.enemy_panel_mode ~= "combat"
-                if DD_GUI.cancel_enemy_defeat_transition then
+                if not transition_in_progress and
+                   DD_GUI.cancel_enemy_defeat_transition then
                         DD_GUI.cancel_enemy_defeat_transition()
                 end
                 if entering_combat and DD_GUI.cancel_enemy_panel_flash then
