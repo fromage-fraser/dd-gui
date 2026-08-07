@@ -20,6 +20,8 @@ FrameGrid.minimum_height = 48
 FrameGrid.refresh_timer = nil
 FrameGrid.drag = nil
 FrameGrid.rendering = false
+FrameGrid.gauge_dividers = FrameGrid.gauge_dividers or {}
+FrameGrid.underlay_index = 0
 
 FrameGrid.frame_names = {
         ["DD_GUI.Top"] = "LayoutTop",
@@ -132,8 +134,10 @@ function FrameGrid:is_regular_color(color)
 end
 
 function FrameGrid:base_color()
-        return DD_GUI.Theme and DD_GUI.Theme.colors and
-                DD_GUI.Theme.colors.dark_frame or "rgb(72,10,18)"
+        -- The transparent braid tiles sit over a true black backing. The
+        -- pulse underlay supplies the controlled colour glow only while a
+        -- frame is flashing or pulsing.
+        return "rgb(0,0,0)"
 end
 
 function FrameGrid:asset_path(name)
@@ -160,13 +164,16 @@ end
 
 function FrameGrid:clear_visuals()
         for _, widget in ipairs(self.segments) do
+                delete_widget(widget._dd_gui_frame_underlay)
                 delete_widget(widget)
         end
         for _, widget in ipairs(self.nodes) do
+                delete_widget(widget._dd_gui_frame_underlay)
                 delete_widget(widget)
         end
         self.segments = {}
         self.nodes = {}
+        self.underlay_index = 0
 end
 
 function FrameGrid:clear_handles()
@@ -188,6 +195,7 @@ function FrameGrid:clear()
         self:clear_handles()
         self.regions = {}
         self.axes = { h = {}, v = {} }
+        self.gauge_dividers = {}
 end
 
 local function add_region(self, id, widget, options)
@@ -210,6 +218,7 @@ end
 function FrameGrid:collect_regions()
         self.regions = {}
         self.region_by_id = {}
+        self.gauge_dividers = {}
 
         local definitions = {
                 { "EnemyBox", DD_GUI.EnemyBox },
@@ -249,6 +258,44 @@ function FrameGrid:collect_regions()
                                 height = bottom.height,
                         },
                 })
+
+                -- The fixed gaps between gauge columns are wide enough for
+                -- a vertical braid. Keep those dividers decorative rather
+                -- than treating them as resize splitters, and terminate
+                -- each one with a square joiner at the outer frame edges.
+                local columns = {}
+                for _, column in ipairs({
+                        DD_GUI.FirstColumn,
+                        DD_GUI.SecondColumn,
+                        DD_GUI.ThirdColumn,
+                        DD_GUI.FourthColumn,
+                }) do
+                        local bounds = widget_bounds(column)
+                        if bounds then
+                                columns[#columns + 1] = bounds
+                        end
+                end
+                table.sort(columns, function(left_column, right_column)
+                        return left_column.x < right_column.x
+                end)
+                for index = 1, #columns - 1 do
+                        local left_column = columns[index]
+                        local right_column = columns[index + 1]
+                        local gap_start = left_column.x + left_column.width
+                        local gap_width = right_column.x - gap_start
+                        -- The columns normally touch; the gauge's own
+                        -- horizontal inset creates the visible black gap.
+                        -- Anchor a divider on that shared boundary, while
+                        -- avoiding dividers when a user has made columns
+                        -- overlap substantially.
+                        if gap_width >= -self.thickness / 2 then
+                                self.gauge_dividers[#self.gauge_dividers + 1] = {
+                                        x = gap_start + gap_width / 2,
+                                        y = bottom.y,
+                                        height = bottom.height,
+                                }
+                        end
+                end
         end
 end
 
@@ -440,6 +487,42 @@ local function edge_owner_color(self, entries)
         return selected
 end
 
+function FrameGrid:transparent_css()
+        return [[
+                background-color: rgba(0,0,0,0);
+                border: 0px;
+                border-radius: 0px;
+                margin: 0px;
+        ]]
+end
+
+function FrameGrid:ensure_underlay(widget)
+        if not widget then
+                return nil
+        end
+        if widget._dd_gui_frame_underlay then
+                return widget._dd_gui_frame_underlay
+        end
+
+        local bounds = widget_bounds(widget)
+        if not bounds or not Geyser or not Geyser.Label then
+                return nil
+        end
+
+        self.underlay_index = (self.underlay_index or 0) + 1
+        local underlay = Geyser.Label:new({
+                name = "DD_GUI.FrameGrid.Underlay." .. self.underlay_index,
+                x = bounds.x,
+                y = bounds.y,
+                width = bounds.width,
+                height = bounds.height,
+        }, main)
+        underlay:setStyleSheet(self:transparent_css())
+        set_clickthrough(underlay, true)
+        widget._dd_gui_frame_underlay = underlay
+        return underlay
+end
+
 function FrameGrid:line_style(widget, orientation, color)
         local regular = self:is_regular_color(color)
         local css = string.format([[ 
@@ -449,14 +532,26 @@ function FrameGrid:line_style(widget, orientation, color)
                 margin: 0px;
         ]], regular and self:base_color() or color)
 
-        local asset = regular and self:asset_path(
-                orientation == "h" and "horizontal.png" or "vertical.png") or nil
+        local underlay = self:ensure_underlay(widget)
+        if underlay then
+                underlay:setStyleSheet(css)
+        end
+
+        -- Keep the braid foreground in every state. The transparent asset
+        -- lets the regular or pulsing colour remain underneath it.
+        local asset = self:asset_path(
+                orientation == "h" and "horizontal.png" or "vertical.png")
         if asset and type(widget.setTiledBackgroundImage) == "function" then
+                -- The braid assets have a transparent backing. Paint the
+                -- state colour first so combat pulses sit beneath the links
+                -- instead of replacing them with a flat strip.
+                widget:setStyleSheet(underlay and self:transparent_css() or css)
                 pcall(function() widget:setTiledBackgroundImage(asset) end)
         elseif asset and type(widget.setBackgroundImage) == "function" then
+                widget:setStyleSheet(underlay and self:transparent_css() or css)
                 pcall(function() widget:setBackgroundImage(asset) end)
         else
-                widget:setStyleSheet(css)
+                widget:setStyleSheet(underlay and self:transparent_css() or css)
                 if type(widget.resetBackgroundImage) == "function" then
                         pcall(function() widget:resetBackgroundImage() end)
                 end
@@ -473,11 +568,20 @@ function FrameGrid:node_style(widget, color)
                 margin: 0px;
         ]], regular and self:base_color() or color)
 
-        local asset = regular and self:asset_path("node.png") or nil
+        local underlay = self:ensure_underlay(widget)
+        if underlay then
+                underlay:setStyleSheet(css)
+        end
+
+        -- Keep the square joiner foreground while its underlay changes.
+        local asset = self:asset_path("node.png")
         if asset and type(widget.setBackgroundImage) == "function" then
+                -- Keep the square joiner above the same pulsing underlay as
+                -- its adjoining links.
+                widget:setStyleSheet(underlay and self:transparent_css() or css)
                 pcall(function() widget:setBackgroundImage(asset) end)
         else
-                widget:setStyleSheet(css)
+                widget:setStyleSheet(underlay and self:transparent_css() or css)
                 if type(widget.resetBackgroundImage) == "function" then
                         pcall(function() widget:resetBackgroundImage() end)
                 end
@@ -610,6 +714,39 @@ function FrameGrid:draw_visuals()
                 self:node_style(marker, color)
                 self.nodes[#self.nodes + 1] = marker
         end
+
+        local divider_index = 0
+        for _, divider in ipairs(self.gauge_dividers or {}) do
+                divider_index = divider_index + 1
+                local color = self:regular_color()
+                local segment = Geyser.Label:new({
+                        name = "DD_GUI.FrameGrid.GaugeDivider." .. divider_index,
+                        x = round(divider.x - self.thickness / 2),
+                        y = round(divider.y),
+                        width = self.thickness,
+                        height = math.max(1, round(divider.height)),
+                }, root)
+                segment._dd_gui_frame_orientation = "v"
+                segment._dd_gui_frame_entries = {}
+                segment._dd_gui_frame_color = color
+                self:line_style(segment, "v", color)
+                self.segments[#self.segments + 1] = segment
+
+                for _, y in ipairs({ divider.y, divider.y + divider.height }) do
+                        local marker = Geyser.Label:new({
+                                name = "DD_GUI.FrameGrid.GaugeDividerNode." ..
+                                        divider_index .. "." .. tostring(y),
+                                x = round(divider.x - self.node_size / 2),
+                                y = round(y - self.node_size / 2),
+                                width = self.node_size,
+                                height = self.node_size,
+                        }, root)
+                        marker._dd_gui_frame_regions = {}
+                        marker._dd_gui_frame_color = color
+                        self:node_style(marker, color)
+                        self.nodes[#self.nodes + 1] = marker
+                end
+        end
 end
 
 local function handle_css(active)
@@ -706,9 +843,17 @@ end
 
 function FrameGrid:raise()
         for _, widget in ipairs(self.segments) do
+                if widget._dd_gui_frame_underlay and
+                   widget._dd_gui_frame_underlay.raise then
+                        widget._dd_gui_frame_underlay:raise()
+                end
                 if widget.raise then widget:raise() end
         end
         for _, widget in ipairs(self.nodes) do
+                if widget._dd_gui_frame_underlay and
+                   widget._dd_gui_frame_underlay.raise then
+                        widget._dd_gui_frame_underlay:raise()
+                end
                 if widget.raise then widget:raise() end
         end
         for _, orientation in ipairs({ "h", "v" }) do

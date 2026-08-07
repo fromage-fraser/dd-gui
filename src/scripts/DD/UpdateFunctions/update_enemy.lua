@@ -69,9 +69,9 @@ function update_enemy()
                 if EnemyInfoConsole and EnemyInfoConsole.resize then
                         EnemyInfoConsole:resize("92%", "14%")
                 end
-                EnemyConsoleHitpointsContainer:show()
-                EnemyConsoleHitpoints:show()
-                EnemyHitpointsLabel:show()
+                if DD_GUI.set_enemy_hitpoints_visible then
+                        DD_GUI.set_enemy_hitpoints_visible(true)
+                end
                 EnemyConsole:clear()
                 EnemyInfoConsole:clear()
                 local enemy_image       = asset_path("mobs/20412_the_destroyer.png")
