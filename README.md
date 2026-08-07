@@ -66,8 +66,11 @@ data. The main panels are:
   pulse while fighting and briefly pulses brighter when entering a new room
   before returning to its regular colour. When combat ends, the enemy image
   slowly fades to black, the next enemy or room image is rendered underneath,
-  and the replacement fades back in.
-- **Map:** the current room and surrounding map data.
+  and the replacement fades back in. Shared edges with the map follow the
+  combat colour as well, so the pulse remains continuous around the panel.
+- **Map:** the current room and surrounding map data. The embedded mapper has
+  even internal padding, and its title is kept to one compact room/vnum line
+  so northern rooms remain visible even when a room name is long.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
