@@ -40,6 +40,10 @@
                 "keys": "keypad+7"
         },
         {
+                "name": "Numpad7Home",
+                "keys": "keypad+Home"
+        },
+        {
                 "name": "Numpad8",
                 "keys": "keypad+8"
         },
@@ -62,6 +66,10 @@
         {
                 "name": "Numpad1",
                 "keys": "keypad+1"
+        },
+        {
+                "name": "Numpad1End",
+                "keys": "keypad+End"
         },
         {
                 "name": "Numpad2",
