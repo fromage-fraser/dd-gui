@@ -56,12 +56,12 @@ function DD_GUI.flash_enemy_panel()
 
   DD_GUI.enemy_panel_flash_active = true
   DD_GUI.set_enemy_panel_border(bright)
-  tempTimer(0.12, function()
+  tempTimer(0.20, function()
     if DD_GUI.enemy_panel_flash_token == token then
       DD_GUI.set_enemy_panel_border(middle)
     end
   end)
-  tempTimer(0.42, function()
+  tempTimer(0.76, function()
     if DD_GUI.enemy_panel_flash_token == token then
       DD_GUI.enemy_panel_flash_active = false
       DD_GUI.set_enemy_panel_border(regular)
@@ -124,26 +124,26 @@ function DD_GUI.start_enemy_combat_pulse()
     0.18
   )
   local pulse_stages = {
-    {color = black, duration = 0.26},
-    {color = ember, duration = 0.12},
-    {color = glow, duration = 0.14},
-    {color = dim, duration = 0.16},
-    {color = base, duration = 0.16},
-    {color = low, duration = 0.16},
-    {color = soft, duration = 0.16},
-    {color = middle, duration = 0.18},
-    {color = high, duration = 0.18},
-    {color = very_high, duration = 0.16},
-    {color = peak, duration = 0.22},
-    {color = very_high, duration = 0.16},
-    {color = high, duration = 0.18},
-    {color = middle, duration = 0.18},
-    {color = soft, duration = 0.16},
-    {color = low, duration = 0.16},
-    {color = base, duration = 0.16},
-    {color = dim, duration = 0.16},
-    {color = glow, duration = 0.14},
-    {color = ember, duration = 0.12},
+    {color = black, duration = 0.20},
+    {color = ember, duration = 0.09},
+    {color = glow, duration = 0.11},
+    {color = dim, duration = 0.12},
+    {color = base, duration = 0.12},
+    {color = low, duration = 0.12},
+    {color = soft, duration = 0.12},
+    {color = middle, duration = 0.14},
+    {color = high, duration = 0.14},
+    {color = very_high, duration = 0.12},
+    {color = peak, duration = 0.18},
+    {color = very_high, duration = 0.12},
+    {color = high, duration = 0.14},
+    {color = middle, duration = 0.14},
+    {color = soft, duration = 0.12},
+    {color = low, duration = 0.12},
+    {color = base, duration = 0.12},
+    {color = dim, duration = 0.12},
+    {color = glow, duration = 0.11},
+    {color = ember, duration = 0.09},
   }
 
   DD_GUI.enemy_combat_pulse_active = true

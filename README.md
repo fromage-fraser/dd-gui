@@ -71,7 +71,10 @@ data. The main panels are:
   coloured underlay feathers toward black across each braid edge, keeping the
   glow softer than a solid rectangular strip.
   pulse while fighting and briefly pulses brighter when entering a new room
-  before returning to its regular colour. When combat ends, the enemy image
+  before returning to its regular colour. The enemy pulse is quicker while
+  the room-entry flash lingers a little longer, and the coloured underlay is
+  inset by one pixel
+  on each exposed side behind the braid. When combat ends, the enemy image
   slowly fades to black, the next enemy or room image is rendered underneath,
   and the replacement fades back in. Shared edges with the map follow the
   combat colour as well, so the pulse remains continuous around the panel.

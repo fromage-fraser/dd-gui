@@ -539,12 +539,44 @@ function FrameGrid:underlay_css(color, orientation, node)
         ]], x2, y2, color, color)
 end
 
-function FrameGrid:ensure_underlay(widget)
+function FrameGrid:underlay_bounds(bounds, orientation, node)
+        local inset_x = 0
+        local inset_y = 0
+        if node then
+                inset_x = 1
+                inset_y = 1
+        elseif orientation == "h" then
+                inset_y = 1
+        elseif orientation == "v" then
+                inset_x = 1
+        end
+
+        return {
+                x = bounds.x + inset_x,
+                y = bounds.y + inset_y,
+                width = math.max(1, bounds.width - inset_x * 2),
+                height = math.max(1, bounds.height - inset_y * 2),
+        }
+end
+
+function FrameGrid:position_underlay(underlay, bounds, orientation, node)
+        local positioned = self:underlay_bounds(bounds, orientation, node)
+        if underlay.move then
+                pcall(function()
+                        underlay:move(positioned.x, positioned.y)
+                end)
+        end
+        if underlay.resize then
+                pcall(function()
+                        underlay:resize(positioned.width, positioned.height)
+                end)
+        end
+        return positioned
+end
+
+function FrameGrid:ensure_underlay(widget, orientation, node)
         if not widget then
                 return nil
-        end
-        if widget._dd_gui_frame_underlay then
-                return widget._dd_gui_frame_underlay
         end
 
         local bounds = widget_bounds(widget)
@@ -552,13 +584,24 @@ function FrameGrid:ensure_underlay(widget)
                 return nil
         end
 
+        if widget._dd_gui_frame_underlay then
+                self:position_underlay(
+                        widget._dd_gui_frame_underlay,
+                        bounds,
+                        orientation,
+                        node
+                )
+                return widget._dd_gui_frame_underlay
+        end
+
         self.underlay_index = (self.underlay_index or 0) + 1
+        local positioned = self:underlay_bounds(bounds, orientation, node)
         local underlay = Geyser.Label:new({
                 name = "DD_GUI.FrameGrid.Underlay." .. self.underlay_index,
-                x = bounds.x,
-                y = bounds.y,
-                width = bounds.width,
-                height = bounds.height,
+                x = positioned.x,
+                y = positioned.y,
+                width = positioned.width,
+                height = positioned.height,
         }, main)
         underlay:setStyleSheet(self:transparent_css())
         set_clickthrough(underlay, true)
@@ -575,7 +618,7 @@ function FrameGrid:line_style(widget, orientation, color)
                 margin: 0px;
         ]], regular and self:base_color() or color)
 
-        local underlay = self:ensure_underlay(widget)
+        local underlay = self:ensure_underlay(widget, orientation, false)
         if underlay then
                 underlay:setStyleSheet(self:underlay_css(
                         regular and self:base_color() or color,
@@ -615,7 +658,7 @@ function FrameGrid:node_style(widget, color)
                 margin: 0px;
         ]], regular and self:base_color() or color)
 
-        local underlay = self:ensure_underlay(widget)
+        local underlay = self:ensure_underlay(widget, nil, true)
         if underlay then
                 underlay:setStyleSheet(self:underlay_css(
                         regular and self:base_color() or color,
