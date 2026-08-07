@@ -61,7 +61,9 @@ end
 function DD_GUI.apply_mapper_theme()
         if type(setConfig) == "function" then
                 pcall(function()
-                        setConfig("mapInfoColor", {0, 0, 0, 255})
+                        -- Keep northern room symbols visible if the native
+                        -- title reaches into the top of the map.
+                        setConfig("mapInfoColor", {0, 0, 0, 0})
                 end)
         end
 

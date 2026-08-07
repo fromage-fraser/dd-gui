@@ -20,7 +20,7 @@ If you have any issues with the automated installation and update system for the
 
 To uninstall the GUI, you can simply type:
 
-`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed. To safely uninstall and reinstall the latest remote package, use `reinstallgui`; it lets the alias return, waits three seconds between the two operations so Mudlet can finish removing the old package, then reports the installed package version.
+`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed. To safely uninstall and reinstall the latest remote package, use `reinstallgui`; it lets the alias return, waits three seconds between the two operations so Mudlet can finish removing the old package, then installs from the canonical `.mpackage` URL and reports the installed package version. The handoff uses profile-level named timers and install/uninstall events so the reinstall callback survives removal of the old package.
 
 ## Layout controls
 
@@ -131,9 +131,8 @@ data. The main panels are:
 The main MUD console and panel consoles use the profile's shared scrollbar
 style: narrow black tracks have restrained dark-red edges, while the moving
 thumb is rendered as a small red square joiner against the black track. The
-mapper's native room title uses
-an opaque black background with white text and no additional accent line, so
-the title takes as little vertical space as possible.
+mapper's native room title uses a transparent background with white text and no
+additional accent line, so rooms at the top edge remain visible beneath it.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. `bootstrap()` is idempotent for the installed package version, so
@@ -159,7 +158,7 @@ These aliases are available from the Mudlet command line:
 | `ddmap on` / `ddmap off` | Enable or disable the Dragons Domain custom mapper. |
 | `ignores` | Add the Dragons Domain portal message to the mapper's ignore patterns. |
 | `ugui` | Uninstall the `DD_GUI` package. |
-| `reinstallgui` | Defer the uninstall, wait three seconds, reinstall the latest remote package, and report its installed version without removing downloaded custom content. |
+| `reinstallgui` | Defer the uninstall, wait three seconds, reinstall the latest remote package with a profile-level handoff, and report its installed version without removing downloaded custom content. |
 
 
 ## Keyboard controls
