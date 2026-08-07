@@ -76,6 +76,8 @@ data. The main panels are:
   slowly fades to black, the next enemy or room image is rendered underneath,
   and the replacement fades back in. Shared edges with the map follow the
   combat colour as well, so the pulse remains continuous around the panel.
+  If a new enemy arrives during that transition, combat data takes priority
+  and the new image and hitpoint bar appear immediately.
   The braid and square joiners remain visible over that colour instead of
   turning into flat red strips during the pulse; the state colour is painted
   on a separate underlay so the texture cannot suppress it. During normal
