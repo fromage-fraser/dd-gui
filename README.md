@@ -164,7 +164,9 @@ These aliases are available from the Mudlet command line:
 While the GUI is in its normal locked state:
 
 - `Ctrl+Shift+Alt+C` clears the main MUD text window.
-- Numeric keypad `7`, `8`, and `9` send equipment, north, and up.
+- Numeric keypad `7`, `8`, and `9` send equipment, north, and up. The `7`
+  and `1` actions also work with Num Lock off, where the keys are reported as
+  keypad `Home` and `End`.
 - Numeric keypad `4`, `5`, and `6` send west, look, and east.
 - Numeric keypad `1`, `2`, and `3` send scan, south, and down. Each action
   briefly highlights its corresponding compass button.
