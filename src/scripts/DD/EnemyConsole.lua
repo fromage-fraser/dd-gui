@@ -158,12 +158,32 @@ function DD_GUI.enemy_panel_same_room(room)
     tostring(room.vnum) == tostring(DD_GUI.enemy_panel_room_vnum)
 end
 
+local function first_enemy_for_transition(enemies)
+  if type(enemies) ~= "table" or type(enemies[1]) ~= "table" then
+    return nil
+  end
+
+  if enemies[1].name ~= nil or enemies[1].hp ~= nil or
+     enemies[1].maxhp ~= nil then
+    return enemies[1]
+  end
+
+  if type(enemies[1][1]) == "table" then
+    return enemies[1][1]
+  end
+
+  return nil
+end
+
 function DD_GUI.maybe_start_enemy_defeat_transition()
   local room = gmcp and gmcp.Room and gmcp.Room.Info
   local same_room = DD_GUI.enemy_panel_same_room and
     DD_GUI.enemy_panel_same_room(room)
 
   if DD_GUI.enemy_defeat_active then
+    if DD_GUI.enemy_defeat_phase == "fade_in" then
+      return false
+    end
     if not same_room and DD_GUI.cancel_enemy_defeat_transition then
       DD_GUI.cancel_enemy_defeat_transition()
       return false
@@ -177,42 +197,43 @@ function DD_GUI.maybe_start_enemy_defeat_transition()
   end
 
   return DD_GUI.start_enemy_defeat_transition(function()
-    if type(update_travel) == "function" then
+    local enemies = gmcp and gmcp.Char and gmcp.Char.Enemies
+    local enemy = first_enemy_for_transition(enemies)
+    local position = gmcp and gmcp.Char and gmcp.Char.Vitals and
+      tonumber(gmcp.Char.Vitals.position)
+
+    if type(enemy) == "table" and position == 6 and
+       type(update_enemy) == "function" then
+      pcall(update_enemy)
+    elseif type(update_travel) == "function" then
       pcall(update_travel)
     end
   end) == true
 end
 
-local function shatter_css(alpha)
-  local theme = DD_GUI.Theme
-  local colors = theme and theme.colors or {}
-  local edge = colors.bright_frame or "rgb(205,48,60)"
-
+local function enemy_fade_css(alpha)
   return string.format([[
-    background-color: rgba(151,27,39,%d);
-    border-style: solid;
-    border-width: 1px;
-    border-color: %s;
+    background-color: rgba(0,0,0,%d);
+    border: 0px;
     border-radius: 0px;
     margin: 0px;
-  ]], alpha, edge)
+  ]], math.max(0, math.min(255, tonumber(alpha) or 0)))
 end
 
-local function remove_enemy_shatter_shards()
-  for _, shard in ipairs(DD_GUI.EnemyShatterShards or {}) do
-    if shard and shard.delete then
-      pcall(function() shard:delete() end)
-    end
+local function set_enemy_fade_alpha(alpha)
+  DD_GUI.enemy_defeat_alpha = math.max(0, math.min(255, tonumber(alpha) or 0))
+  if EnemyFadeLayer and EnemyFadeLayer.setStyleSheet then
+    EnemyFadeLayer:setStyleSheet(enemy_fade_css(DD_GUI.enemy_defeat_alpha))
   end
-  DD_GUI.EnemyShatterShards = {}
 end
 
 function DD_GUI.cancel_enemy_defeat_transition()
   DD_GUI.enemy_defeat_token = (DD_GUI.enemy_defeat_token or 0) + 1
   DD_GUI.enemy_defeat_active = false
-  remove_enemy_shatter_shards()
-  if EnemyShatterLayer and EnemyShatterLayer.hide then
-    EnemyShatterLayer:hide()
+  DD_GUI.enemy_defeat_phase = nil
+  set_enemy_fade_alpha(0)
+  if EnemyFadeLayer and EnemyFadeLayer.hide then
+    EnemyFadeLayer:hide()
   end
 end
 
@@ -221,7 +242,7 @@ function DD_GUI.start_enemy_defeat_transition(on_complete)
     return true
   end
 
-  if not EnemyShatterLayer or not Geyser or not Geyser.Label then
+  if not EnemyFadeLayer or not Geyser or not Geyser.Label then
     if type(on_complete) == "function" then
       on_complete()
     end
@@ -229,16 +250,12 @@ function DD_GUI.start_enemy_defeat_transition(on_complete)
   end
 
   DD_GUI.enemy_defeat_active = true
+  DD_GUI.enemy_defeat_phase = "fade_out"
   DD_GUI.enemy_defeat_token = (DD_GUI.enemy_defeat_token or 0) + 1
   local token = DD_GUI.enemy_defeat_token
-  local layer = EnemyShatterLayer
-  local layer_width = math.max(1, tonumber(layer:get_width()) or 0)
-  local layer_height = math.max(1, tonumber(layer:get_height()) or 0)
-  local columns = 6
-  local rows = 4
-  local cell_width = layer_width / columns
-  local cell_height = layer_height / rows
-  local symbols = {"/", "\\", "+", "-", "*"}
+  local layer = EnemyFadeLayer
+  local frame_count = 15
+  local frame_delay = 0.06
 
   DD_GUI.cancel_enemy_panel_flash()
   if DD_GUI.cancel_enemy_combat_pulse then
@@ -248,96 +265,89 @@ function DD_GUI.start_enemy_defeat_transition(on_complete)
     DD_GUI.Theme and DD_GUI.Theme.colors.bright_frame or
       "rgb(205,48,60)"
   )
-  remove_enemy_shatter_shards()
+  set_enemy_fade_alpha(0)
   layer:show()
-
-  for row = 0, rows - 1 do
-    for column = 0, columns - 1 do
-      local x = math.floor(column * cell_width + 2)
-      local y = math.floor(row * cell_height + 2)
-      local width = math.max(8, math.floor(cell_width - 4))
-      local height = math.max(8, math.floor(cell_height - 4))
-      local shard = Geyser.Label:new({
-        name = string.format("DD_GUI.EnemyShatter.%d.%d", row, column),
-        x = x,
-        y = y,
-        width = width,
-        height = height,
-        color = "black",
-      }, layer)
-      shard:setStyleSheet(shatter_css(90))
-      shard:echo(symbols[(row + column) % #symbols + 1], "white", "cb9")
-      if DD_GUI.set_widget_clickthrough then
-        DD_GUI.set_widget_clickthrough(shard, true)
-      end
-      local desired_drift_x = (column - (columns - 1) / 2) * 34 +
-        (row % 2 == 0 and -8 or 8)
-      local desired_drift_y =
-        28 + row * 18 + math.abs(column - (columns - 1) / 2) * 12
-      local min_drift_x = 2 - x
-      local max_drift_x = layer_width - x - width - 2
-      local max_drift_y = layer_height - y - height - 2
-      table.insert(DD_GUI.EnemyShatterShards, {
-        widget = shard,
-        x = x,
-        y = y,
-        width = width,
-        height = height,
-        drift_x = math.max(min_drift_x, math.min(max_drift_x, desired_drift_x)),
-        drift_y = math.max(0, math.min(max_drift_y, desired_drift_y)),
-      })
-    end
+  if layer.raise then
+    layer:raise()
   end
 
-  layer:raiseAll()
-  local frame = 0
-  local frame_count = 12
-
-  local function finish()
-    if DD_GUI.enemy_defeat_token ~= token then
-      return
-    end
-
+  if not tempTimer then
+    set_enemy_fade_alpha(255)
     DD_GUI.enemy_defeat_active = false
-    DD_GUI.enemy_panel_mode = "travel"
-    remove_enemy_shatter_shards()
-    layer:hide()
+    DD_GUI.enemy_defeat_phase = "replacement"
     if type(on_complete) == "function" then
       pcall(on_complete)
     end
+    DD_GUI.enemy_defeat_active = false
+    DD_GUI.enemy_defeat_phase = nil
+    set_enemy_fade_alpha(0)
+    layer:hide()
+    return true
   end
 
-  local function animate()
+  local frame = 0
+
+  local function fade_in_replacement()
     if DD_GUI.enemy_defeat_token ~= token then
       return
     end
 
     frame = frame + 1
     local progress = math.min(1, frame / frame_count)
-    local alpha = math.floor(90 + 130 * progress)
-    for _, state in ipairs(DD_GUI.EnemyShatterShards) do
-      local shard = state.widget
-      local scale = 1 - progress * 0.45
-      local width = math.max(3, math.floor(state.width * scale))
-      local height = math.max(3, math.floor(state.height * scale))
-      local x = state.x + state.drift_x * progress +
-        (state.width - width) / 2
-      local y = state.y + state.drift_y * progress +
-        (state.height - height) / 2
+    set_enemy_fade_alpha(math.floor(255 * (1 - progress) + 0.5))
 
-      shard:move(math.floor(x), math.floor(y))
-      shard:resize(width, height)
-      shard:setStyleSheet(shatter_css(alpha))
-    end
-
-    if frame >= frame_count then
-      tempTimer(0.08, finish)
+    if progress >= 1 then
+      DD_GUI.enemy_defeat_active = false
+      DD_GUI.enemy_defeat_phase = nil
+      set_enemy_fade_alpha(0)
+      layer:hide()
     else
-      tempTimer(0.07, animate)
+      tempTimer(frame_delay, fade_in_replacement)
     end
   end
 
-  animate()
+  local function replace_under_black()
+    if DD_GUI.enemy_defeat_token ~= token then
+      return
+    end
+
+    DD_GUI.enemy_defeat_active = false
+    DD_GUI.enemy_defeat_phase = "replacement"
+    DD_GUI.enemy_panel_mode = "travel"
+    if type(on_complete) == "function" then
+      pcall(on_complete)
+    end
+
+    if DD_GUI.enemy_defeat_token ~= token then
+      return
+    end
+
+    DD_GUI.enemy_defeat_active = true
+    DD_GUI.enemy_defeat_phase = "fade_in"
+    frame = 0
+    if layer.raise then
+      layer:raise()
+    end
+    fade_in_replacement()
+  end
+
+  local function fade_out_enemy()
+    if DD_GUI.enemy_defeat_token ~= token then
+      return
+    end
+
+    frame = frame + 1
+    local progress = math.min(1, frame / frame_count)
+    set_enemy_fade_alpha(math.floor(255 * progress + 0.5))
+
+    if progress >= 1 then
+      replace_under_black()
+    else
+      tempTimer(frame_delay, fade_out_enemy)
+    end
+  end
+
+  fade_out_enemy()
   return true
 end
 
@@ -348,9 +358,12 @@ function build_enemy_console()
   if DD_GUI.cancel_enemy_combat_pulse then
     DD_GUI.cancel_enemy_combat_pulse()
   end
-  if EnemyShatterLayer and EnemyShatterLayer.delete then
-    pcall(function() EnemyShatterLayer:delete() end)
+  for _, layer in ipairs({EnemyFadeLayer, EnemyShatterLayer}) do
+    if layer and layer.delete then
+      pcall(function() layer:delete() end)
+    end
   end
+  EnemyFadeLayer = nil
   EnemyShatterLayer = nil
 
 
@@ -469,17 +482,19 @@ function build_enemy_console()
 
     -- This must be a sibling of the native MiniConsole rather than its
     -- child. MiniConsole can repaint over child widgets during a refresh,
-    -- making the defeat animation appear to skip straight to travel mode.
-    EnemyShatterLayer = Geyser.Container:new({
-      name = "DD_GUI.EnemyShatterLayer",
+    -- so the fade overlay stays deterministic while the image underneath
+    -- is replaced.
+    EnemyFadeLayer = Geyser.Label:new({
+      name = "DD_GUI.EnemyFadeLayer",
       x = "4%",
       y = "6%",
       width = "92%",
       height = "63%",
     }, DD_GUI.EnemyBox)
+    set_enemy_fade_alpha(0)
     if DD_GUI.set_widget_clickthrough then
-      DD_GUI.set_widget_clickthrough(EnemyShatterLayer, true)
+      DD_GUI.set_widget_clickthrough(EnemyFadeLayer, true)
     end
-    EnemyShatterLayer:hide()
+    EnemyFadeLayer:hide()
 
   end
