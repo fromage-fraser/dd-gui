@@ -67,7 +67,9 @@ data. The main panels are:
   Travel mode keeps the room summary visible as `Area` and `Type` on the first
   line, `Room` on the second, and `Room flags` on the third; empty visible flags
   are shown as `None`. The panel border moves through a slower, smoothly
-  graduated multi-step red
+  graduated multi-step red pulse with an explicit black-to-red swell. The
+  coloured underlay feathers toward black across each braid edge, keeping the
+  glow softer than a solid rectangular strip.
   pulse while fighting and briefly pulses brighter when entering a new room
   before returning to its regular colour. When combat ends, the enemy image
   slowly fades to black, the next enemy or room image is rendered underneath,

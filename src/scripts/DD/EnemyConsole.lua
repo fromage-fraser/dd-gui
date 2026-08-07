@@ -109,6 +109,11 @@ function DD_GUI.start_enemy_combat_pulse()
   local bright = colors.bright_frame or "rgb(205,48,60)"
   local regular = colors.frame or "rgb(151,27,39)"
   local middle = colors.frame_flash or "rgb(181,37,49)"
+  local black = "rgb(0,0,0)"
+  local ember = blend_rgb(black, regular, 0.18)
+  local glow = blend_rgb(black, regular, 0.38)
+  local dim = blend_rgb(black, regular, 0.62)
+  local base = blend_rgb(black, regular, 0.82)
   local low = blend_rgb(regular, middle, 0.25)
   local soft = blend_rgb(regular, middle, 0.5)
   local high = blend_rgb(middle, bright, 0.5)
@@ -119,18 +124,26 @@ function DD_GUI.start_enemy_combat_pulse()
     0.18
   )
   local pulse_stages = {
-    {color = regular, duration = 0.70},
+    {color = black, duration = 0.26},
+    {color = ember, duration = 0.12},
+    {color = glow, duration = 0.14},
+    {color = dim, duration = 0.16},
+    {color = base, duration = 0.16},
     {color = low, duration = 0.16},
-    {color = soft, duration = 0.18},
-    {color = middle, duration = 0.20},
-    {color = high, duration = 0.20},
-    {color = very_high, duration = 0.18},
-    {color = peak, duration = 0.26},
-    {color = very_high, duration = 0.18},
-    {color = high, duration = 0.20},
-    {color = middle, duration = 0.20},
-    {color = soft, duration = 0.18},
+    {color = soft, duration = 0.16},
+    {color = middle, duration = 0.18},
+    {color = high, duration = 0.18},
+    {color = very_high, duration = 0.16},
+    {color = peak, duration = 0.22},
+    {color = very_high, duration = 0.16},
+    {color = high, duration = 0.18},
+    {color = middle, duration = 0.18},
+    {color = soft, duration = 0.16},
     {color = low, duration = 0.16},
+    {color = base, duration = 0.16},
+    {color = dim, duration = 0.16},
+    {color = glow, duration = 0.14},
+    {color = ember, duration = 0.12},
   }
 
   DD_GUI.enemy_combat_pulse_active = true

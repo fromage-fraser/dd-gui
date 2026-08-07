@@ -496,6 +496,49 @@ function FrameGrid:transparent_css()
         ]]
 end
 
+function FrameGrid:underlay_css(color, orientation, node)
+        if self:is_regular_color(color) or color == "rgb(0,0,0)" then
+                return string.format([[
+                        background-color: %s;
+                        border: 0px;
+                        border-radius: 0px;
+                        margin: 0px;
+                ]], self:base_color())
+        end
+
+        if node then
+                return string.format([[
+                        background-color: qradialgradient(
+                                cx: 0.5, cy: 0.5, radius: 0.72,
+                                stop: 0 %s,
+                                stop: 0.58 %s,
+                                stop: 1 rgba(0,0,0,0)
+                        );
+                        border: 0px;
+                        border-radius: 0px;
+                        margin: 0px;
+                ]], color, color)
+        end
+
+        local x2, y2 = "0", "1"
+        if orientation == "v" then
+                x2, y2 = "1", "0"
+        end
+
+        return string.format([[
+                background-color: qlineargradient(
+                        x1: 0, y1: 0, x2: %s, y2: %s,
+                        stop: 0 rgba(0,0,0,0),
+                        stop: 0.28 %s,
+                        stop: 0.72 %s,
+                        stop: 1 rgba(0,0,0,0)
+                );
+                border: 0px;
+                border-radius: 0px;
+                margin: 0px;
+        ]], x2, y2, color, color)
+end
+
 function FrameGrid:ensure_underlay(widget)
         if not widget then
                 return nil
@@ -534,7 +577,11 @@ function FrameGrid:line_style(widget, orientation, color)
 
         local underlay = self:ensure_underlay(widget)
         if underlay then
-                underlay:setStyleSheet(css)
+                underlay:setStyleSheet(self:underlay_css(
+                        regular and self:base_color() or color,
+                        orientation,
+                        false
+                ))
         end
 
         -- Keep the braid foreground in every state. The transparent asset
@@ -570,7 +617,11 @@ function FrameGrid:node_style(widget, color)
 
         local underlay = self:ensure_underlay(widget)
         if underlay then
-                underlay:setStyleSheet(css)
+                underlay:setStyleSheet(self:underlay_css(
+                        regular and self:base_color() or color,
+                        nil,
+                        true
+                ))
         end
 
         -- Keep the square joiner foreground while its underlay changes.
