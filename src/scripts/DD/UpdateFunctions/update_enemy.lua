@@ -32,21 +32,16 @@ function update_enemy()
 
                 local transition_in_progress = DD_GUI.enemy_defeat_active or
                         DD_GUI.enemy_defeat_phase == "replacement"
-                if transition_in_progress and DD_GUI.enemy_panel_same_room then
-                        local room = gmcp and gmcp.Room and gmcp.Room.Info
-                        if not DD_GUI.enemy_panel_same_room(room) then
-                                if DD_GUI.cancel_enemy_defeat_transition then
-                                        DD_GUI.cancel_enemy_defeat_transition()
-                                end
-                                transition_in_progress = false
-                        end
+                if transition_in_progress and
+                   DD_GUI.cancel_enemy_defeat_transition then
+                        -- A live enemy takes priority over the previous
+                        -- defeat transition. Do not leave the new image and
+                        -- hitpoint bar hidden behind its fade layer.
+                        DD_GUI.cancel_enemy_defeat_transition()
+                        transition_in_progress = false
                 end
 
                 local entering_combat = DD_GUI.enemy_panel_mode ~= "combat"
-                if not transition_in_progress and
-                   DD_GUI.cancel_enemy_defeat_transition then
-                        DD_GUI.cancel_enemy_defeat_transition()
-                end
                 if entering_combat and DD_GUI.cancel_enemy_panel_flash then
                         DD_GUI.cancel_enemy_panel_flash()
                 end
