@@ -343,9 +343,42 @@ function FrameGrid:make_axes()
                 return result
         end
 
+        local function merge_nearby_axes(axes_list)
+                local result = {}
+                for _, axis in ipairs(axes_list) do
+                        local match
+                        for _, existing in ipairs(result) do
+                                local overlap = math.min(existing.finish,
+                                        axis.finish) - math.max(existing.start,
+                                        axis.start)
+                                if math.abs(existing.position - axis.position) <= 2 and
+                                   overlap >= 8 then
+                                        match = existing
+                                        break
+                                end
+                        end
+
+                        if match then
+                                match.position = (match.position + axis.position) / 2
+                                match.start = math.min(match.start, axis.start)
+                                match.finish = math.max(match.finish, axis.finish)
+                                for _, entry in ipairs(axis.entries or {}) do
+                                        match.entries[#match.entries + 1] = entry
+                                end
+                        else
+                                result[#result + 1] = axis
+                        end
+                end
+
+                table.sort(result, function(left, right)
+                        return left.position < right.position
+                end)
+                return result
+        end
+
         self.axes = {
-                h = materialize_axis(axes.h),
-                v = materialize_axis(axes.v),
+                h = merge_nearby_axes(materialize_axis(axes.h)),
+                v = merge_nearby_axes(materialize_axis(axes.v)),
         }
 
         -- Independent percentage layouts can land a shared corner a pixel
@@ -383,6 +416,19 @@ end
 
 local function edge_owner_color(self, entries)
         local regular = self:regular_color()
+
+        -- The enemy/map divider is a shared edge. Give combat state an
+        -- explicit priority there so a regular map repaint cannot mask the
+        -- enemy pulse on that one side.
+        local enemy_color = self.region_colors.EnemyBox
+        if enemy_color and enemy_color ~= regular then
+                for _, entry in ipairs(entries or {}) do
+                        if entry.region and entry.region.id == "EnemyBox" then
+                                return enemy_color
+                        end
+                end
+        end
+
         local selected = regular
         for _, entry in ipairs(entries or {}) do
                 local color = self.region_colors[entry.region.id]
@@ -468,6 +514,10 @@ function FrameGrid:refresh_colors()
                         marker._dd_gui_frame_color = color
                 end
         end
+
+        -- Content widgets can repaint a shared divider after a combat colour
+        -- change. Keep the click-through frame layer above those surfaces.
+        self:raise()
 end
 
 function FrameGrid:draw_visuals()

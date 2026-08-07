@@ -30,7 +30,33 @@ local function legacy_mapper_save_path()
         return string.gsub(package_path .. "/maps/dragons_domain_mapper.dat", "\\", "/")
 end
 
+local map_info_title_name = "DD_GUI.MapTitle"
 local map_info_accent_name = "DD_GUI.MapTitleAccent"
+
+local function compact_map_title(room_id)
+        local id = tonumber(room_id)
+        if not id or type(roomExists) ~= "function" then
+                return ""
+        end
+
+        local exists_ok, exists = pcall(roomExists, id)
+        if not exists_ok or not exists then
+                return ""
+        end
+
+        local name_ok, name = pcall(getRoomName, id)
+        if not name_ok or not name or tostring(name) == "" then
+                return tostring(id)
+        end
+
+        local title = tostring(name):gsub("[\r\n]+", " ") .. " / " .. tostring(id)
+        -- The native mapper wraps map-info fragments. Keep the title on one
+        -- line so north rooms remain visible in the small embedded viewport.
+        if #title > 40 then
+                title = title:sub(1, 37):gsub("%s+%S*$", "") .. "..."
+        end
+        return title
+end
 
 function DD_GUI.apply_mapper_theme()
         if type(setConfig) == "function" then
@@ -49,10 +75,18 @@ function DD_GUI.apply_mapper_theme()
         local rule = string.rep(string.char(226, 148, 128), 38)
 
         pcall(function()
+                registerMapInfo(map_info_title_name, function(room_id)
+                        local title = compact_map_title(room_id)
+                        if title == "" then
+                                return ""
+                        end
+                        return title, false, false, 255, 255, 255
+                end)
                 registerMapInfo(map_info_accent_name, function()
                         return rule, false, false, frame[1], frame[2], frame[3]
                 end)
-                enableMapInfo("Short")
+                disableMapInfo("Short")
+                enableMapInfo(map_info_title_name)
                 enableMapInfo(map_info_accent_name)
         end)
 end
