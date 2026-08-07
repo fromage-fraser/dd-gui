@@ -7,6 +7,11 @@ local function compass_surface_css()
   ]]
 end
 
+local compass_action_commands = {
+  nw = "equipment",
+  sw = "scan",
+}
+
 function dd_gui_compass_handle_click(event)
   if not DD_GUI.Layout or not DD_GUI.Layout.enabled or
      not event or event.button ~= "LeftButton" or
@@ -96,13 +101,13 @@ function build_compass()
   compass = {
     buttons = {"nw", "n", "u", "w", "look", "e", "sw", "s", "d"},
     commands = {
-      nw = "equipment",
+      nw = compass_action_commands.nw,
       n = "north",
       u = "up",
       w = "west",
       look = "look",
       e = "east",
-      sw = "scan",
+      sw = compass_action_commands.sw,
       s = "south",
       d = "down",
     },
@@ -341,6 +346,12 @@ function build_compass()
   function DD_GUI.compass_press(name)
     if compass and compass.click then
       compass.click(name)
+      return
+    end
+
+    local command = compass_action_commands[name]
+    if command then
+      send(command)
     end
   end
 
@@ -353,7 +364,12 @@ function build_compass()
       cell:setFontSize(8)
       cell:setBold(1)
     end
-    cell:setClickCallback("compass.click", direction)
+    -- Route clicks through the stable public callback. This survives a live
+    -- compass rebuild and keeps action cells interactive above frame layers.
+    cell:setClickCallback("DD_GUI.compass_press", direction)
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(cell, false)
+    end
     setLabelOnEnter("compass." .. direction, "compass.onEnter", direction)
     setLabelOnLeave("compass." .. direction, "compass.onLeave", direction)
   end
