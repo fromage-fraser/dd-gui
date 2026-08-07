@@ -14,6 +14,7 @@ end
 
 DD_GUI = DD_GUI or {}
 DD_GUI.mainconsole_padding = 8
+DD_GUI.mainconsole_top_padding = 10
 
 function ui_container()
 
@@ -76,8 +77,9 @@ function ui_container()
                 local ch = tonumber(ui.mainconsole_container:get_height()) or h
 
                 local padding = tonumber(DD_GUI.mainconsole_padding) or 8
+                local top_padding = tonumber(DD_GUI.mainconsole_top_padding) or padding
                 local left = math.max(0, cx + padding)
-                local top = math.max(0, cy + padding)
+                local top = math.max(0, cy + top_padding)
                 local right = math.max(0, w - cx - cw + padding)
                 local bottom = math.max(0, h - cy - ch + padding)
 

@@ -1,4 +1,5 @@
 local package_url = "https://www.dragons-domain.org/main/gui/DD_GUI.mpackage"
+local package_install_url = package_url .. "?v=" .. tostring(os.time())
 local uninstall_delay = 0.1
 local reinstall_delay = 3
 local version_check_delay = 5
@@ -105,7 +106,7 @@ state.reinstall_timer = tempTimer(uninstall_delay, function()
 
         tempTimer(reinstall_delay, function()
                 echo("\nInstalling the latest DD_GUI package...\n")
-                local install_ok, install_err = pcall(installPackage, package_url)
+                local install_ok, install_err = pcall(installPackage, package_install_url)
                 if not install_ok then
                         echo("DD_GUI install failed: " .. tostring(install_err) .. "\n")
                         state.reinstall_install_finished = true

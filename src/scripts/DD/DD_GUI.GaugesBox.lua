@@ -43,8 +43,11 @@ local function new_status_gauge(name, parent, label_text, color, value, maximum)
     local theme = DD_GUI.Theme
     local gauge = Geyser.Gauge:new({
       name = name,
-      x = "0%", y = "15%",
-      width = "100%", height = "70%",
+      -- Keep the coloured row clear of both braid edges. The slight lower
+      -- inset compensates for the transparent tile pixels at the frame
+      -- edges, so the black breathing room reads evenly above and below.
+      x = "2%", y = "20%",
+      width = "96%", height = "70%",
       strict = true,
     }, parent)
 

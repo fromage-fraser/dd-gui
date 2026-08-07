@@ -11,6 +11,26 @@ function DD_GUI.set_enemy_panel_border(border)
   end
 end
 
+local function enemy_hitpoint_widgets()
+  return {
+    EnemyConsoleHitpointsContainer,
+    EnemyConsoleHitpoints,
+    EnemyHitpointsLabel,
+  }
+end
+
+function DD_GUI.set_enemy_hitpoints_visible(visible)
+  for _, widget in ipairs(enemy_hitpoint_widgets()) do
+    if widget then
+      if visible and widget.show then
+        pcall(function() widget:show() end)
+      elseif not visible and widget.hide then
+        pcall(function() widget:hide() end)
+      end
+    end
+  end
+end
+
 function DD_GUI.cancel_enemy_panel_flash()
   DD_GUI.enemy_panel_flash_token =
     (DD_GUI.enemy_panel_flash_token or 0) + 1
@@ -89,22 +109,41 @@ function DD_GUI.start_enemy_combat_pulse()
   local bright = colors.bright_frame or "rgb(205,48,60)"
   local regular = colors.frame or "rgb(151,27,39)"
   local middle = colors.frame_flash or "rgb(181,37,49)"
+  local black = "rgb(0,0,0)"
+  local ember = blend_rgb(black, regular, 0.18)
+  local glow = blend_rgb(black, regular, 0.38)
+  local dim = blend_rgb(black, regular, 0.62)
+  local base = blend_rgb(black, regular, 0.82)
+  local low = blend_rgb(regular, middle, 0.25)
   local soft = blend_rgb(regular, middle, 0.5)
   local high = blend_rgb(middle, bright, 0.5)
+  local very_high = blend_rgb(bright, colors.white or "rgb(255,255,255)", 0.08)
   local peak = blend_rgb(
     bright,
     colors.white or "rgb(255,255,255)",
     0.18
   )
   local pulse_stages = {
-    {color = regular, duration = 0.64},
-    {color = soft, duration = 0.19},
-    {color = middle, duration = 0.23},
-    {color = high, duration = 0.23},
-    {color = peak, duration = 0.30},
-    {color = high, duration = 0.23},
-    {color = middle, duration = 0.23},
-    {color = soft, duration = 0.19},
+    {color = black, duration = 0.26},
+    {color = ember, duration = 0.12},
+    {color = glow, duration = 0.14},
+    {color = dim, duration = 0.16},
+    {color = base, duration = 0.16},
+    {color = low, duration = 0.16},
+    {color = soft, duration = 0.16},
+    {color = middle, duration = 0.18},
+    {color = high, duration = 0.18},
+    {color = very_high, duration = 0.16},
+    {color = peak, duration = 0.22},
+    {color = very_high, duration = 0.16},
+    {color = high, duration = 0.18},
+    {color = middle, duration = 0.18},
+    {color = soft, duration = 0.16},
+    {color = low, duration = 0.16},
+    {color = base, duration = 0.16},
+    {color = dim, duration = 0.16},
+    {color = glow, duration = 0.14},
+    {color = ember, duration = 0.12},
   }
 
   DD_GUI.enemy_combat_pulse_active = true
@@ -347,6 +386,18 @@ function build_enemy_console()
   if DD_GUI.cancel_enemy_combat_pulse then
     DD_GUI.cancel_enemy_combat_pulse()
   end
+  if type(deleteLabel) == "function" then
+    -- A package rebuild can leave named sibling labels alive after their Lua
+    -- references are replaced. Remove the old combat gauge before creating
+    -- its replacement so travel mode cannot reveal a stale HITS bar.
+    for _, name in ipairs({
+      "EnemyConsoleHitpointsContainer",
+      "EnemyConsoleHitpoints",
+      "EnemyHitpointsLabel",
+    }) do
+      pcall(deleteLabel, name)
+    end
+  end
   for _, layer in ipairs({EnemyFadeLayer, EnemyShatterLayer}) do
     if layer and layer.delete then
       pcall(function() layer:delete() end)
@@ -447,7 +498,10 @@ function build_enemy_console()
       if limit > 0 then
         ratio = math.max(0, math.min(1, current / limit))
       end
-      self:resize(string.format("%.3f%%", ratio * 100), "10%")
+      -- The track starts at 4% and is 92% wide. Resize the fill against
+      -- that track rather than the whole panel, or a full bar overruns the
+      -- image/info frame by the track's right inset.
+      self:resize(string.format("%.3f%%", ratio * 92), "10%")
     end
 
     EnemyHitpointsLabel = Geyser.Label:new({
@@ -485,5 +539,6 @@ function build_enemy_console()
       DD_GUI.set_widget_clickthrough(EnemyFadeLayer, true)
     end
     EnemyFadeLayer:hide()
+    DD_GUI.set_enemy_hitpoints_visible(false)
 
   end

@@ -12,6 +12,10 @@ function update_travel()
 
     if (tonumber(vitals.position) ~= 6) then
 
+            if DD_GUI.set_enemy_hitpoints_visible then
+                    DD_GUI.set_enemy_hitpoints_visible(false)
+            end
+
             if DD_GUI.maybe_start_enemy_defeat_transition and
                DD_GUI.maybe_start_enemy_defeat_transition() then
                     return
@@ -59,9 +63,9 @@ function update_travel()
                     )
             end
             EnemyInfoConsole:clear()
-            EnemyConsoleHitpointsContainer:hide()
-            EnemyConsoleHitpoints:hide()
-            EnemyHitpointsLabel:hide()
+            if DD_GUI.set_enemy_hitpoints_visible then
+                    DD_GUI.set_enemy_hitpoints_visible(false)
+            end
             local room_image = asset_path("avatars/default_char.png")
             local sector_name = "Unknown"
 

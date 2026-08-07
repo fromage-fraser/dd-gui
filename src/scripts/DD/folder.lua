@@ -3,7 +3,7 @@ mudlet = mudlet or {}
 
 -- Mudlet builds without getPackageInfo() still need a reliable way to show
 -- the installed GUI version and decide whether bootstrap() may be reused.
-DD_GUI.package_version = "0.0.83"
+DD_GUI.package_version = "0.0.97"
 
 local profile_path = string.gsub(getMudletHomeDir(), "\\", "/")
 local package_path = profile_path .. "/DD_GUI"

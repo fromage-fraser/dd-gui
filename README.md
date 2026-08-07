@@ -38,8 +38,11 @@ character sheet, comms, inventory/equipment, affects, main MUD text, and gauge
 band can all be resized without tinting or masking their contents. The
 navigation compass remains an independently movable square overlay.
 
-The frame uses a slim shaded dark-red braid with square junction markers. It
-keeps the room/enemy combat pulse and movement flash states: an active enemy
+The frame uses slim shaded dark-red braid tiles with square junction markers
+over a pure-black backing;
+the horizontal and vertical repeats are seamless. Gauge-column gaps carry
+matching vertical braid dividers with square terminators. It keeps the room/enemy
+combat pulse and movement flash states: an active enemy
 recolours its owning edges through the combat pulse, while a newly entered
 room briefly brightens the travel edge before fading back to the regular
 frame colour.
@@ -48,7 +51,8 @@ ratio. Leaving layout mode saves the current positions and sizes to the active
 Mudlet profile. Use `resetgui` to restore every region to its default geometry.
 
 With layout editing disabled, tabs, compass buttons, and main-window
-scrollback remain available for normal play.
+scrollback remain available for normal play. The main MUD text has a small
+additional top inset so its first line does not crowd the frame.
 
 
 ## Interface and data
@@ -62,12 +66,21 @@ data. The main panels are:
   shape with a `vnum` identifier; the enemy hitpoint gauge uses either shape.
   Travel mode keeps the room summary visible as `Area` and `Type` on the first
   line, `Room` on the second, and `Room flags` on the third; empty visible flags
-  are shown as `None`. The panel border moves through a slower, multi-step red
+  are shown as `None`. The panel border moves through a slower, smoothly
+  graduated multi-step red pulse with an explicit black-to-red swell. The
+  coloured underlay feathers toward black across each braid edge, keeping the
+  glow softer than a solid rectangular strip.
   pulse while fighting and briefly pulses brighter when entering a new room
   before returning to its regular colour. When combat ends, the enemy image
   slowly fades to black, the next enemy or room image is rendered underneath,
   and the replacement fades back in. Shared edges with the map follow the
   combat colour as well, so the pulse remains continuous around the panel.
+  The braid and square joiners remain visible over that colour instead of
+  turning into flat red strips during the pulse; the state colour is painted
+  on a separate underlay so the texture cannot suppress it. During normal
+  play, the area behind the links remains pure black. The enemy hitpoint gauge is
+  combat-only and is explicitly hidden whenever the panel returns to travel
+  mode, including after a package rebuild.
 - **Map:** the current room and surrounding map data. The embedded mapper has
   even internal padding, and its title is kept to one compact room/vnum line
   so northern rooms remain visible even when a room name is long.
@@ -103,9 +116,13 @@ data. The main panels are:
   command. Status gauges clamp GMCP current values to their reported maximums
   and keep their fills inside their parent panels. Enemy hitpoints are rendered
   in a dedicated overlay below the enemy text, so the red gauge remains visible
-  when the enemy console refreshes. The compass has the same shared braided
+  when the enemy console refreshes and disappears outside combat. The compass has the same shared braided
   frame as the main panels, and keyboard/button movement uses the same brief
   border-only pressed highlight.
+
+  The four status gauges use an even inset on all four sides inside the shared
+  braided frame, so their black breathing room remains balanced when the gauge
+  band is resized.
 
 The main MUD console and panel consoles use the profile's shared scrollbar
 style: narrow black tracks have restrained dark-red edges, while the moving
