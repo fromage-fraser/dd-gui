@@ -230,6 +230,10 @@ function Theme:profile_style_sheet()
 
         local joiner = stylesheet_url(
                 DD_GUI.asset_path and DD_GUI.asset_path("frame/node.png"))
+        local menu_check = stylesheet_url(
+                DD_GUI.asset_path and DD_GUI.asset_path("frame/menu-check.svg"))
+        local menu_arrow = stylesheet_url(
+                DD_GUI.asset_path and DD_GUI.asset_path("frame/menu-arrow.svg"))
 
         local console_stylesheet = string.format([[
                 TConsole QScrollBar:vertical {
@@ -404,7 +408,74 @@ function Theme:profile_style_sheet()
                 c.ink, c.ivory, c.frame, c.dark_frame, c.white
         )
 
-        return console_stylesheet .. mapper_stylesheet
+        local popup_stylesheet = string.format([[
+                QMenu {
+                        background-color: %s;
+                        color: %s;
+                        border: 1px solid %s;
+                        padding: 2px;
+                }
+
+                QMenu::item {
+                        background-color: transparent;
+                        color: %s;
+                        border: 1px solid transparent;
+                        padding: 4px 28px 4px 24px;
+                        margin: 1px 2px;
+                }
+
+                QMenu::item:selected,
+                QMenu::item:pressed {
+                        background-color: %s;
+                        color: %s;
+                        border-color: %s;
+                }
+
+                QMenu::item:disabled {
+                        color: %s;
+                }
+
+                QMenu::separator {
+                        height: 1px;
+                        background-color: %s;
+                        margin: 4px 5px;
+                }
+
+                QMenu::indicator {
+                        width: 12px;
+                        height: 12px;
+                        margin-left: 5px;
+                        margin-right: 3px;
+                        background-color: %s;
+                        border: 1px solid %s;
+                }
+
+                QMenu::indicator:checked,
+                QMenu::indicator:non-exclusive:checked,
+                QMenu::indicator:exclusive:checked,
+                QMenu::indicator:indeterminate {
+                        background-color: %s;
+                        border: 0px;
+                        image: %s;
+                }
+
+                QMenu::right-arrow {
+                        width: 8px;
+                        height: 8px;
+                        image: %s;
+                }
+        ]],
+                c.ink, c.ivory, c.frame,
+                c.ivory,
+                c.dark_frame, c.white, c.bright_frame,
+                c.dark_gold,
+                c.frame,
+                c.ink, c.frame,
+                c.ink, menu_check,
+                menu_arrow
+        )
+
+        return console_stylesheet .. mapper_stylesheet .. popup_stylesheet
 end
 
 function Theme:apply_profile_style()
