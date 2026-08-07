@@ -231,7 +231,7 @@ function Theme:profile_style_sheet()
         local joiner = stylesheet_url(
                 DD_GUI.asset_path and DD_GUI.asset_path("frame/node.png"))
 
-        return string.format([[
+        local console_stylesheet = string.format([[
                 TConsole QScrollBar:vertical {
                         background-color: %s;
                         width: 10px;
@@ -307,6 +307,104 @@ function Theme:profile_style_sheet()
                 c.ink, joiner, c.ink, joiner,
                 c.ink
         )
+
+        local mapper_stylesheet = string.format([[
+                QWidget#mapper,
+                QWidget#widget_panel,
+                QWidget#widget_topRow,
+                QWidget#widget_panControls,
+                TMapView {
+                        background-color: %s;
+                        border: 0px;
+                }
+
+                QWidget#mapper QToolButton,
+                QWidget#widget_panel QToolButton,
+                TMapView QToolButton {
+                        background-color: %s;
+                        color: %s;
+                        border: 1px solid %s;
+                        border-radius: 0px;
+                        padding: 0px;
+                        margin: 0px;
+                }
+
+                QWidget#mapper QToolButton:hover,
+                QWidget#mapper QToolButton:focus,
+                QWidget#mapper QToolButton:pressed,
+                QWidget#mapper QToolButton:checked,
+                QWidget#widget_panel QToolButton:hover,
+                QWidget#widget_panel QToolButton:focus,
+                QWidget#widget_panel QToolButton:pressed,
+                QWidget#widget_panel QToolButton:checked,
+                TMapView QToolButton:hover,
+                TMapView QToolButton:focus,
+                TMapView QToolButton:pressed,
+                TMapView QToolButton:checked {
+                        background-color: %s;
+                        color: %s;
+                        border-color: %s;
+                }
+
+                QWidget#mapper QLabel#label_area,
+                QWidget#widget_panel QLabel#label_area,
+                TMapView QLabel {
+                        background-color: %s;
+                        color: %s;
+                        border: 0px;
+                        padding: 0px;
+                }
+
+                QWidget#mapper QComboBox,
+                QWidget#widget_panel QComboBox,
+                TMapView QComboBox {
+                        background-color: %s;
+                        color: %s;
+                        border: 1px solid %s;
+                        border-radius: 0px;
+                        padding: 0px 2px;
+                        selection-background-color: %s;
+                        selection-color: %s;
+                }
+
+                QWidget#mapper QComboBox:hover,
+                QWidget#mapper QComboBox:focus,
+                QWidget#widget_panel QComboBox:hover,
+                QWidget#widget_panel QComboBox:focus,
+                TMapView QComboBox:hover,
+                TMapView QComboBox:focus {
+                        border-color: %s;
+                }
+
+                QWidget#mapper QComboBox::drop-down,
+                QWidget#widget_panel QComboBox::drop-down,
+                TMapView QComboBox::drop-down {
+                        background-color: %s;
+                        border-left: 1px solid %s;
+                        width: 16px;
+                }
+
+                QWidget#mapper QComboBox QAbstractItemView,
+                QWidget#widget_panel QComboBox QAbstractItemView,
+                TMapView QComboBox QAbstractItemView {
+                        background-color: %s;
+                        color: %s;
+                        border: 1px solid %s;
+                        selection-background-color: %s;
+                        selection-color: %s;
+                }
+        ]],
+                c.ink,
+                c.ink, c.ivory, c.frame,
+                c.dark_frame, c.white, c.bright_frame,
+                c.ink, c.ivory,
+                c.ink, c.ivory, c.frame, c.dark_frame, c.white,
+                c.bright_frame,
+                c.ink, c.dark_frame,
+                c.ink, c.ivory, c.frame, c.dark_frame, c.white
+        )
+
+        return console_stylesheet .. mapper_stylesheet
 end
 
 function Theme:apply_profile_style()
