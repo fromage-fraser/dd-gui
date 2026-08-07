@@ -6,6 +6,10 @@ local function transparent_surface_css(css)
 end
 
 local function adjustable_state_css(box)
+        if box and box._dd_gui_frame_region_id then
+                return ""
+        end
+
         local theme = DD_GUI and DD_GUI.Theme
         local layout_enabled = DD_GUI and DD_GUI.Layout and
                 DD_GUI.Layout.enabled
@@ -262,6 +266,9 @@ function DD_GUI.raise_info_box_contents()
                         compass.handle:raise()
                 end
                 raise_tab_controls()
+                if DD_GUI.FrameGrid and DD_GUI.FrameGrid.raise then
+                        DD_GUI.FrameGrid:raise()
+                end
                 return
         end
 
@@ -296,6 +303,9 @@ function DD_GUI.raise_info_box_contents()
         if compass and compass.box and compass.box.raiseAll then
                 compass.box:raiseAll()
         end
+        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.raise then
+                DD_GUI.FrameGrid:raise()
+        end
 end
 
 function DD_GUI.new_adjustable_container(cons, parent, options)
@@ -329,6 +339,11 @@ function DD_GUI.new_adjustable_container(cons, parent, options)
                         box.goInside = false
                 end
                 box._dd_gui_adjustable = true
+                box._dd_gui_frame_parent = parent
+                if DD_GUI.FrameGrid and DD_GUI.FrameGrid.region_id_for_name then
+                        box._dd_gui_frame_region_id =
+                                DD_GUI.FrameGrid:region_id_for_name(cons.name)
+                end
                 if DD_GUI.Layout and DD_GUI.Layout.apply_box then
                         DD_GUI.Layout:apply_box(box)
                 end
@@ -397,6 +412,8 @@ local function panel_without_outline_css()
         ]]
 end
 
+DD_GUI.panel_surface_css = panel_without_outline_css
+
 local function ensure_panel_outline(panel, name)
         if not panel then
                 return nil
@@ -455,14 +472,9 @@ end
 DD_GUI.ensure_panel_outline = ensure_panel_outline
 
 function define_boxes()
-        local box_css = DD_GUI.Theme and DD_GUI.Theme:panel_css() or [[
-          background-color: rgb(0,0,0);
-          border-style: solid;
-          border-width: 1px;
-          border-radius: 0px;
-          border-color: grey;
-          margin: 1px;
-        ]]
+        -- The shared frame layer owns all major panel edges. Keeping the
+        -- content surfaces borderless prevents double lines at every join.
+        local box_css = panel_without_outline_css()
 
         DD_GUI.BoxCSS = CSSMan.new(box_css)
         DD_GUI.EnemyBoxCSS = CSSMan.new(box_css)
@@ -531,13 +543,7 @@ function define_boxes()
         DD_GUI.AffectBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.AffectBox:echo("<center>GUI.AffectBox")
 
-        DD_GUI.InventoryPanelOutline = ensure_panel_outline(
-                DD_GUI.InventoryBox,
-                "DD_GUI.InventoryPanelOutline"
-        )
-        DD_GUI.AffectPanelOutline = ensure_panel_outline(
-                DD_GUI.AffectBox,
-                "DD_GUI.AffectPanelOutline"
-        )
+        DD_GUI.InventoryPanelOutline = nil
+        DD_GUI.AffectPanelOutline = nil
         
 end

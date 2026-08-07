@@ -219,62 +219,104 @@ end
 
 function Theme:profile_style_sheet()
         local c = self.colors
+        local function stylesheet_url(path)
+                if not path then
+                        return "none"
+                end
+
+                return 'url("' .. tostring(path):gsub("\\", "/")
+                        :gsub('"', '\\"') .. '")'
+        end
+
+        local vertical_chain = stylesheet_url(
+                DD_GUI.asset_path and DD_GUI.asset_path("frame/vertical.png"))
+        local horizontal_chain = stylesheet_url(
+                DD_GUI.asset_path and DD_GUI.asset_path("frame/horizontal.png"))
+        local joiner = stylesheet_url(
+                DD_GUI.asset_path and DD_GUI.asset_path("frame/node.png"))
 
         return string.format([[
                 TConsole QScrollBar:vertical {
-                        background: %s;
-                        width: 8px;
+                        background-color: %s;
+                        background-image: %s;
+                        background-repeat: repeat-y;
+                        background-position: center;
+                        width: 10px;
                         margin: 0px;
                         border-left: 1px solid %s;
+                        border-right: 1px solid %s;
                 }
                 TConsole QScrollBar::handle:vertical {
-                        background: %s;
-                        min-height: 18px;
-                        border: 1px solid %s;
+                        background-color: %s;
+                        background-image: %s;
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        min-height: 20px;
+                        border: 0px;
                 }
-                TConsole QScrollBar::handle:vertical:hover {
-                        background: %s;
+                TConsole QScrollBar::handle:vertical:hover,
+                TConsole QScrollBar::handle:vertical:pressed {
+                        background-color: %s;
+                        background-image: %s;
+                        background-repeat: no-repeat;
+                        background-position: center;
                 }
                 TConsole QScrollBar::add-line:vertical,
                 TConsole QScrollBar::sub-line:vertical {
-                        background: %s;
+                        background: transparent;
                         height: 0px;
                         border: none;
                 }
                 TConsole QScrollBar::add-page:vertical,
                 TConsole QScrollBar::sub-page:vertical {
-                        background: %s;
+                        background: transparent;
                 }
 
                 TConsole QScrollBar:horizontal {
-                        background: %s;
-                        height: 8px;
+                        background-color: %s;
+                        background-image: %s;
+                        background-repeat: repeat-x;
+                        background-position: center;
+                        height: 10px;
                         margin: 0px;
                         border-top: 1px solid %s;
+                        border-bottom: 1px solid %s;
                 }
                 TConsole QScrollBar::handle:horizontal {
-                        background: %s;
-                        min-width: 18px;
-                        border: 1px solid %s;
+                        background-color: %s;
+                        background-image: %s;
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        min-width: 20px;
+                        border: 0px;
                 }
-                TConsole QScrollBar::handle:horizontal:hover {
-                        background: %s;
+                TConsole QScrollBar::handle:horizontal:hover,
+                TConsole QScrollBar::handle:horizontal:pressed {
+                        background-color: %s;
+                        background-image: %s;
+                        background-repeat: no-repeat;
+                        background-position: center;
                 }
                 TConsole QScrollBar::add-line:horizontal,
                 TConsole QScrollBar::sub-line:horizontal {
-                        background: %s;
+                        background: transparent;
                         width: 0px;
                         border: none;
                 }
                 TConsole QScrollBar::add-page:horizontal,
                 TConsole QScrollBar::sub-page:horizontal {
+                        background: transparent;
+                }
+                TConsole QScrollBar::corner {
                         background: %s;
                 }
         ]],
-                c.ink, c.dark_frame, c.frame, c.bright_frame, c.bright_frame,
-                c.ink, c.ink,
-                c.ink, c.dark_frame, c.frame, c.bright_frame, c.bright_frame,
-                c.ink, c.ink
+                c.ink, vertical_chain, c.dark_frame, c.dark_frame,
+                c.ink, joiner, c.ink, joiner,
+                c.ink,
+                c.ink, horizontal_chain, c.dark_frame, c.dark_frame,
+                c.ink, joiner, c.ink, joiner,
+                c.ink
         )
 end
 
@@ -346,11 +388,20 @@ function Layout:apply_box(box)
                 return
         end
 
-        set_clickthrough(box.adjLabel, not self.enabled)
+        -- Major panels are controlled by shared frame splitters. Their
+        -- Adjustable.Container overlay must stay transparent so the frame
+        -- never masks tabs, consoles, or the compass.
+        local grid_managed = DD_GUI.FrameGrid and
+                DD_GUI.FrameGrid.is_frame_box and
+                DD_GUI.FrameGrid:is_frame_box(box)
+        set_clickthrough(box.adjLabel, grid_managed and true or not self.enabled)
         if DD_GUI.hide_adjustable_controls then
                 DD_GUI.hide_adjustable_controls(box)
         end
-        if DD_GUI.refresh_adjustable_style then
+        if grid_managed then
+                box._dd_gui_dragging = false
+                box.adjLabel:setStyleSheet(box._dd_gui_base_style or "")
+        elseif DD_GUI.refresh_adjustable_style then
                 DD_GUI.refresh_adjustable_style(box)
         end
 end
@@ -381,6 +432,9 @@ function Layout:apply(enabled)
         self:each_box(function(box)
                 self:apply_box(box)
         end)
+        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.set_enabled then
+                DD_GUI.FrameGrid:set_enabled(self.enabled)
+        end
         self:apply_compass()
 
         if DD_GUI.raise_info_box_contents then
@@ -420,7 +474,7 @@ function Layout:command(raw_mode)
 
         self:set_enabled(enabled)
         if enabled then
-                cecho("\n<gold>DD_GUI layout mode: <white>ON<reset> - drag or resize the gold-outlined regions.\n")
+                cecho("\n<gold>DD_GUI layout mode: <white>ON<reset> - drag the shared red frame edges to resize adjacent regions.\n")
         else
                 cecho("\n<gold>DD_GUI layout mode: <white>OFF<reset> - controls are locked and input passes through.\n")
         end

@@ -29,11 +29,20 @@ buttons, and console scrollback receive mouse input. Use `layoutgui` to toggle
 layout editing, or `layoutgui on` and `layoutgui off` to choose the state
 explicitly.
 
-When layout editing is enabled, the red-bordered regions can be dragged and
-resized. This includes the room/enemy panel, map, character sheet, comms,
-inventory/equipment, affects, main MUD text, navigation compass, and gauges.
-The adjustment surfaces remain transparent and below the panel data, so
-content stays visible while borders remain available for layout editing.
+When layout editing is enabled, the shared red frame edges act as splitters:
+dragging a separator resizes the regions on both sides together. This keeps
+touching panels on one clean line instead of creating double borders, and
+corner/junction markers stay attached as the layout changes. The frame is
+drawn independently from the content surfaces, so the room/enemy panel, map,
+character sheet, comms, inventory/equipment, affects, main MUD text, and gauge
+band can all be resized without tinting or masking their contents. The
+navigation compass remains an independently movable square overlay.
+
+The frame uses a slim shaded dark-red braid with square junction markers. It
+keeps the room/enemy combat pulse and movement flash states: an active enemy
+recolours its owning edges through the combat pulse, while a newly entered
+room briefly brightens the travel edge before fading back to the regular
+frame colour.
 The compass keeps a square shape and room/enemy images keep their 56:30 display
 ratio. Leaving layout mode saves the current positions and sizes to the active
 Mudlet profile. Use `resetgui` to restore every region to its default geometry.
@@ -91,12 +100,15 @@ data. The main panels are:
   command. Status gauges clamp GMCP current values to their reported maximums
   and keep their fills inside their parent panels. Enemy hitpoints are rendered
   in a dedicated overlay below the enemy text, so the red gauge remains visible
-  when the enemy console refreshes.
+  when the enemy console refreshes. The compass has the same shared braided
+  frame as the main panels, and keyboard/button movement uses the same brief
+  border-only pressed highlight.
 
-The main MUD console and panel consoles use the profile's shared dark scrollbar
-style: narrow black tracks, dark-red edges, and red handles. The mapper's native
-room title uses an opaque black background with white text and a short red rule
-underneath, so it belongs visually with the rest of the interface.
+The main MUD console and panel consoles use the profile's shared scrollbar
+style: narrow black tracks carry a repeating vertical chain, while the moving
+thumb is rendered as a small square joiner. The mapper's native room title uses
+an opaque black background with white text and a short red rule underneath, so
+it belongs visually with the rest of the interface.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. `bootstrap()` is idempotent for the installed package version, so

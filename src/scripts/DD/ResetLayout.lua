@@ -334,6 +334,10 @@ function DD_GUI.migrate_layout_defaults()
                 DD_GUI.raise_info_box_contents()
         end
 
+        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
+                DD_GUI.FrameGrid:schedule_refresh(0.02)
+        end
+
         return changed
 end
 
@@ -390,5 +394,8 @@ function DD_GUI.reset_layout()
 
         if DD_GUI.Layout then
                 DD_GUI.Layout:apply()
+        end
+        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
+                DD_GUI.FrameGrid:schedule_refresh(0.02)
         end
 end

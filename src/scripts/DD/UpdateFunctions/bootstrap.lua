@@ -117,6 +117,10 @@ local function dd_gui_hide_previous_roots()
                         DD_GUI[key] = nil
                 end
         end
+
+        if DD_GUI and DD_GUI.FrameGrid and DD_GUI.FrameGrid.clear then
+                DD_GUI.FrameGrid:clear()
+        end
 end
 
 local function dd_gui_show_current_roots()
@@ -155,17 +159,6 @@ local function dd_gui_show_current_roots()
                 dd_gui_show_widget(widget)
         end
 
-        if DD_GUI.ensure_panel_outline then
-                DD_GUI.InventoryPanelOutline = DD_GUI.ensure_panel_outline(
-                        DD_GUI.InventoryBox,
-                        "DD_GUI.InventoryPanelOutline"
-                )
-                DD_GUI.AffectPanelOutline = DD_GUI.ensure_panel_outline(
-                        DD_GUI.AffectBox,
-                        "DD_GUI.AffectPanelOutline"
-                )
-        end
-
         local panel_css = DD_GUI and DD_GUI.BoxCSS
         if panel_css and type(panel_css.getCSS) == "function" then
                 local css = panel_css:getCSS()
@@ -179,6 +172,10 @@ local function dd_gui_show_current_roots()
                                 pcall(function() panel:setStyleSheet(css) end)
                         end
                 end
+        end
+
+        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
+                DD_GUI.FrameGrid:schedule_refresh(0.02)
         end
 end
 
@@ -208,6 +205,9 @@ function bootstrap()
                 end
                 if DD_GUI.Layout then
                         DD_GUI.Layout:apply(false)
+                end
+                if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
+                        DD_GUI.FrameGrid:schedule_refresh(0.05)
                 end
                 return
         end
@@ -245,6 +245,10 @@ function bootstrap()
                 DD_GUI.Mapper:setColor(0, 0, 0, 255)
         end
 
+        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.register then
+                DD_GUI.FrameGrid:register()
+        end
+
         -- Resizing and moving are opt-in. Normal play leaves the adjustable
         -- surfaces click-through so tabs, compass controls, and scrollback
         -- receive mouse input directly.
@@ -280,6 +284,9 @@ function bootstrap()
                 end
                 if DD_GUI.Layout then
                         DD_GUI.Layout:apply(false)
+                end
+                if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
+                        DD_GUI.FrameGrid:schedule_refresh(0.05)
                 end
         end)
 end

@@ -39,9 +39,14 @@ function ui_container()
                 DD_GUI.new_adjustable_container(mainconsole_constraints) or
                 Geyser.Container:new(mainconsole_constraints)
 
-        if ui.mainconsole_container.setStyleSheet and DD_GUI.Theme then
+        if ui.mainconsole_container.setStyleSheet then
                 ui.mainconsole_container:setStyleSheet(
-                        DD_GUI.Theme:panel_css({ background = "rgba(0,0,0,0)" })
+                        DD_GUI.panel_surface_css and
+                                DD_GUI.panel_surface_css() or [[
+                                background-color: rgba(0,0,0,0);
+                                border: 0px;
+                                margin: 0px;
+                        ]]
                 )
         end
 
