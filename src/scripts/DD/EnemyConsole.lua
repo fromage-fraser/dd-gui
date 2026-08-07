@@ -1,25 +1,14 @@
-local function enemy_panel_css(border)
-  if DD_GUI.Theme and DD_GUI.Theme.panel_css then
-    return DD_GUI.Theme:panel_css({border = border})
-  end
-
-  return string.format([[
-    background-color: rgba(0,0,0,0);
-    border-style: solid;
-    border-width: 2px;
-    border-color: %s;
-    border-radius: 0px;
-    margin: 1px;
-  ]], border)
-end
-
 function DD_GUI.set_enemy_panel_border(border)
-  if not DD_GUI.EnemyBox or not border then
+  if not border then
     return
   end
 
-  DD_GUI.EnemyBox:setStyleSheet(enemy_panel_css(border))
   DD_GUI.enemy_panel_border = border
+  if DD_GUI.FrameGrid and DD_GUI.FrameGrid.set_region_color then
+    DD_GUI.FrameGrid:set_region_color("EnemyBox", border)
+  elseif DD_GUI.EnemyBox and DD_GUI.panel_surface_css then
+    DD_GUI.EnemyBox:setStyleSheet(DD_GUI.panel_surface_css())
+  end
 end
 
 function DD_GUI.cancel_enemy_panel_flash()

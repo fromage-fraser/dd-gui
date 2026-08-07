@@ -1,10 +1,7 @@
 local function compass_surface_css()
-  if DD_GUI.Theme then
-    return DD_GUI.Theme:panel_css({ margin = 0 })
-  end
   return [[
     background-color: rgb(0,0,0);
-    border: 2px solid grey;
+    border: 0px;
     border-radius: 0px;
     margin: 0px;
   ]]

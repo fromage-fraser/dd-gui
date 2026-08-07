@@ -217,10 +217,10 @@ function DD_GUI.migrate_layout_defaults()
         end
         if old_gauge_columns or current_gauge_columns then
                 local new_gauge_columns = {
-                        { "5.56%", "23.36%" },
-                        { "28.92%", "23.36%" },
-                        { "52.28%", "23.36%" },
-                        { "75.64%", "23.36%" },
+                        { "5.56%", "23.61%" },
+                        { "29.17%", "23.61%" },
+                        { "52.78%", "23.61%" },
+                        { "76.39%", "23.61%" },
                 }
                 for index, column in ipairs(gauge_columns) do
                         reset_adjustable_box(
@@ -302,10 +302,10 @@ function DD_GUI.migrate_layout_defaults()
                 { ui and ui.mainconsole_container, "4%", "36%", "68%", "57%" },
                 { DD_GUI.Right, "-28%", "3%", "28%", "94%" },
                 { DD_GUI.Bottom, "0%", "93%", "72%", "4%" },
-                { DD_GUI.FirstColumn, "5.56%", "0%", "23.36%", "100%" },
-                { DD_GUI.SecondColumn, "28.92%", "0%", "23.36%", "100%" },
-                { DD_GUI.ThirdColumn, "52.28%", "0%", "23.36%", "100%" },
-                { DD_GUI.FourthColumn, "75.64%", "0%", "23.36%", "100%" },
+                { DD_GUI.FirstColumn, "5.56%", "0%", "23.61%", "100%" },
+                { DD_GUI.SecondColumn, "29.17%", "0%", "23.61%", "100%" },
+                { DD_GUI.ThirdColumn, "52.78%", "0%", "23.61%", "100%" },
+                { DD_GUI.FourthColumn, "76.39%", "0%", "23.61%", "100%" },
                 { DD_GUI.EnemyBox, "4%", "0%", "23%", "100%" },
                 { DD_GUI.MapBox, "27%", "0%", "27%", "100%" },
                 { DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%" },
@@ -334,6 +334,10 @@ function DD_GUI.migrate_layout_defaults()
                 DD_GUI.raise_info_box_contents()
         end
 
+        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
+                DD_GUI.FrameGrid:schedule_refresh(0.02)
+        end
+
         return changed
 end
 
@@ -343,10 +347,10 @@ function DD_GUI.reset_layout()
                 { DD_GUI.Right, "-28%", "3%", "28%", "94%" },
                 { DD_GUI.Top, "0%", "3%", "100%", "33%" },
                 { DD_GUI.Bottom, "0%", "93%", "72%", "4%" },
-                { DD_GUI.FirstColumn, "5.56%", "0%", "23.36%", "100%" },
-                { DD_GUI.SecondColumn, "28.92%", "0%", "23.36%", "100%" },
-                { DD_GUI.ThirdColumn, "52.28%", "0%", "23.36%", "100%" },
-                { DD_GUI.FourthColumn, "75.64%", "0%", "23.36%", "100%" },
+                { DD_GUI.FirstColumn, "5.56%", "0%", "23.61%", "100%" },
+                { DD_GUI.SecondColumn, "29.17%", "0%", "23.61%", "100%" },
+                { DD_GUI.ThirdColumn, "52.78%", "0%", "23.61%", "100%" },
+                { DD_GUI.FourthColumn, "76.39%", "0%", "23.61%", "100%" },
                 { DD_GUI.EnemyBox, "4%", "0%", "23%", "100%" },
                 { DD_GUI.MapBox, "27%", "0%", "27%", "100%" },
                 { DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%" },
@@ -390,5 +394,8 @@ function DD_GUI.reset_layout()
 
         if DD_GUI.Layout then
                 DD_GUI.Layout:apply()
+        end
+        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
+                DD_GUI.FrameGrid:schedule_refresh(0.02)
         end
 end

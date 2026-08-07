@@ -118,28 +118,28 @@ function build_gauges()
     DD_GUI.FirstColumn = new_gauge_column({
       name = "DD_GUI.FirstColumn",
       x = "5.56%", y = "0%",
-      width = "23.36%", height = "100%",
+      width = "23.61%", height = "100%",
       padding = 0,
     })
 
     DD_GUI.SecondColumn = new_gauge_column({
       name = "DD_GUI.SecondColumn",
-      x = "28.92%", y = "0%",
-      width = "23.36%", height = "100%",
+      x = "29.17%", y = "0%",
+      width = "23.61%", height = "100%",
       padding = 0,
     })
 
     DD_GUI.ThirdColumn = new_gauge_column({
       name = "DD_GUI.ThirdColumn",
-      x = "52.28%", y = "0%",
-      width = "23.36%", height = "100%",
+      x = "52.78%", y = "0%",
+      width = "23.61%", height = "100%",
       padding = 0,
     })
 
     DD_GUI.FourthColumn = new_gauge_column({
       name = "DD_GUI.FourthColumn",
-      x = "75.64%", y = "0%",
-      width = "23.36%", height = "100%",
+      x = "76.39%", y = "0%",
+      width = "23.61%", height = "100%",
       padding = 0,
     })
 

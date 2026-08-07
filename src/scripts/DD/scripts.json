@@ -9,10 +9,13 @@
         "name": "AffectsConsole"
   },
   {
-        "name": "GoldBoxTheme"
+    "name": "GoldBoxTheme"
   },
   {
-        "name": "CompassExits"
+    "name": "FrameGrid"
+  },
+  {
+    "name": "CompassExits"
   },
   {
         "name": "BoxesDefinitions"
