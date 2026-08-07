@@ -86,7 +86,8 @@ data. The main panels are:
   mode, including after a package rebuild.
 - **Map:** the current room and surrounding map data. The embedded mapper has
   even internal padding, and its title is kept to one compact room/vnum line
-  so northern rooms remain visible even when a room name is long.
+  with no extra rule beneath it, so northern rooms remain visible even when a
+  room name is long.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
@@ -131,8 +132,8 @@ The main MUD console and panel consoles use the profile's shared scrollbar
 style: narrow black tracks have restrained dark-red edges, while the moving
 thumb is rendered as a small red square joiner against the black track. The
 mapper's native room title uses
-an opaque black background with white text and a short red rule underneath, so
-it belongs visually with the rest of the interface.
+an opaque black background with white text and no additional accent line, so
+the title takes as little vertical space as possible.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. `bootstrap()` is idempotent for the installed package version, so

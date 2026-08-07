@@ -70,10 +70,6 @@ function DD_GUI.apply_mapper_theme()
                 return
         end
 
-        local frame = DD_GUI.Theme and DD_GUI.Theme.map_info_frame or
-                {151, 27, 39}
-        local rule = string.rep(string.char(226, 148, 128), 38)
-
         pcall(function()
                 registerMapInfo(map_info_title_name, function(room_id)
                         local title = compact_map_title(room_id)
@@ -82,12 +78,12 @@ function DD_GUI.apply_mapper_theme()
                         end
                         return title, false, false, 255, 255, 255
                 end)
-                registerMapInfo(map_info_accent_name, function()
-                        return rule, false, false, frame[1], frame[2], frame[3]
-                end)
                 disableMapInfo("Short")
+                -- Older builds registered a red rule beneath the title. Hide
+                -- that persisted map-info entry so it cannot cover northern
+                -- rooms after an upgrade.
+                disableMapInfo(map_info_accent_name)
                 enableMapInfo(map_info_title_name)
-                enableMapInfo(map_info_accent_name)
         end)
 end
 
