@@ -136,6 +136,10 @@ additional accent line, so rooms at the top edge remain visible beneath it.
 The mapper's native control strip uses the same visual language: black surfaces,
 ivory labels, dark-red edges, and restrained bright-red hover and focus states
 for its zoom controls, area selector, and menu button.
+Native popup menus use the same profile-wide treatment, including black
+surfaces, ivory text, dark-red separators and borders, red hover states, and
+matching checked-item and submenu indicators. This covers mapper menus,
+dropdown menus, and right-click context menus consistently.
 
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. `bootstrap()` is idempotent for the installed package version, so
