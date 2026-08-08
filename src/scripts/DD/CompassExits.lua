@@ -43,6 +43,13 @@ function DD_GUI.update_exit_status(exit_text)
         local statuses = {}
         local text = tostring(exit_text or "")
         text = text:gsub("\27%[[0-9;]*m", "")
+        local room_id = compass_current_room_id()
+        local previous = room_id and DD_GUI.exit_status_by_room[room_id]
+        if type(previous) == "table" then
+                for direction, status in pairs(previous) do
+                        statuses[direction] = status
+                end
+        end
 
         for token in text:gmatch("%S+") do
                 local first = token:sub(1, 1)
@@ -69,7 +76,6 @@ function DD_GUI.update_exit_status(exit_text)
                 end
         end
 
-        local room_id = compass_current_room_id()
         if room_id then
                 DD_GUI.exit_status_by_room[room_id] = statuses
                 DD_GUI.exit_status_room = room_id

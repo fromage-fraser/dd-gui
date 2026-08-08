@@ -115,6 +115,8 @@ function load_dd_mapper()
                         return 2
                 elseif text == "locked" or text == "lock" or text == "3" then
                         return 3
+                elseif text == "wall" or text == "blocked" then
+                        return 4
                 end
                 return 0
         end
@@ -122,22 +124,116 @@ function load_dd_mapper()
         local function normalise_exit(value)
                 local result = {
                         to = nil,
-                        status = 0,
+                        status = nil,
+                        has_status = false,
+                        blocked = false,
                         door = nil,
                         command = nil,
+                        cost = nil,
                 }
 
                 if type(value) == "table" then
                         result.to = dd_mapper_number(
                                 value.to or value.vnum or value.room or value.id or value.destination
                         )
-                        result.status = normalise_door_status(value.status or value.state or value.door_state)
+                        local raw_status = value.status or value.state or value.door_state
+                        if raw_status ~= nil then
+                                result.status = normalise_door_status(raw_status)
+                                result.has_status = true
+                                result.blocked = tostring(raw_status):lower() == "wall" or
+                                        tostring(raw_status):lower() == "blocked"
+                        end
                         result.door = value.door or value.door_name
                         result.command = value.command or value.move or value.keyword
+                        result.cost = dd_mapper_number(value.cost or value.move_cost or value.weight)
                 else
                         result.to = dd_mapper_number(value)
                 end
 
+                return result
+        end
+
+        local function normalise_tags(value)
+                local tags = {}
+                if type(value) == "string" then
+                        for tag in value:lower():gmatch("[%w_%-]+") do
+                                tags[tag] = true
+                        end
+                elseif type(value) == "table" then
+                        for key, tag in pairs(value) do
+                                if type(tag) == "string" then
+                                        tags[tag:lower()] = true
+                                elseif tag == true and type(key) == "string" then
+                                        tags[key:lower()] = true
+                                elseif type(tag) == "table" then
+                                        local name = tag.name or tag.tag or tag.id
+                                        if name then
+                                                tags[tostring(name):lower()] = true
+                                        end
+                                end
+                        end
+                end
+                return tags
+        end
+
+        local function merge_exit_detail(exits, direction, value)
+                local short = short_direction(direction)
+                if not direction_names[short] then
+                        return
+                end
+
+                local detail = normalise_exit(value)
+                local existing = exits[short] or {
+                        to = nil,
+                        status = nil,
+                        has_status = false,
+                        blocked = false,
+                        door = nil,
+                        command = nil,
+                        cost = nil,
+                }
+
+                if detail.to then
+                        existing.to = detail.to
+                end
+                if detail.has_status then
+                        existing.status = detail.status
+                        existing.has_status = true
+                        existing.blocked = detail.blocked == true
+                end
+                if detail.door ~= nil then
+                        existing.door = tostring(detail.door)
+                end
+                if detail.command ~= nil then
+                        existing.command = tostring(detail.command)
+                end
+                if detail.cost ~= nil then
+                        existing.cost = detail.cost
+                end
+                exits[short] = existing
+        end
+
+        local function normalise_special_exits(source)
+                local result = {}
+                if type(source) ~= "table" then
+                        return result
+                end
+
+                for key, value in pairs(source) do
+                        local detail = normalise_exit(value)
+                        local command
+                        if type(value) == "table" then
+                                command = value.command or value.name or value.move or value.keyword or
+                                        (type(key) == "string" and key or nil)
+                        elseif type(key) == "string" then
+                                command = key
+                        end
+
+                        if detail.to and command then
+                                detail.command = tostring(command)
+                                table.insert(result, detail)
+                        end
+                end
                 return result
         end
 
@@ -161,6 +257,16 @@ function load_dd_mapper()
                         end
                 end
 
+                -- DD4 now sends exit_details beside the legacy exits object.
+                -- Merge it rather than replacing exits so older payloads keep
+                -- mapping exactly as before while rich state becomes authoritative.
+                local exit_details = source.exit_details or source.exitDetails or source.exit_detail
+                if type(exit_details) == "table" then
+                        for direction, value in pairs(exit_details) do
+                                merge_exit_detail(exits, direction, value)
+                        end
+                end
+
                 local arrival = source.arrival or source.transition or source.move_info
                 if type(arrival) ~= "table" then
                         arrival = nil
@@ -175,8 +281,11 @@ function load_dd_mapper()
                         sector_text = tostring(source.sector_text or ""),
                         description = tostring(source.description or ""),
                         flags = source.flags,
+                        tags = normalise_tags(source.tags),
                         exits = exits,
-                        special_exits = source.special_exits or source.specialExits,
+                        special_exits = normalise_special_exits(
+                                source.special_exits or source.specialExits or source.special_exit_details
+                        ),
                         arrival = arrival,
                 }
         end
@@ -204,6 +313,91 @@ function load_dd_mapper()
                 return ok and tonumber(area_id) or nil
         end
 
+        local function set_mapper_user_data(room_id, key, value)
+                if type(setRoomUserData) ~= "function" then
+                        return false
+                end
+
+                value = tostring(value or "")
+                local old_value = ""
+                if type(getRoomUserData) == "function" then
+                        local ok, stored = dd_mapper_call(getRoomUserData, room_id, key)
+                        if ok then
+                                old_value = tostring(stored or "")
+                        end
+                end
+
+                if old_value == value then
+                        return false
+                end
+                pcall(setRoomUserData, room_id, key, value)
+                return true
+        end
+
+        local function set_mapper_area_data(area_id, key, value)
+                if type(setAreaUserData) ~= "function" then
+                        return false
+                end
+
+                value = tostring(value or "")
+                local old_value = ""
+                if type(getAreaUserData) == "function" then
+                        local ok, stored = dd_mapper_call(getAreaUserData, area_id, key)
+                        if ok then
+                                old_value = tostring(stored or "")
+                        end
+                end
+
+                if old_value == value then
+                        return false
+                end
+                pcall(setAreaUserData, area_id, key, value)
+                return true
+        end
+
+        local function update_area_metadata(area_id, info)
+                if not area_id or not info then
+                        return false
+                end
+
+                local changed = false
+                local managed_name = ""
+                if type(getAreaUserData) == "function" then
+                        local ok, stored = dd_mapper_call(
+                                getAreaUserData, area_id, "dd_gui.server_area_name"
+                        )
+                        if ok then
+                                managed_name = tostring(stored or "")
+                        end
+                end
+                if info.area_id then
+                        changed = set_mapper_area_data(
+                                area_id, "dd_gui.server_area_id", info.area_id
+                        ) or changed
+                end
+                changed = set_mapper_area_data(
+                        area_id, "dd_gui.server_area_name", info.area
+                ) or changed
+
+                -- A server area rename should follow the stable area_id, but
+                -- an area a player has deliberately renamed must remain theirs.
+                if type(setAreaName) == "function" and type(getAreaTable) == "function" then
+                        local current_name
+                        for candidate_name, candidate_id in pairs(getAreaTable() or {}) do
+                                if tonumber(candidate_id) == tonumber(area_id) then
+                                        current_name = tostring(candidate_name)
+                                        break
+                                end
+                        end
+                        if current_name and current_name ~= info.area
+                        and (managed_name == "" or managed_name == current_name) then
+                                local ok = pcall(setAreaName, area_id, info.area)
+                                changed = ok or changed
+                        end
+                end
+                return changed
+        end
+
         local function area_id_for(info)
                 local name = tostring(info and info.area or "Unknown")
                 local areas = getAreaTable()
@@ -214,6 +408,7 @@ function load_dd_mapper()
                                         getAreaUserData, candidate_id, "dd_gui.server_area_id"
                                 )
                                 if ok and tonumber(stored) == tonumber(info.area_id) then
+                                        update_area_metadata(tonumber(candidate_id), info)
                                         return tonumber(candidate_id)
                                 end
                         end
@@ -221,22 +416,41 @@ function load_dd_mapper()
 
                 local area_id = areas and areas[name]
                 if area_id then
-                        if info and info.area_id and type(setAreaUserData) == "function" then
-                                pcall(setAreaUserData, area_id, "dd_gui.server_area_id", tostring(info.area_id))
+                        local existing_server_id
+                        if info and info.area_id and type(getAreaUserData) == "function" then
+                                local stored_ok, stored = dd_mapper_call(
+                                        getAreaUserData, area_id, "dd_gui.server_area_id"
+                                )
+                                if stored_ok and tostring(stored or "") ~= "" then
+                                        existing_server_id = tonumber(stored)
+                                end
                         end
+                        if existing_server_id and existing_server_id ~= tonumber(info.area_id) then
+                                local scoped_name = string.format(
+                                        "%s [%s]", name, tostring(info.area_id)
+                                )
+                                local scoped_ok, scoped_id = dd_mapper_call(
+                                        addAreaName, scoped_name
+                                )
+                                if scoped_ok and scoped_id then
+                                        update_area_metadata(tonumber(scoped_id), info)
+                                        return tonumber(scoped_id)
+                                end
+                        end
+                        update_area_metadata(tonumber(area_id), info)
                         return tonumber(area_id)
                 end
 
                 local ok, added = dd_mapper_call(addAreaName, name)
                 if ok and added then
-                        if info and info.area_id and type(setAreaUserData) == "function" then
-                                pcall(setAreaUserData, added, "dd_gui.server_area_id", tostring(info.area_id))
-                        end
+                        update_area_metadata(tonumber(added), info)
                         return tonumber(added)
                 end
 
                 areas = getAreaTable()
-                return areas and tonumber(areas[name]) or nil
+                area_id = areas and tonumber(areas[name]) or nil
+                update_area_metadata(area_id, info)
+                return area_id
         end
 
         local function room_at(area_id, x, y, z, excluded)
@@ -294,9 +508,98 @@ function load_dd_mapper()
                 return result
         end
 
+        local function serialise_exit_details(exits)
+                local parts = {}
+                for direction, exit in pairs(exits or {}) do
+                        if exit.to then
+                                local door = tostring(exit.door or "")
+                                local command = tostring(exit.command or "")
+                                door = door:gsub("%%", "%%25"):gsub("[|,]", function(value)
+                                        return value == "|" and "%%7C" or "%%2C"
+                                end)
+                                command = command:gsub("%%", "%%25"):gsub("[|,]", function(value)
+                                        return value == "|" and "%%7C" or "%%2C"
+                                end)
+                                table.insert(parts, string.format(
+                                        "%s=%s,%s,%s,%s,%s",
+                                        direction,
+                                        tostring(exit.status or 0),
+                                        tostring(exit.has_status and 1 or 0),
+                                        tostring(exit.cost or ""),
+                                        door,
+                                        command
+                                ))
+                        end
+                end
+                table.sort(parts)
+                return table.concat(parts, ";")
+        end
+
+        local function serialise_special_exits(exits)
+                local parts = {}
+                for _, exit in ipairs(exits or {}) do
+                        if exit.to and exit.command then
+                                local command = tostring(exit.command)
+                                command = command:gsub("%%", "%%25"):gsub("[|=]", function(value)
+                                        return value == "|" and "%%7C" or "%%3D"
+                                end)
+                                table.insert(parts, string.format(
+                                        "%s=%s,%s,%s",
+                                        command,
+                                        tostring(exit.to),
+                                        tostring(exit.status or 0),
+                                        tostring(exit.cost or "")
+                                ))
+                        end
+                end
+                table.sort(parts)
+                return table.concat(parts, ";")
+        end
+
+        local function room_flag_text(info)
+                if type(info.flags) == "string" then
+                        return info.flags:lower()
+                elseif type(info.flags) == "table" then
+                        local parts = {}
+                        for key, flag in pairs(info.flags) do
+                                if type(flag) == "string" then
+                                        table.insert(parts, flag:lower())
+                                elseif flag == true and type(key) == "string" then
+                                        table.insert(parts, key:lower())
+                                end
+                        end
+                        return table.concat(parts, " ")
+                end
+                return ""
+        end
+
         local function set_room_metadata(info, area_id)
                 pcall(setRoomName, info.vnum, info.name)
                 pcall(setRoomArea, info.vnum, area_id)
+
+                local changed = false
+                changed = set_mapper_user_data(info.vnum, "dd_gui.area_id", info.area_id) or changed
+                changed = set_mapper_user_data(info.vnum, "dd_gui.area", info.area) or changed
+                changed = set_mapper_user_data(info.vnum, "dd_gui.sector", info.sector) or changed
+                changed = set_mapper_user_data(info.vnum, "dd_gui.sector_text", info.sector_text) or changed
+                changed = set_mapper_user_data(info.vnum, "dd_gui.flags", room_flag_text(info)) or changed
+
+                local tag_names = {}
+                for tag in pairs(info.tags or {}) do
+                        table.insert(tag_names, tag)
+                end
+                table.sort(tag_names)
+                changed = set_mapper_user_data(
+                        info.vnum, "dd_gui.tags", table.concat(tag_names, ",")
+                ) or changed
+                if info.description ~= "" then
+                        -- Keep room notes useful without allowing a malformed
+                        -- payload to make the persistent map unbounded.
+                        local description = info.description:sub(1, 4096)
+                        changed = set_mapper_user_data(
+                                info.vnum, "dd_gui.description", description
+                        ) or changed
+                end
 
                 local terrain = terrain_types[info.sector]
                 if terrain and type(setRoomEnv) == "function" then
@@ -305,17 +608,25 @@ function load_dd_mapper()
                                 pcall(setCustomEnvColor, terrain.id, terrain.r, terrain.g, terrain.b, 255)
                         end
                 end
+                return changed
         end
 
-        local function set_exit_door(room_id, direction, status)
-                if status and status > 0 and type(setDoor) == "function" then
-                        pcall(setDoor, room_id, short_direction(direction), status)
+        local function set_exit_door(room_id, direction, status, present)
+                local short = short_direction(direction)
+                local native_door_directions = {
+                        n = true, ne = true, nw = true, e = true,
+                        w = true, s = true, se = true, sw = true,
+                }
+                if present and native_door_directions[short] and type(setDoor) == "function" then
+                        local native_status = math.max(0, math.min(3, tonumber(status) or 0))
+                        pcall(setDoor, room_id, short, native_status)
                 end
         end
 
         local function sync_room_exits(info, created)
                 local previous = {}
                 local previous_serialised = ""
+                local changed = false
                 if type(getRoomUserData) == "function" then
                         local ok, value = dd_mapper_call(getRoomUserData, info.vnum, "dd_gui.exits")
                         if ok then
@@ -324,13 +635,55 @@ function load_dd_mapper()
                         end
                 end
 
+                DD_GUI.exit_status_by_room = DD_GUI.exit_status_by_room or {}
+                DD_GUI.exit_status_by_room[info.vnum] = DD_GUI.exit_status_by_room[info.vnum] or {}
                 for direction, exit in pairs(info.exits) do
-                        if exit.to and roomExists(exit.to) then
+                        if exit.blocked then
+                                pcall(setExitStub, info.vnum, direction, true)
+                                pcall(setExit, info.vnum, -1, direction)
+                        elseif exit.to and roomExists(exit.to) then
                                 pcall(setExit, info.vnum, exit.to, direction)
                         else
                                 pcall(setExitStub, info.vnum, direction, true)
                         end
-                        set_exit_door(info.vnum, direction, exit.status)
+                        if exit.has_status then
+                                DD_GUI.exit_status_by_room[info.vnum][direction] = exit.status
+                                local native_status = exit.status
+                                -- DD4 reports every traversable exit as
+                                -- state=open. Only draw an open native door
+                                -- when the exit actually has a door keyword;
+                                -- closed and locked exits remain visible even
+                                -- when the MUD leaves that keyword blank.
+                                if exit.status == 1 and
+                                        tostring(exit.door or "") == "" then
+                                        native_status = 0
+                                end
+                                set_exit_door(info.vnum, direction, native_status, true)
+                        end
+                        if exit.cost and type(setExitWeight) == "function" then
+                                local cost_weight = math.max(0, math.floor(exit.cost) - 1)
+                                pcall(setExitWeight, info.vnum, direction, cost_weight)
+                                changed = set_mapper_user_data(
+                                        info.vnum, "dd_gui.exit_cost." .. direction, exit.cost
+                                ) or changed
+                        elseif type(getRoomUserData) == "function" then
+                                local cost_ok, old_cost = dd_mapper_call(
+                                        getRoomUserData, info.vnum, "dd_gui.exit_cost." .. direction
+                                )
+                                if cost_ok and tostring(old_cost or "") ~= "" then
+                                        if type(setExitWeight) == "function" then
+                                                pcall(setExitWeight, info.vnum, direction, 0)
+                                        end
+                                        changed = set_mapper_user_data(
+                                                info.vnum, "dd_gui.exit_cost." .. direction, ""
+                                        ) or changed
+                        end
+                        end
+                        if exit.door ~= nil then
+                                changed = set_mapper_user_data(
+                                        info.vnum, "dd_gui.door_name." .. direction, exit.door
+                                ) or changed
+                        end
                 end
 
                 if type(info.special_exits) == "table" and type(addSpecialExit) == "function" then
@@ -342,6 +695,10 @@ function load_dd_mapper()
                                         local command = special.command or special.name or special.move
                                         if destination and command and roomExists(destination) then
                                                 pcall(addSpecialExit, info.vnum, destination, tostring(command))
+                                                if special.cost and type(setExitWeight) == "function" then
+                                                        pcall(setExitWeight, info.vnum, tostring(command),
+                                                                math.max(0, math.floor(special.cost) - 1))
+                                                end
                                         end
                                 end
                         end
@@ -364,54 +721,74 @@ function load_dd_mapper()
                                 if not info.exits[direction] then
                                         pcall(setExitStub, info.vnum, direction, false)
                                         pcall(setExit, info.vnum, -1, direction)
+                                        DD_GUI.exit_status_by_room[info.vnum][direction] = nil
+                                        set_exit_door(info.vnum, direction, 0, true)
+                                        if type(getRoomUserData) == "function" then
+                                                local cost_ok, old_cost = dd_mapper_call(
+                                                        getRoomUserData, info.vnum,
+                                                        "dd_gui.exit_cost." .. direction
+                                                )
+                                                if cost_ok and tostring(old_cost or "") ~= "" then
+                                                        if type(setExitWeight) == "function" then
+                                                                pcall(setExitWeight, info.vnum, direction, 0)
+                                                        end
+                                                        changed = set_mapper_user_data(
+                                                                info.vnum, "dd_gui.exit_cost." .. direction, ""
+                                                        ) or changed
+                                                end
+                                        end
                                 end
                         end
                 end
 
                 local current_serialised = serialise_exits(info.exits)
-                if type(setRoomUserData) == "function" and previous_serialised ~= current_serialised then
-                        pcall(setRoomUserData, info.vnum, "dd_gui.exits", current_serialised)
+                if previous_serialised ~= current_serialised then
+                        changed = set_mapper_user_data(
+                                info.vnum, "dd_gui.exits", current_serialised
+                        ) or changed
                 end
 
-                return previous_serialised ~= current_serialised
-        end
-
-        local function room_flag_text(info)
-                if type(info.flags) == "string" then
-                        return info.flags:lower()
-                elseif type(info.flags) == "table" then
-                        local parts = {}
-                        for _, flag in pairs(info.flags) do
-                                table.insert(parts, tostring(flag):lower())
-                        end
-                        return table.concat(parts, " ")
-                end
-                return ""
+                changed = set_mapper_user_data(
+                        info.vnum, "dd_gui.exit_details", serialise_exit_details(info.exits)
+                ) or changed
+                changed = set_mapper_user_data(
+                        info.vnum, "dd_gui.special_exits", serialise_special_exits(info.special_exits)
+                ) or changed
+                return changed
         end
 
         local function apply_room_semantics(info)
                 if not map.configs.dd_room_symbols or type(setRoomChar) ~= "function" then
-                        return
+                        return false
+                end
+
+                local function has_tag(tag)
+                        return info.tags and info.tags[tag] == true
                 end
 
                 local flags = room_flag_text(info)
                 local symbol
-                if flags:find("death") or flags:find("no recall") or flags:find("no_recall") then
+                if has_tag("danger") or flags:find("death") or
+                        flags:find("no recall") or flags:find("no_recall") then
                         symbol = "!"
-                elseif flags:find("quest") then
+                elseif has_tag("questmaster") or flags:find("quest") then
                         symbol = "Q"
-                elseif flags:find("trainer") then
+                elseif has_tag("bank") then
+                        symbol = "B"
+                elseif has_tag("trainer") or flags:find("trainer") then
                         symbol = "T"
-                elseif flags:find("healer") then
+                elseif has_tag("healer") or flags:find("healer") then
                         symbol = "H"
-                elseif flags:find("shop") or flags:find("store") then
+                elseif has_tag("shop") or flags:find("shop") or flags:find("store") then
                         symbol = "$"
-                elseif flags:find("safe") then
+                elseif has_tag("arena") then
+                        symbol = "A"
+                elseif has_tag("vault") then
+                        symbol = "V"
+                elseif has_tag("craft") or has_tag("spellcraft") then
+                        symbol = "C"
+                elseif has_tag("safe") or flags:find("safe") then
                         symbol = "S"
-                end
-
-                if not symbol then
-                        return
                 end
 
                 local existing = ""
@@ -426,35 +803,64 @@ function load_dd_mapper()
                         owned = ok and tostring(value or "") ~= ""
                 end
 
+                if not symbol then
+                        if owned then
+                                pcall(setRoomChar, info.vnum, " ")
+                                set_mapper_user_data(info.vnum, "dd_gui.symbol", "")
+                                return true
+                        end
+                        return false
+                end
+
+                local changed = false
                 if existing == "" or owned then
                         pcall(setRoomChar, info.vnum, symbol)
                         if type(setRoomCharColor) == "function" then
-                                local colour = symbol == "!" and {220, 40, 45} or {210, 170, 45}
+                                local colours = {
+                                        ["!"] = {220, 40, 45},
+                                        Q = {210, 170, 45}, B = {80, 180, 220},
+                                        T = {90, 210, 110}, H = {110, 220, 220},
+                                        ["$"] = {230, 190, 50}, A = {220, 90, 120},
+                                        V = {180, 110, 230}, C = {100, 190, 230},
+                                        S = {100, 220, 120},
+                                }
+                                local colour = colours[symbol] or {210, 170, 45}
                                 pcall(setRoomCharColor, info.vnum, colour[1], colour[2], colour[3])
                         end
-                        if type(setRoomUserData) == "function" then
-                                pcall(setRoomUserData, info.vnum, "dd_gui.symbol", symbol)
-                        end
+                        changed = set_mapper_user_data(info.vnum, "dd_gui.symbol", symbol) or changed
                 end
+                return changed or existing ~= symbol
+        end
+
+        local function arrival_is_spatial(arrival)
+                if type(arrival) ~= "table" then
+                        return true
+                end
+
+                local kind = tostring(arrival.kind or ""):lower()
+                return kind == "" or kind == "walk" or kind == "climb" or kind == "other"
         end
 
         local function placement_for(info, area_id)
-                local previous_id = dd_mapper_number(map.prev_info and map.prev_info.vnum)
+                local arrival = info.arrival
+                local previous_id = arrival and dd_mapper_number(
+                        arrival.from or arrival.from_vnum or arrival.previous
+                )
+                previous_id = previous_id or dd_mapper_number(map.prev_info and map.prev_info.vnum)
                 local previous_coords = previous_id and room_coordinates(previous_id)
                 local previous_area = previous_id and room_area(previous_id)
                 local base
 
                 if previous_coords and previous_area == area_id then
-                        local arrival = info.arrival
                         local arrival_direction = arrival and (arrival.direction or arrival.dir or arrival.command)
                         local arrival_vector = direction_vector(arrival_direction)
-                        if arrival_vector then
+                        if arrival_vector and arrival_is_spatial(arrival) then
                                 base = {
                                         previous_coords[1] + arrival_vector[1],
                                         previous_coords[2] + arrival_vector[2],
                                         previous_coords[3] + arrival_vector[3],
                                 }
-                        else
+                        elseif arrival_is_spatial(arrival) then
                                 for direction, exit in pairs(info.exits) do
                                         if exit.to == previous_id and direction_vector(direction) then
                                                 local vector = direction_vector(direction)
@@ -466,6 +872,16 @@ function load_dd_mapper()
                                                 break
                                         end
                                 end
+                        else
+                                -- A recall, portal, teleport, or immortal
+                                -- transfer is not a directional map edge. Keep
+                                -- the destination visibly separate instead of
+                                -- inventing an adjacent room relationship.
+                                base = {
+                                        previous_coords[1] + 3,
+                                        previous_coords[2] + 3,
+                                        previous_coords[3],
+                                }
                         end
                 end
 
@@ -473,10 +889,44 @@ function load_dd_mapper()
                 return free_coordinates(area_id, base, info.vnum)
         end
 
+        local function sync_arrival_link(info)
+                local arrival = info.arrival
+                if not arrival or not arrival_is_spatial(arrival) or
+                        type(setExit) ~= "function" then
+                        return false
+                end
+
+                local from_room = dd_mapper_number(
+                        arrival.from or arrival.from_vnum or arrival.previous
+                )
+                local direction = short_direction(
+                        arrival.direction or arrival.dir or arrival.command
+                )
+                if not from_room or not direction_names[direction] or
+                        not roomExists(from_room) or not roomExists(info.vnum) then
+                        return false
+                end
+
+                local checked = false
+                if type(getRoomExits) == "function" then
+                        local exits_ok, exits = dd_mapper_call(getRoomExits, from_room)
+                        if exits_ok and type(exits) == "table" then
+                                checked = true
+                                local current = exits[direction] or exits[long_direction(direction)]
+                                if tonumber(current) == tonumber(info.vnum) then
+                                        return false
+                                end
+                        end
+                end
+
+                pcall(setExit, from_room, info.vnum, direction)
+                return checked
+        end
+
         local function create_room(info, area_id)
                 local coordinates, displaced = placement_for(info, area_id)
-                local added = pcall(addRoom, info.vnum, area_id)
-                if not added then
+                local add_ok, added = pcall(addRoom, info.vnum, area_id)
+                if not add_ok or added == false then
                         pcall(addRoom, info.vnum)
                 end
                 set_room_metadata(info, area_id)
@@ -491,6 +941,7 @@ function load_dd_mapper()
 
         local function reconcile_room(info)
                 local created = not roomExists(info.vnum)
+                local metadata_changed = false
                 local area_id = area_id_for(info)
                 if not area_id then
                         return false, false
@@ -499,12 +950,14 @@ function load_dd_mapper()
                 if created then
                         create_room(info, area_id)
                 else
-                        set_room_metadata(info, area_id)
+                        metadata_changed = set_room_metadata(info, area_id)
                 end
 
                 local exits_changed = sync_room_exits(info, created)
-                apply_room_semantics(info)
-                return created or exits_changed, created
+                local arrival_link_changed = sync_arrival_link(info)
+                local semantics_changed = apply_room_semantics(info)
+                return created or metadata_changed or exits_changed or
+                        arrival_link_changed or semantics_changed, created
         end
 
         local function clear_highlights()
@@ -635,7 +1088,9 @@ function load_dd_mapper()
         local function movement_commands(room_id, direction)
                 local command = long_direction(direction)
                 local status = door_status(room_id, direction)
-                if status == 3 then
+                if status == 4 then
+                        return {}
+                elseif status == 3 then
                         return {"unlock " .. command, "open " .. command, command}
                 elseif status == 2 then
                         return {"open " .. command, command}
@@ -674,7 +1129,12 @@ function load_dd_mapper()
 
                 route.awaiting = action.to
                 route.last_room = map.room_info.vnum
-                for index, command in ipairs(movement_commands(action.from, action.direction)) do
+                local commands = movement_commands(action.from, action.direction)
+                if #commands == 0 then
+                        stop_route("Speedwalk stopped: the next exit is a wall.")
+                        return
+                end
+                for index, command in ipairs(commands) do
                         tempTimer((index - 1) * 0.2, function()
                                 if state.route == route then
                                         send(command)
@@ -786,8 +1246,13 @@ function load_dd_mapper()
                 if not room_id or type(statuses) ~= "table" then
                         return
                 end
+                DD_GUI.exit_status_by_room = DD_GUI.exit_status_by_room or {}
+                DD_GUI.exit_status_by_room[room_id] = DD_GUI.exit_status_by_room[room_id] or {}
                 for direction, status in pairs(statuses) do
-                        set_exit_door(room_id, direction, tonumber(status) or 0)
+                        local short = short_direction(direction)
+                        local numeric_status = tonumber(status) or 0
+                        DD_GUI.exit_status_by_room[room_id][short] = numeric_status
+                        set_exit_door(room_id, short, numeric_status, true)
                 end
         end
 
@@ -819,6 +1284,61 @@ function load_dd_mapper()
                         return true
                 end
                 return false
+        end
+
+        function DD_GUI.mapper_show_room_details(room_id)
+                room_id = tonumber(room_id) or (map.room_info and tonumber(map.room_info.vnum))
+                if not room_id or not roomExists(room_id) then
+                        mapper_echo("No mapped room is available to inspect.", true)
+                        return false
+                end
+
+                local name = room_id
+                if type(getRoomName) == "function" then
+                        local ok, value = dd_mapper_call(getRoomName, room_id)
+                        if ok and value and tostring(value) ~= "" then
+                                name = tostring(value)
+                        end
+                end
+                mapper_echo("Room " .. tostring(room_id) .. ": " .. tostring(name))
+
+                local data = {}
+                if type(getAllRoomUserData) == "function" then
+                        local ok, value = dd_mapper_call(getAllRoomUserData, room_id)
+                        if ok and type(value) == "table" then
+                                data = value
+                        end
+                end
+
+                local keys = {}
+                for key in pairs(data) do
+                        if tostring(key):match("^dd_gui%.") then
+                                table.insert(keys, tostring(key))
+                        end
+                end
+                table.sort(keys)
+                for _, key in ipairs(keys) do
+                        local value = tostring(data[key] or ""):gsub("[\r\n]+", " ")
+                        mapper_echo("  " .. key .. " = " .. value)
+                end
+
+                local statuses = DD_GUI.exit_status_by_room and DD_GUI.exit_status_by_room[room_id]
+                if statuses then
+                        local status_names = {[0] = "none", [1] = "open", [2] = "closed", [3] = "locked"}
+                        local directions = {}
+                        for direction in pairs(statuses) do
+                                table.insert(directions, direction)
+                        end
+                        table.sort(directions)
+                        for _, direction in ipairs(directions) do
+                                mapper_echo(string.format(
+                                        "  exit %s = %s",
+                                        direction,
+                                        status_names[tonumber(statuses[direction]) or 0] or "unknown"
+                                ))
+                        end
+                end
+                return true
         end
 
         local function selected_rooms()
@@ -1062,6 +1582,8 @@ function load_dd_mapper()
                         if rooms[1] then
                                 start_route(rooms[1])
                         end
+                elseif action == "details" then
+                        DD_GUI.mapper_show_room_details(rooms[1])
                 elseif action == "avoid" or action == "allow" then
                         for _, room_id in ipairs(rooms) do
                                 if action == "avoid" then
@@ -1130,6 +1652,7 @@ function load_dd_mapper()
                         {"center", "Centre on player"},
                         {"route", "Route to selected room"},
                         {"quest", "Show quest destination"},
+                        {"details", "Show DD4 room data"},
                         {"avoid", "Avoid selected rooms"},
                         {"allow", "Allow selected rooms"},
                 }
@@ -1154,6 +1677,9 @@ function load_dd_mapper()
                 local overlap_count = 0
                 local invalid_name_count = 0
                 local dangling_exit_count = 0
+                local rich_room_count = 0
+                local tagged_room_count = 0
+                local door_count = 0
                 local areas = getAreaTable() or {}
 
                 for area_name, area_id in pairs(areas) do
@@ -1174,6 +1700,30 @@ function load_dd_mapper()
                                 if not ok or not name or tostring(name) == "" then
                                         invalid_name_count = invalid_name_count + 1
                                 end
+                                if type(getRoomUserData) == "function" then
+                                        local details_ok, details = dd_mapper_call(
+                                                getRoomUserData, room_id, "dd_gui.exit_details"
+                                        )
+                                        if details_ok and tostring(details or "") ~= "" then
+                                                rich_room_count = rich_room_count + 1
+                                        end
+                                        local tags_ok, tags = dd_mapper_call(
+                                                getRoomUserData, room_id, "dd_gui.tags"
+                                        )
+                                        if tags_ok and tostring(tags or "") ~= "" then
+                                                tagged_room_count = tagged_room_count + 1
+                                        end
+                                end
+                                if type(getDoors) == "function" then
+                                        local doors_ok, doors = dd_mapper_call(getDoors, room_id)
+                                        if doors_ok and type(doors) == "table" then
+                                                for _, status in pairs(doors) do
+                                                        if tonumber(status) and tonumber(status) > 0 then
+                                                                door_count = door_count + 1
+                                                        end
+                                                end
+                                        end
+                                end
                                 if type(getRoomExits) == "function" then
                                         local exits_ok, exits = dd_mapper_call(getRoomExits, room_id)
                                         if exits_ok and type(exits) == "table" then
@@ -1188,8 +1738,9 @@ function load_dd_mapper()
                 end
 
                 mapper_echo(string.format(
-                        "Audit: %d areas, %d rooms, %d coordinate overlaps, %d unnamed rooms, %d dangling exits.",
-                        area_count, room_count, overlap_count, invalid_name_count, dangling_exit_count
+                        "Audit: %d areas, %d rooms, %d overlaps, %d unnamed, %d dangling exits, %d rich rooms, %d tagged rooms, %d doors.",
+                        area_count, room_count, overlap_count, invalid_name_count,
+                        dangling_exit_count, rich_room_count, tagged_room_count, door_count
                 ))
                 if overlap_count > 0 then
                         mapper_echo("Overlaps were reported only; no map data was changed.", true)
