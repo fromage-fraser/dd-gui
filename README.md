@@ -120,7 +120,10 @@ data. The main panels are:
   stale-link cleanup. The native mapper context menu includes `Show DD4 room
   data`, and `ddmap info` prints the current room's persisted record.
 - **Character sheet:** profile image, character details, statistics, and
-  resistances.
+  resistances. Characters below level 100 also receive compact segmented
+  `THIRST` and `HUNGER` gauges from `Char.Vitals`. The gauges are hidden for
+  Vampires, whose DD4 condition values do not decay, and on older servers that
+  do not provide the new current/maximum fields.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
   tab is always first. Other tabs appear only when GMCP reports that the
   character can access and has enabled that channel. Messages include their
@@ -178,9 +181,10 @@ data. The main panels are:
   dialog; if that is unavailable, use the displayed console link or type
   `ddmap reset` (and `ddmap cancel` to cancel).
 
-  The four status gauges use an even inset on all four sides inside the shared
-  braided frame, so their black breathing room remains balanced when the gauge
-  band is resized.
+  The four footer status gauges use an even inset on all four sides inside the
+  shared braided frame, so their black breathing room remains balanced when
+  the gauge band is resized. The character sheet's hunger and thirst bars use
+  the same segmented gauge treatment in a compact two-column row.
 
 The main MUD console and panel consoles use the profile's shared scrollbar
 style: narrow black tracks have restrained dark-red edges, while the moving
