@@ -1,5 +1,26 @@
 DD_GUI = DD_GUI or {}
 
+local function remove_conflicting_generic_mapper()
+        if DD_GUI.generic_mapper_checked then
+                return
+        end
+
+        DD_GUI.generic_mapper_checked = true
+
+        if type(uninstallPackage) ~= "function" then
+                return
+        end
+
+        if type(getPackageInfo) == "function" then
+                local ok, version = pcall(getPackageInfo, "generic_mapper", "version")
+                if not ok or version == nil or tostring(version) == "" then
+                        return
+                end
+        end
+
+        pcall(uninstallPackage, "generic_mapper")
+end
+
 local function run_update(fn)
         if type(fn) ~= "function" then
                 return
@@ -186,6 +207,8 @@ end
 DD_GUI.show_current_roots = dd_gui_show_current_roots
 
 function bootstrap()
+        remove_conflicting_generic_mapper()
+
         local package_version = dd_gui_installed_version()
 
         if DD_GUI.Theme and DD_GUI.Theme.apply_profile_style then
