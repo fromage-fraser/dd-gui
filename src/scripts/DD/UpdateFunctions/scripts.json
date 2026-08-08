@@ -1,60 +1,31 @@
 [
 
         {
-                "name": "update_vitals",
-                "eventHandlerList": [ 
-                        "gmcp.Char.Vitals"
-                ]
+                "name": "update_vitals"
         },
         {
-                "name": "update_affects",
-                "eventHandlerList": [ 
-                        "gmcp.Char.Affect"
-                ]
+                "name": "update_affects"
         },
         {
-                "name": "update_quest_status",
-                "eventHandlerList": [
-                        "gmcp.Char.Quest"
-                ]
+                "name": "update_quest_status"
         },
         {
-                "name": "update_inventory",
-                "eventHandlerList": [
-                        "gmcp.Char.Items"
-                ]
+                "name": "update_inventory"
         },
         {
-                "name": "update_equipped",
-                "eventHandlerList": [
-                        "gmcp.Char.Worn",
-                        "gmcp.Char.Base",
-                        "gmcp.Char.Vitals"
-                ]
+                "name": "update_equipped"
         },
         {
-                "name": "update_travel",
-                "eventHandlerList": [ 
-                        "gmcp.Room.Info"
-                ]
+                "name": "update_travel"
         },
         {
-                "name": "update_enemy",
-                "eventHandlerList": [ 
-                        "gmcp.Char.Enemies"
-                ]
+                "name": "update_enemy"
         },
         {
-                "name": "update_comms",
-                "eventHandlerList": [
-                        "gmcp.Comm.Channel.Text"
-                ]
+                "name": "update_comms"
         },
         {
-                "name": "update_channel_status",
-                "eventHandlerList": [
-                        "gmcp.Char.Channels"
-                ]
+                "name": "update_channel_status"
         },
         {
                 "name": "bootstrap"

@@ -103,7 +103,7 @@ function ui_container()
         -- Defer border changes until the adjustable container has finished updating.
         function ui.updatecontent()
                 if ui.eventtimer then
-                        killTimer(ui.eventtimer)
+                        return
                 end
 
                 ui.eventtimer = tempTimer(0, function()

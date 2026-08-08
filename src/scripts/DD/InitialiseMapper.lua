@@ -98,7 +98,32 @@ function save_dd_mapper()
         return saved
 end
 
+local function safe_load_map(path)
+        if type(loadMap) ~= "function" then
+                return false, "Mudlet loadMap() is unavailable"
+        end
+
+        local ok, loaded, error_message = pcall(loadMap, path)
+        if not ok then
+                return false, tostring(loaded)
+        end
+
+        return loaded == true, error_message
+end
+
 function initialise_mapper()
+        if DD_GUI.mapper_load_in_progress then
+                return false
+        end
+
+        -- A local development reload can invoke bootstrap more than once.
+        -- Native map parsing is expensive and the same map is already resident,
+        -- so never ask Mudlet to parse it repeatedly in one profile session.
+        if DD_GUI.mapper_load_attempted then
+                return DD_GUI.mapper_loaded == true
+        end
+
+        DD_GUI.mapper_load_attempted = true
         expandAlias("ignores")
 
         local bundled_map = asset_path("maps/mud_school.dat")
@@ -114,12 +139,31 @@ function initialise_mapper()
                 migrate_legacy_map = true
         end
 
-        local loaded, error_message = loadMap(map_to_load)
+        DD_GUI.mapper_load_in_progress = true
+        local loaded, error_message = safe_load_map(map_to_load)
+        DD_GUI.mapper_load_in_progress = false
 
-        if not loaded and map_to_load ~= bundled_map then
-                cecho(string.format("<yellow>Unable to load saved Dragons Domain map: %s. Loading the bundled map instead.<reset>\n", error_message or "unknown error"))
-                loadMap(bundled_map)
-        elseif migrate_legacy_map then
-                save_dd_mapper()
+        if loaded then
+                DD_GUI.mapper_loaded = true
+                DD_GUI.mapper_loaded_path = map_to_load
+                if migrate_legacy_map then
+                        save_dd_mapper()
+                end
+                return true
         end
+
+        if map_to_load ~= bundled_map then
+                cecho(string.format("<yellow>Unable to load saved Dragons Domain map: %s. Loading the bundled map instead.<reset>\n", error_message or "unknown error"))
+                local fallback_loaded, fallback_error = safe_load_map(bundled_map)
+                if fallback_loaded then
+                        DD_GUI.mapper_loaded = true
+                        DD_GUI.mapper_loaded_path = bundled_map
+                        return true
+                end
+
+                cecho(string.format("<red>Unable to load the bundled Dragons Domain map: %s<reset>\n", fallback_error or "unknown error"))
+        end
+
+        DD_GUI.mapper_load_error = error_message or "unknown error"
+        return false
 end

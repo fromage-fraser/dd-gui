@@ -26,6 +26,17 @@ elseif target == "off" then
   if type(removeMapMenu) == "function" then
     pcall(removeMapMenu, "DD_GUI.Mapper")
   end
+elseif target == "cleanup" then
+  if DD_GUI and DD_GUI.remove_conflicting_generic_mapper then
+    local removed = DD_GUI.remove_conflicting_generic_mapper(true)
+    if removed then
+      cecho("<yellow>Removed generic_mapper. Restart Mudlet before reconnecting if its map load was freezing this profile.<reset>\n")
+    else
+      cecho("<white>The conflicting generic_mapper package is not installed, or could not be removed.<reset>\n")
+    end
+  else
+    cecho("<red>DD_GUI mapper cleanup is unavailable until bootstrap completes.<reset>\n")
+  end
 elseif target == "audit" then
   if DD_GUI and DD_GUI.mapper_audit then
     DD_GUI.mapper_audit()
