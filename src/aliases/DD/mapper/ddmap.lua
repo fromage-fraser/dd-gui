@@ -47,6 +47,12 @@ elseif target == "fit" then
   if DD_GUI and DD_GUI.mapper_fit_area then
     DD_GUI.mapper_fit_area()
   end
+elseif target == "info" or target == "room" then
+  if DD_GUI and DD_GUI.mapper_show_room_details then
+    DD_GUI.mapper_show_room_details()
+  else
+    cecho("<red>The Dragons Domain mapper is not loaded.<reset>\n")
+  end
 elseif target == "safe" then
   map.configs = map.configs or {}
   map.configs.dd_safe_speedwalk = true

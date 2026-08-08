@@ -92,8 +92,13 @@ data. The main panels are:
   persistent. Use `ddmap fit` to refit the current area at any time.
   Mapped quest destinations receive a restrained gold highlight, and selected
   rooms can be routed to, avoided, or centred from the native mapper context
-  menu. Rooms with recognized server flags may receive a small semantic marker
-  such as `!`, `Q`, `T`, `H`, `$`, or `S`; existing user symbols are preserved.
+  menu. The mapper consumes DD4's structured `Room.Info` fields: stable
+  `area_id` identity, sector and sector text, room flags, room descriptions,
+  semantic `tags`, rich exit destinations, door state/name, movement cost,
+  arrival direction/kind, and compatible special exits. Tags can add coloured
+  semantic markers (`!`, `Q`, `B`, `T`, `H`, `$`, `A`, `V`, `C`, or `S`);
+  markers owned by DD_GUI are removed when the server no longer reports the
+  corresponding condition, while existing user symbols are preserved.
 - **Mapper ownership:** DD_GUI uses its own GMCP/native mapper. During bootstrap
   it removes Mudlet's conflicting `generic_mapper` package, whose obsolete
   updater can otherwise request a dead `versions.lua` URL. The cleanup now runs
@@ -102,11 +107,18 @@ data. The main panels are:
   DD_GUI during development reloads. `ddmap cleanup` repeats that removal if a
   local profile still has the old package installed; restart Mudlet afterward if
   it was freezing while reading the generic map.
-  The custom mapper accepts the current direction-to-vnum exit shape and also
-  understands a future richer exit object with destination, door state, door
-  name, command, arrival, area ID, and special-exit fields. Older payloads are
-  still mapped unchanged. Existing rooms and hand-corrected coordinates are
-  preserved; only rooms created by DD_GUI are eligible for stale-link cleanup.
+  The custom mapper accepts both the original direction-to-vnum exit shape and
+  the current richer DD4 payload. Native mapper doors are updated with `0`
+  (removed), `1` (open), `2` (closed), or `3` (locked); up/down states remain
+  available to compass routing through the GUI's per-room cache because older
+  Mudlet native door drawing only supports compass-plane directions. Exit
+  movement costs bias native pathfinding through per-exit weights, and arrival
+  metadata repairs the previous room's outbound link when a newly discovered
+  room was previously only an exit stub. DD4 wall exits remain visible as
+  non-routable stubs. Existing rooms and hand-corrected
+  coordinates are preserved; only rooms created by DD_GUI are eligible for
+  stale-link cleanup. The native mapper context menu includes `Show DD4 room
+  data`, and `ddmap info` prints the current room's persisted record.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
@@ -151,11 +163,12 @@ data. The main panels are:
   border-only pressed highlight.
 
   Mapper speedwalks now wait for each expected GMCP room transition, stop when
-  movement fails or diverges from the known route, and include the current
-  closed/locked door commands. `ddmap fast` restores immediate route sending;
-  `ddmap safe` restores confirmation-based routing. The existing `[Exits: ...]`
-  parser remains the compatibility fallback until richer exit state is sent
-  through GMCP.
+  movement fails or diverges from the known route, include current
+  closed/locked door commands, and use the richer exit costs when available.
+  `ddmap fast` restores immediate route sending; `ddmap safe` restores
+  confirmation-based routing. The existing `[Exits: ...]` parser remains a
+  compatibility fallback for sessions or rooms that do not yet provide rich
+  exit state through GMCP.
   The `DD_GUI` mapper context menu also provides `Reset selected area's rooms`.
   It asks for an explicit in-console confirmation, then removes the selected
   area's mapped rooms and exits so the area can be remapped from scratch. A
@@ -206,6 +219,7 @@ These aliases are available from the Mudlet command line:
 | `ddmap on` / `ddmap off` | Enable or disable the Dragons Domain custom mapper. |
 | `ddmap audit` | Report map areas, rooms, overlaps, unnamed rooms, and dangling exits without changing map data. |
 | `ddmap fit` | Fit and centre the current mapped area. |
+| `ddmap info` / `ddmap room` | Print the current mapped room's persisted DD4 metadata, exits, tags, and door state. |
 | `ddmap safe` / `ddmap fast` | Toggle confirmation-based or immediate mapper speedwalks. |
 | `ddmap cleanup` | Remove the legacy `generic_mapper` package from the profile before restarting Mudlet. |
 | `ddmap reset` / `ddmap cancel` | Confirm or cancel a pending mapper area reset when the dialog/link fallback is used. |
