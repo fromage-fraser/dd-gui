@@ -900,7 +900,7 @@ function load_dd_mapper()
                         area_name = area_name(area_id),
                 }
                 local pending = state.pending_area_reset
-                pending.timer = tempTimer(15, function()
+                pending.timer = tempTimer(60, function()
                         if state.pending_area_reset == pending then
                                 clear_pending_area_reset()
                                 mapper_echo("Area reset confirmation expired.", true)
@@ -911,21 +911,46 @@ function load_dd_mapper()
                         "Reset %s and remove all %d mapped rooms?",
                         pending.area_name, pending.room_count
                 ), true)
+
+                if type(createComposer) == "function" then
+                        local composer_call_ok, composer_opened = dd_mapper_call(
+                                createComposer,
+                                "Reset mapper area: " .. pending.area_name,
+                                "",
+                                function(text, saved)
+                                        if not saved then
+                                                DD_GUI.mapper_cancel_area_reset()
+                                        elseif tostring(text or ""):match("^%s*RESET%s*$") then
+                                                DD_GUI.mapper_confirm_area_reset(area_id)
+                                        else
+                                                mapper_echo("Type RESET in the confirmation dialog to clear this area.", true)
+                                        end
+                                end
+                        )
+                        if composer_call_ok and composer_opened then
+                                return true
+                        end
+                end
+
                 if type(cechoLink) == "function" then
                         cechoLink(
+                                "main",
                                 "<red>[CONFIRM RESET]<reset>",
                                 "DD_GUI.mapper_confirm_area_reset(" .. tostring(area_id) .. ")",
                                 "Remove every mapped room in this area",
                                 true
                         )
-                        cecho("  ")
+                        cecho("main", "  ")
                         cechoLink(
+                                "main",
                                 "<white>[CANCEL]<reset>",
                                 "DD_GUI.mapper_cancel_area_reset()",
                                 "Cancel area reset",
                                 true
                         )
-                        cecho("\n")
+                        cecho("main", "\n")
+                else
+                        mapper_echo("Type 'ddmap reset' to confirm, or 'ddmap cancel' to cancel.", true)
                 end
                 return true
         end
@@ -1006,6 +1031,25 @@ function load_dd_mapper()
                 return true
         end
 
+        function DD_GUI.mapper_confirm_pending_area_reset()
+                local pending = state.pending_area_reset
+                if not pending then
+                        mapper_echo("There is no pending area reset.", true)
+                        return false
+                end
+                return DD_GUI.mapper_confirm_area_reset(pending.area_id)
+        end
+
+        local function handle_reset_area_menu()
+                local rooms = selected_rooms()
+                local area_id, error_message = selected_area(rooms)
+                if not area_id then
+                        mapper_echo(error_message or "No mapped area was selected.", true)
+                else
+                        request_area_reset(area_id)
+                end
+        end
+
         local function handle_mapper_menu(_, action)
                 local rooms = selected_rooms()
                 if action == "fit" then
@@ -1075,6 +1119,10 @@ function load_dd_mapper()
                         pcall(killAnonymousEventHandler, state.handlers.menu)
                         state.handlers.menu = nil
                 end
+                if state.handlers.reset_area then
+                        pcall(killAnonymousEventHandler, state.handlers.reset_area)
+                        state.handlers.reset_area = nil
+                end
                 pcall(removeMapMenu, "DD_GUI.Mapper")
                 pcall(addMapMenu, "DD_GUI.Mapper", nil, "DD_GUI")
                 local entries = {
@@ -1084,14 +1132,20 @@ function load_dd_mapper()
                         {"quest", "Show quest destination"},
                         {"avoid", "Avoid selected rooms"},
                         {"allow", "Allow selected rooms"},
-                        {"reset_area", "Reset selected area's rooms"},
                 }
                 for _, entry in ipairs(entries) do
                         pcall(removeMapEvent, "DD_GUI.Mapper." .. entry[1])
                         pcall(addMapEvent, "DD_GUI.Mapper." .. entry[1],
                                 "DD_GUI.MapperMenu", "DD_GUI.Mapper", entry[2], entry[1])
                 end
+                pcall(removeMapEvent, "DD_GUI.Mapper.reset_area")
+                pcall(addMapEvent, "DD_GUI.Mapper.reset_area",
+                        "DD_GUI.MapperResetArea", "DD_GUI.Mapper",
+                        "Reset selected area's rooms")
                 state.handlers.menu = registerAnonymousEventHandler("DD_GUI.MapperMenu", handle_mapper_menu)
+                state.handlers.reset_area = registerAnonymousEventHandler(
+                        "DD_GUI.MapperResetArea", handle_reset_area_menu
+                )
         end
 
         local function audit_mapper()

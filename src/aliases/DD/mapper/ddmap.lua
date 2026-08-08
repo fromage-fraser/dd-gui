@@ -44,6 +44,16 @@ elseif target == "fast" then
   map.configs = map.configs or {}
   map.configs.dd_safe_speedwalk = false
   cecho("<yellow>Mapper speedwalk safety is OFF; routes send without room confirmation.<reset>\n")
+elseif target == "reset" then
+  if DD_GUI and DD_GUI.mapper_confirm_pending_area_reset then
+    DD_GUI.mapper_confirm_pending_area_reset()
+  else
+    cecho("<red>No mapper area reset is waiting for confirmation.<reset>\n")
+  end
+elseif target == "cancel" then
+  if DD_GUI and DD_GUI.mapper_cancel_area_reset then
+    DD_GUI.mapper_cancel_area_reset()
+  end
 else
   cecho("<red>Do not understand mapper option \"" .. target .. "\"<reset>\n")
 end
