@@ -1,3 +1,5 @@
+DD_GUI = DD_GUI or {}
+
 local function looks_like_file(relPath)
   -- has a basename with a dot extension and does not end with '/'
   return relPath:match("[^/]+%.[^/]+$") ~= nil
@@ -145,6 +147,17 @@ function start_next_download()
   downloadFile(nextDownload.saveto, nextDownload.url)
 end
 
--- Register (safe to call once at load time)
-registerAnonymousEventHandler("sysDownloadDone",  "onDownloadDone")
-registerAnonymousEventHandler("sysDownloadError", "onDownloadError")
+-- Replace the previous callbacks when local source files are reloaded. Without
+-- this, every reload can make one completed download advance the queue several
+-- times and leave the downloader in a corrupt state.
+DD_GUI.download_event_handlers = DD_GUI.download_event_handlers or {}
+for _, handler_id in pairs(DD_GUI.download_event_handlers) do
+  if handler_id and type(killAnonymousEventHandler) == "function" then
+    pcall(killAnonymousEventHandler, handler_id)
+  end
+end
+
+DD_GUI.download_event_handlers = {
+  done = registerAnonymousEventHandler("sysDownloadDone", "onDownloadDone"),
+  error = registerAnonymousEventHandler("sysDownloadError", "onDownloadError"),
+}

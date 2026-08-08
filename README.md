@@ -96,7 +96,12 @@ data. The main panels are:
   such as `!`, `Q`, `T`, `H`, `$`, or `S`; existing user symbols are preserved.
 - **Mapper ownership:** DD_GUI uses its own GMCP/native mapper. During bootstrap
   it removes Mudlet's conflicting `generic_mapper` package, whose obsolete
-  updater can otherwise request a dead `versions.lua` URL.
+  updater can otherwise request a dead `versions.lua` URL. The cleanup now runs
+  as soon as the DD_GUI folder loads, before the GUI starts its own mapper, so
+  the generic package's profile-level `map\autosave.dat` is not loaded beside
+  DD_GUI during development reloads. `ddmap cleanup` repeats that removal if a
+  local profile still has the old package installed; restart Mudlet afterward if
+  it was freezing while reading the generic map.
   The custom mapper accepts the current direction-to-vnum exit shape and also
   understands a future richer exit object with destination, door state, door
   name, command, arrival, area ID, and special-exit fields. Older payloads are
@@ -202,6 +207,7 @@ These aliases are available from the Mudlet command line:
 | `ddmap audit` | Report map areas, rooms, overlaps, unnamed rooms, and dangling exits without changing map data. |
 | `ddmap fit` | Fit and centre the current mapped area. |
 | `ddmap safe` / `ddmap fast` | Toggle confirmation-based or immediate mapper speedwalks. |
+| `ddmap cleanup` | Remove the legacy `generic_mapper` package from the profile before restarting Mudlet. |
 | `ddmap reset` / `ddmap cancel` | Confirm or cancel a pending mapper area reset when the dialog/link fallback is used. |
 | `ignores` | Preserve the legacy mapper command; the GMCP mapper reports that text ignore patterns are unnecessary when generic_mapper is absent. |
 | `ugui` | Uninstall the `DD_GUI` package. |
@@ -251,6 +257,18 @@ file. Keep that file local and never commit or print it.
 
 Keep this README synchronized with significant GUI, alias, keybinding, package,
 and workflow changes.
+
+### Development reload recovery
+
+If a local package reload drives Mudlet CPU usage high or leaves it frozen on
+`Reading map ... map\autosave.dat`, the profile is still loading the legacy
+`generic_mapper` package. Run `ddmap cleanup` once the profile responds, close
+and restart Mudlet, and then load DD_GUI again. DD_GUI also guards its own
+persistent `dragons_domain_mapper.dat` load so repeated `bootstrap()` calls do
+not parse the native map repeatedly in one session. If Mudlet cannot respond
+long enough to run the command, make a backup of the profile's
+`map\autosave.dat`, rename that file, restart Mudlet, and let DD_GUI rebuild
+from its own persistent map; the generic file is not used by DD_GUI.
 
 For smaller changes, you may wish to work in Mudlet's built-in text editor so you can quickly view the changes, then copy the code over to your local `dd-gui` repo after you're satisfied with it before building the package.
 

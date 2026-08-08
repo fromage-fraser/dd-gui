@@ -3,7 +3,41 @@ mudlet = mudlet or {}
 
 -- Mudlet builds without getPackageInfo() still need a reliable way to show
 -- the installed GUI version and decide whether bootstrap() may be reused.
-DD_GUI.package_version = "0.0.114"
+DD_GUI.package_version = "0.0.115"
+
+-- DD_GUI owns the native mapper surface. Remove the legacy generic mapper as
+-- early as possible so its profile-level map/autosave.dat is not loaded beside
+-- the DD_GUI map during a local development reload.
+function DD_GUI.remove_conflicting_generic_mapper(force)
+        if DD_GUI.generic_mapper_checked and not force then
+                return DD_GUI.generic_mapper_removed == true
+        end
+
+        DD_GUI.generic_mapper_checked = true
+        DD_GUI.generic_mapper_removed = false
+
+        if type(uninstallPackage) ~= "function" then
+                return false
+        end
+
+        local installed = true
+        if type(getPackageInfo) == "function" then
+                local ok, version = pcall(getPackageInfo, "generic_mapper", "version")
+                installed = ok and version ~= nil and tostring(version) ~= ""
+        end
+
+        if installed then
+                local ok, result = pcall(uninstallPackage, "generic_mapper")
+                DD_GUI.generic_mapper_removed = ok and result ~= false
+                if DD_GUI.generic_mapper_removed and type(cecho) == "function" then
+                        cecho("<yellow>Removed the conflicting generic_mapper package; DD_GUI owns the mapper.<reset>\n")
+                end
+        end
+
+        return DD_GUI.generic_mapper_removed == true
+end
+
+DD_GUI.remove_conflicting_generic_mapper()
 
 local profile_path = string.gsub(getMudletHomeDir(), "\\", "/")
 local package_path = profile_path .. "/DD_GUI"
@@ -113,15 +147,32 @@ function myScriptInstalled(_, name)
         if name ~= "DD_GUI" then
                 return
         end
+        DD_GUI.remove_conflicting_generic_mapper()
         DD_GUI.migrate_legacy_content()
         bootstrap()
 end
 
 function myScriptUninstalled(_, name)
         if name == "DD_GUI" then
+                if DD_GUI.unregister_data_refresh_handlers then
+                        DD_GUI.unregister_data_refresh_handlers()
+                end
                 DD_GUI.migrate_legacy_content()
         end
 end
 
-registerAnonymousEventHandler("sysInstallPackage", "myScriptInstalled")
-registerAnonymousEventHandler("sysUninstallPackage", "myScriptUninstalled")
+local function register_package_handlers()
+        DD_GUI.package_event_handlers = DD_GUI.package_event_handlers or {}
+        for _, handler_id in pairs(DD_GUI.package_event_handlers) do
+                if handler_id and type(killAnonymousEventHandler) == "function" then
+                        pcall(killAnonymousEventHandler, handler_id)
+                end
+        end
+
+        DD_GUI.package_event_handlers = {
+                install = registerAnonymousEventHandler("sysInstallPackage", "myScriptInstalled"),
+                uninstall = registerAnonymousEventHandler("sysUninstallPackage", "myScriptUninstalled"),
+        }
+end
+
+register_package_handlers()

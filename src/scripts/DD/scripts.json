@@ -33,10 +33,7 @@
         "name": "CharsheetConsole"
   },
   {
-        "name": "compass.resize",
-        "eventHandlerList": [ 
-                "sysWindowResizeEvent"
-        ]
+        "name": "compass.resize"
   },
   {
         "name": "CreateBackground"

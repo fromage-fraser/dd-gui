@@ -976,8 +976,11 @@ function FrameGrid:register()
 end
 
 function FrameGrid:schedule_refresh(delay)
-        if self.refresh_timer and type(killTimer) == "function" then
-                killTimer(self.refresh_timer)
+        -- Resize and reposition events often arrive as a burst. One pending
+        -- render is enough; repeatedly killing and recreating the timer can
+        -- monopolise Mudlet while a development package is being reloaded.
+        if self.refresh_timer then
+                return
         end
         if type(tempTimer) ~= "function" then
                 self:render()
