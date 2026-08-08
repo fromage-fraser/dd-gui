@@ -140,6 +140,8 @@ local function raise_data_surfaces()
                 CharsheetPFPConsole,
                 CharsheetImageFrame,
                 DD_GUI and DD_GUI.CharsheetConditions,
+                DD_GUI and DD_GUI.ThirstColumn,
+                DD_GUI and DD_GUI.HungerColumn,
                 DD_GUI and DD_GUI.Thirst,
                 DD_GUI and DD_GUI.Hunger,
                 DD_GUI and DD_GUI.ThirstLabel,
