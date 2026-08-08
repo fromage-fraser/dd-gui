@@ -5,6 +5,10 @@ DD_GUI.exit_status_by_room = DD_GUI.exit_status_by_room or {}
 local compass_exit_aliases = {
         n = "n",
         north = "n",
+        ne = "ne",
+        northeast = "ne",
+        nw = "nw",
+        northwest = "nw",
         u = "u",
         up = "u",
         w = "w",
@@ -13,8 +17,14 @@ local compass_exit_aliases = {
         east = "e",
         s = "s",
         south = "s",
+        se = "se",
+        southeast = "se",
+        sw = "sw",
+        southwest = "sw",
         d = "d",
         down = "d",
+        ["in"] = "in",
+        out = "out",
 }
 
 local function compass_current_room_id()
@@ -63,6 +73,9 @@ function DD_GUI.update_exit_status(exit_text)
         if room_id then
                 DD_GUI.exit_status_by_room[room_id] = statuses
                 DD_GUI.exit_status_room = room_id
+                if DD_GUI.mapper_set_exit_status then
+                        DD_GUI.mapper_set_exit_status(room_id, statuses)
+                end
         end
 end
 

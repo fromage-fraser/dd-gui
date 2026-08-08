@@ -87,10 +87,21 @@ data. The main panels are:
 - **Map:** the current room and surrounding map data. The embedded mapper has
   even internal padding, and its title is kept to one compact room/vnum line
   with no extra rule beneath it, so northern rooms remain visible even when a
-  room name is long.
+  room name is long. Newly visited areas receive a one-time density-based zoom
+  so a sparse map does not collapse into a tiny cluster; manual zoom remains
+  persistent. Use `ddmap fit` to refit the current area at any time.
+  Mapped quest destinations receive a restrained gold highlight, and selected
+  rooms can be routed to, avoided, or centred from the native mapper context
+  menu. Rooms with recognized server flags may receive a small semantic marker
+  such as `!`, `Q`, `T`, `H`, `$`, or `S`; existing user symbols are preserved.
 - **Mapper ownership:** DD_GUI uses its own GMCP/native mapper. During bootstrap
   it removes Mudlet's conflicting `generic_mapper` package, whose obsolete
   updater can otherwise request a dead `versions.lua` URL.
+  The custom mapper accepts the current direction-to-vnum exit shape and also
+  understands a future richer exit object with destination, door state, door
+  name, command, arrival, area ID, and special-exit fields. Older payloads are
+  still mapped unchanged. Existing rooms and hand-corrected coordinates are
+  preserved; only rooms created by DD_GUI are eligible for stale-link cleanup.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
@@ -134,6 +145,13 @@ data. The main panels are:
   frame as the main panels, and keyboard/button movement uses the same brief
   border-only pressed highlight.
 
+  Mapper speedwalks now wait for each expected GMCP room transition, stop when
+  movement fails or diverges from the known route, and include the current
+  closed/locked door commands. `ddmap fast` restores immediate route sending;
+  `ddmap safe` restores confirmation-based routing. The existing `[Exits: ...]`
+  parser remains the compatibility fallback until richer exit state is sent
+  through GMCP.
+
   The four status gauges use an even inset on all four sides inside the shared
   braided frame, so their black breathing room remains balanced when the gauge
   band is resized.
@@ -173,7 +191,10 @@ These aliases are available from the Mudlet command line:
 | `resetgui` | Restore all GUI regions to their default positions and sizes. |
 | `gcc` | Refresh and download the latest custom content. |
 | `ddmap on` / `ddmap off` | Enable or disable the Dragons Domain custom mapper. |
-| `ignores` | Add the Dragons Domain portal message to the mapper's ignore patterns. |
+| `ddmap audit` | Report map areas, rooms, overlaps, unnamed rooms, and dangling exits without changing map data. |
+| `ddmap fit` | Fit and centre the current mapped area. |
+| `ddmap safe` / `ddmap fast` | Toggle confirmation-based or immediate mapper speedwalks. |
+| `ignores` | Preserve the legacy mapper command; the GMCP mapper reports that text ignore patterns are unnecessary when generic_mapper is absent. |
 | `ugui` | Uninstall the `DD_GUI` package. |
 | `reinstallgui` | Defer the uninstall, wait three seconds, reinstall the latest remote package with a profile-level handoff, and report its installed version without removing downloaded custom content. |
 
