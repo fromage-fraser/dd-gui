@@ -190,6 +190,10 @@ function update_vitals()
         )
   end
 
+  if DD_GUI.update_drunk_icon then
+        DD_GUI.update_drunk_icon()
+  end
+
   --CharsheetPFPConsole:setBackgroundImage( [[
   --  background-image: url(]] .. ms_path .. '/avatars/' .. pfp_filename .. [[);
   --  background-position: top left;

@@ -290,34 +290,12 @@ function FrameGrid:collect_regions()
                         -- overlap substantially.
                         if gap_width >= -self.thickness / 2 then
                                 self.gauge_dividers[#self.gauge_dividers + 1] = {
-                                        orientation = "v",
                                         x = gap_start + gap_width / 2,
                                         y = bottom.y,
                                         height = bottom.height,
                                 }
                         end
                 end
-        end
-
-        -- The character condition gauges form a two-cell band inside the
-        -- character panel. Its outer left, right, and bottom edges already
-        -- belong to CharsheetBox, so add only the top braid and one shared
-        -- vertical divider. This keeps every junction single and square.
-        local condition_band = widget_bounds(
-                DD_GUI.CharsheetConditions)
-        if DD_GUI.CharsheetConditionFrameVisible == true and condition_band then
-                self.gauge_dividers[#self.gauge_dividers + 1] = {
-                        orientation = "h",
-                        x = condition_band.x,
-                        y = condition_band.y,
-                        width = condition_band.width,
-                }
-                self.gauge_dividers[#self.gauge_dividers + 1] = {
-                        orientation = "v",
-                        x = condition_band.x + condition_band.width / 2,
-                        y = condition_band.y,
-                        height = condition_band.height,
-                }
         end
 end
 
@@ -835,47 +813,25 @@ function FrameGrid:draw_visuals()
         for _, divider in ipairs(self.gauge_dividers or {}) do
                 divider_index = divider_index + 1
                 local color = self:regular_color()
-                local orientation = divider.orientation or "v"
-                local constraints = {
+                local segment = Geyser.Label:new({
                         name = "DD_GUI.FrameGrid.GaugeDivider." .. divider_index,
-                }
-                local endpoints
-                if orientation == "h" then
-                        constraints.x = round(divider.x)
-                        constraints.y = round(
-                                divider.y - self.thickness / 2)
-                        constraints.width = math.max(1, round(divider.width))
-                        constraints.height = self.thickness
-                        endpoints = {
-                                { x = divider.x, y = divider.y },
-                                { x = divider.x + divider.width, y = divider.y },
-                        }
-                else
-                        constraints.x = round(
-                                divider.x - self.thickness / 2)
-                        constraints.y = round(divider.y)
-                        constraints.width = self.thickness
-                        constraints.height = math.max(1, round(divider.height))
-                        endpoints = {
-                                { x = divider.x, y = divider.y },
-                                { x = divider.x,
-                                  y = divider.y + divider.height },
-                        }
-                end
-
-                local segment = Geyser.Label:new(constraints, root)
-                segment._dd_gui_frame_orientation = orientation
+                        x = round(divider.x - self.thickness / 2),
+                        y = round(divider.y),
+                        width = self.thickness,
+                        height = math.max(1, round(divider.height)),
+                }, root)
+                segment._dd_gui_frame_orientation = "v"
                 segment._dd_gui_frame_entries = {}
                 segment._dd_gui_frame_color = color
-                self:line_style(segment, orientation, color)
+                self:line_style(segment, "v", color)
                 self.segments[#self.segments + 1] = segment
 
-                for endpoint_index, endpoint in ipairs(endpoints) do
+                for _, y in ipairs({ divider.y, divider.y + divider.height }) do
                         local marker = Geyser.Label:new({
                                 name = "DD_GUI.FrameGrid.GaugeDividerNode." ..
-                                        divider_index .. "." .. endpoint_index,
-                                x = round(endpoint.x - self.node_size / 2),
-                                y = round(endpoint.y - self.node_size / 2),
+                                        divider_index .. "." .. tostring(y),
+                                x = round(divider.x - self.node_size / 2),
+                                y = round(y - self.node_size / 2),
                                 width = self.node_size,
                                 height = self.node_size,
                         }, root)

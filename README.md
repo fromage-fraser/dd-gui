@@ -123,9 +123,10 @@ data. The main panels are:
   resistances. Characters below level 100 also receive compact segmented
   `THIRST` and `HUNGER` gauges from `Char.Vitals`. The gauges are hidden for
   Vampires, whose DD4 condition values do not decay, and on older servers that
-  do not provide the new current/maximum fields. Their two-cell row uses the
-  same braided frame as the footer gauges, sharing the character panel's outer
-  edges and using single square junctions at the internal divisions.
+  do not provide the new current/maximum fields. Any positive GMCP `drunk`
+  value adds a small tankard over the portrait's lower-right corner. Its
+  brightness follows `drunk/maxdrunk`, from transparent when sober to fully
+  bright at maximum intoxication.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
   tab is always first. Other tabs appear only when GMCP reports that the
   character can access and has enabled that channel. Messages include their
@@ -186,8 +187,7 @@ data. The main panels are:
   The four footer status gauges use an even inset on all four sides inside the
   shared braided frame, so their black breathing room remains balanced when
   the gauge band is resized. The character sheet's hunger and thirst bars use
-  the same segmented gauge and braided-container treatment in a compact
-  two-column row.
+  the same segmented gauge treatment in a compact two-column row.
 
 The main MUD console and panel consoles use the profile's shared scrollbar
 style: narrow black tracks have restrained dark-red edges, while the moving

@@ -28,8 +28,6 @@ end
 local function set_condition_gauges_visible(visible)
     local widgets = {
       DD_GUI.CharsheetConditions,
-      DD_GUI.ThirstColumn,
-      DD_GUI.HungerColumn,
       DD_GUI.Thirst,
       DD_GUI.Hunger,
       DD_GUI.ThirstLabel,
@@ -49,16 +47,7 @@ end
 
 function DD_GUI.update_character_condition_gauges()
     local visible = character_condition_gauges_visible()
-    local frame_visibility_changed =
-      DD_GUI.CharsheetConditionFrameVisible ~= visible
-    DD_GUI.CharsheetConditionFrameVisible = visible
     set_condition_gauges_visible(visible)
-
-    if frame_visibility_changed and DD_GUI.FrameGrid and
-       DD_GUI.FrameGrid.schedule_refresh then
-      DD_GUI.FrameGrid:schedule_refresh(0.02)
-    end
-
     if not visible then
       return
     end
@@ -74,33 +63,137 @@ function DD_GUI.update_character_condition_gauges()
     end
 end
 
+local function drunk_icon_alpha()
+    local vitals = gmcp and gmcp.Char and gmcp.Char.Vitals
+    local drunk = type(vitals) == "table" and
+      tonumber(vitals.drunk) or 0
+    if drunk <= 0 then
+      return 0
+    end
+
+    local maximum = tonumber(vitals.maxdrunk) or 48
+    if maximum <= 0 then
+      maximum = 48
+    end
+
+    local ratio = math.max(0, math.min(1, drunk / maximum))
+    -- A perceptual curve keeps low intoxication faintly legible while still
+    -- reaching true transparency at zero and full brightness at the maximum.
+    return math.floor(255 * (ratio ^ 0.65) + 0.5)
+end
+
+local function set_drunk_part_style(part, stylesheet)
+    if part and part.setStyleSheet then
+      part:setStyleSheet(stylesheet)
+    end
+end
+
+function DD_GUI.update_drunk_icon()
+    local icon = DD_GUI.DrunkIcon
+    if not icon then
+      return
+    end
+
+    local alpha = drunk_icon_alpha()
+    if alpha <= 0 then
+      icon:hide()
+      return
+    end
+
+    local soft_alpha = math.floor(alpha * 0.72 + 0.5)
+    set_drunk_part_style(DD_GUI.DrunkIconHandle, string.format([[
+      background-color: rgba(0,0,0,0);
+      border: 2px solid rgba(255,190,55,%d);
+      border-left: 0px;
+      border-radius: 2px;
+    ]], alpha))
+    set_drunk_part_style(DD_GUI.DrunkIconBody, string.format([[
+      background-color: rgba(174,91,8,%d);
+      border: 1px solid rgba(255,201,66,%d);
+      border-radius: 1px;
+    ]], alpha, alpha))
+    set_drunk_part_style(DD_GUI.DrunkIconShine, string.format([[
+      background-color: rgba(255,213,91,%d);
+      border: 0px;
+    ]], soft_alpha))
+    set_drunk_part_style(DD_GUI.DrunkIconFoam, string.format([[
+      background-color: rgba(245,230,182,%d);
+      border: 1px solid rgba(255,247,218,%d);
+      border-radius: 2px;
+    ]], alpha, alpha))
+    set_drunk_part_style(DD_GUI.DrunkIconBubbleLarge, string.format([[
+      background-color: rgba(255,235,166,%d);
+      border: 0px;
+      border-radius: 2px;
+    ]], alpha))
+    set_drunk_part_style(DD_GUI.DrunkIconBubbleSmall, string.format([[
+      background-color: rgba(255,235,166,%d);
+      border: 0px;
+      border-radius: 2px;
+    ]], soft_alpha))
+
+    icon:show()
+    if icon.raiseAll then
+      icon:raiseAll()
+    end
+end
+
+local function new_drunk_icon_part(name, constraints)
+    constraints.name = name
+    local part = Geyser.Label:new(constraints, DD_GUI.DrunkIcon)
+    part:setStyleSheet([[background-color: rgba(0,0,0,0); border: 0px;]])
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(part, true)
+    end
+    return part
+end
+
+local function build_drunk_icon()
+    DD_GUI.DrunkIcon = Geyser.Label:new({
+      name = "DD_GUI.DrunkIcon",
+      x = "-28px", y = "-29px",
+      width = "26px", height = "26px",
+    }, CharsheetPFPConsole)
+    DD_GUI.DrunkIcon:setStyleSheet([[
+      background-color: rgba(0,0,0,0);
+      border: 0px;
+    ]])
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(DD_GUI.DrunkIcon, true)
+    end
+
+    DD_GUI.DrunkIconHandle = new_drunk_icon_part(
+      "DD_GUI.DrunkIcon.Handle",
+      {x = "16px", y = "11px", width = "7px", height = "9px"})
+    DD_GUI.DrunkIconBody = new_drunk_icon_part(
+      "DD_GUI.DrunkIcon.Body",
+      {x = "3px", y = "9px", width = "15px", height = "14px"})
+    DD_GUI.DrunkIconShine = new_drunk_icon_part(
+      "DD_GUI.DrunkIcon.Shine",
+      {x = "6px", y = "12px", width = "2px", height = "8px"})
+    DD_GUI.DrunkIconFoam = new_drunk_icon_part(
+      "DD_GUI.DrunkIcon.Foam",
+      {x = "2px", y = "6px", width = "17px", height = "6px"})
+    DD_GUI.DrunkIconBubbleLarge = new_drunk_icon_part(
+      "DD_GUI.DrunkIcon.BubbleLarge",
+      {x = "7px", y = "1px", width = "4px", height = "4px"})
+    DD_GUI.DrunkIconBubbleSmall = new_drunk_icon_part(
+      "DD_GUI.DrunkIcon.BubbleSmall",
+      {x = "14px", y = "3px", width = "3px", height = "3px"})
+
+    DD_GUI.update_drunk_icon()
+end
+
 local function build_character_condition_gauges()
     if not DD_GUI.new_status_gauge then
       return
     end
 
-    -- The condition band must use the character panel's true outer bounds so
-    -- its braid can reuse the existing side and bottom edges without gaps.
-    local go_inside = DD_GUI.CharsheetBox.goInside
-    DD_GUI.CharsheetBox.goInside = false
     DD_GUI.CharsheetConditions = Geyser.Container:new({
       name = "DD_GUI.CharsheetConditions",
-      x = "0%", y = "87%",
-      width = "100%", height = "13%",
+      x = "4%", y = "89%",
+      width = "92%", height = "9%",
     }, DD_GUI.CharsheetBox)
-    DD_GUI.CharsheetBox.goInside = go_inside
-
-    DD_GUI.ThirstColumn = Geyser.Container:new({
-      name = "DD_GUI.ThirstColumn",
-      x = "0%", y = "0%",
-      width = "50%", height = "100%",
-    }, DD_GUI.CharsheetConditions)
-
-    DD_GUI.HungerColumn = Geyser.Container:new({
-      name = "DD_GUI.HungerColumn",
-      x = "50%", y = "0%",
-      width = "50%", height = "100%",
-    }, DD_GUI.CharsheetConditions)
 
     local colors = DD_GUI.Theme and DD_GUI.Theme.colors or {
       thirst = "rgb(35,112,153)",
@@ -109,12 +202,14 @@ local function build_character_condition_gauges()
     local vitals = gmcp.Char.Vitals
 
     DD_GUI.Thirst, DD_GUI.ThirstLabel = DD_GUI.new_status_gauge(
-      "DD_GUI.Thirst", DD_GUI.ThirstColumn, "THIRST", colors.thirst,
-      vitals.thirst, vitals.maxthirst)
+      "DD_GUI.Thirst", DD_GUI.CharsheetConditions, "THIRST", colors.thirst,
+      vitals.thirst, vitals.maxthirst,
+      {x = "0%", y = "0%", width = "49%", height = "100%"})
 
     DD_GUI.Hunger, DD_GUI.HungerLabel = DD_GUI.new_status_gauge(
-      "DD_GUI.Hunger", DD_GUI.HungerColumn, "HUNGER", colors.hunger,
-      vitals.hunger, vitals.maxhunger)
+      "DD_GUI.Hunger", DD_GUI.CharsheetConditions, "HUNGER", colors.hunger,
+      vitals.hunger, vitals.maxhunger,
+      {x = "51%", y = "0%", width = "49%", height = "100%"})
 
     DD_GUI.update_character_condition_gauges()
 end
@@ -125,7 +220,7 @@ function build_charsheet_console()
       name="CharsheetConsole",
       x = "4%", y = "2%",
       width="92%",
-      height="84%",
+      height="86%",
       autoWrap = false,
       color = "black",
       scrollBar = false,
@@ -199,5 +294,6 @@ function build_charsheet_console()
       }
     )
 
+    build_drunk_icon()
     build_character_condition_gauges()
 end
