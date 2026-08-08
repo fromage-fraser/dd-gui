@@ -88,6 +88,9 @@ data. The main panels are:
   even internal padding, and its title is kept to one compact room/vnum line
   with no extra rule beneath it, so northern rooms remain visible even when a
   room name is long.
+- **Mapper ownership:** DD_GUI uses its own GMCP/native mapper. During bootstrap
+  it removes Mudlet's conflicting `generic_mapper` package, whose obsolete
+  updater can otherwise request a dead `versions.lua` URL.
 - **Character sheet:** profile image, character details, statistics, and
   resistances.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
