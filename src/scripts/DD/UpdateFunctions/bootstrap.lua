@@ -30,6 +30,10 @@ function DD_GUI.refresh_data()
                 run_update(update_affects)
         end
 
+        if type(char.Quest) == "table" then
+                run_update(update_quest_status)
+        end
+
         if type(char.Items) == "table" then
                 run_update(update_inventory)
         end

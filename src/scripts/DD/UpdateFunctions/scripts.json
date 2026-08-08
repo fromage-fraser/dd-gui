@@ -13,6 +13,12 @@
                 ]
         },
         {
+                "name": "update_quest_status",
+                "eventHandlerList": [
+                        "gmcp.Char.Quest"
+                ]
+        },
+        {
                 "name": "update_inventory",
                 "eventHandlerList": [
                         "gmcp.Char.Items"
