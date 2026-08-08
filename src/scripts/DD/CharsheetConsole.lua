@@ -28,6 +28,8 @@ end
 local function set_condition_gauges_visible(visible)
     local widgets = {
       DD_GUI.CharsheetConditions,
+      DD_GUI.ThirstColumn,
+      DD_GUI.HungerColumn,
       DD_GUI.Thirst,
       DD_GUI.Hunger,
       DD_GUI.ThirstLabel,
@@ -47,7 +49,16 @@ end
 
 function DD_GUI.update_character_condition_gauges()
     local visible = character_condition_gauges_visible()
+    local frame_visibility_changed =
+      DD_GUI.CharsheetConditionFrameVisible ~= visible
+    DD_GUI.CharsheetConditionFrameVisible = visible
     set_condition_gauges_visible(visible)
+
+    if frame_visibility_changed and DD_GUI.FrameGrid and
+       DD_GUI.FrameGrid.schedule_refresh then
+      DD_GUI.FrameGrid:schedule_refresh(0.02)
+    end
+
     if not visible then
       return
     end
@@ -68,11 +79,28 @@ local function build_character_condition_gauges()
       return
     end
 
+    -- The condition band must use the character panel's true outer bounds so
+    -- its braid can reuse the existing side and bottom edges without gaps.
+    local go_inside = DD_GUI.CharsheetBox.goInside
+    DD_GUI.CharsheetBox.goInside = false
     DD_GUI.CharsheetConditions = Geyser.Container:new({
       name = "DD_GUI.CharsheetConditions",
-      x = "4%", y = "89%",
-      width = "92%", height = "9%",
+      x = "0%", y = "87%",
+      width = "100%", height = "13%",
     }, DD_GUI.CharsheetBox)
+    DD_GUI.CharsheetBox.goInside = go_inside
+
+    DD_GUI.ThirstColumn = Geyser.Container:new({
+      name = "DD_GUI.ThirstColumn",
+      x = "0%", y = "0%",
+      width = "50%", height = "100%",
+    }, DD_GUI.CharsheetConditions)
+
+    DD_GUI.HungerColumn = Geyser.Container:new({
+      name = "DD_GUI.HungerColumn",
+      x = "50%", y = "0%",
+      width = "50%", height = "100%",
+    }, DD_GUI.CharsheetConditions)
 
     local colors = DD_GUI.Theme and DD_GUI.Theme.colors or {
       thirst = "rgb(35,112,153)",
@@ -81,14 +109,12 @@ local function build_character_condition_gauges()
     local vitals = gmcp.Char.Vitals
 
     DD_GUI.Thirst, DD_GUI.ThirstLabel = DD_GUI.new_status_gauge(
-      "DD_GUI.Thirst", DD_GUI.CharsheetConditions, "THIRST", colors.thirst,
-      vitals.thirst, vitals.maxthirst,
-      {x = "0%", y = "0%", width = "49%", height = "100%"})
+      "DD_GUI.Thirst", DD_GUI.ThirstColumn, "THIRST", colors.thirst,
+      vitals.thirst, vitals.maxthirst)
 
     DD_GUI.Hunger, DD_GUI.HungerLabel = DD_GUI.new_status_gauge(
-      "DD_GUI.Hunger", DD_GUI.CharsheetConditions, "HUNGER", colors.hunger,
-      vitals.hunger, vitals.maxhunger,
-      {x = "51%", y = "0%", width = "49%", height = "100%"})
+      "DD_GUI.Hunger", DD_GUI.HungerColumn, "HUNGER", colors.hunger,
+      vitals.hunger, vitals.maxhunger)
 
     DD_GUI.update_character_condition_gauges()
 end
@@ -99,7 +125,7 @@ function build_charsheet_console()
       name="CharsheetConsole",
       x = "4%", y = "2%",
       width="92%",
-      height="86%",
+      height="84%",
       autoWrap = false,
       color = "black",
       scrollBar = false,
