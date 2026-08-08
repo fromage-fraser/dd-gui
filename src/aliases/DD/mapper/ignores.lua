@@ -14,10 +14,12 @@ local okay_matched              = 0
 local wall_matched              = 0
 ]]--
 
-for i,v in ipairs(map.save.ignore_patterns) do 
-  if (portal_string == v) then
-        portal_matched = 1
-  end 
+if map and map.save and map.save.ignore_patterns then
+  for i,v in ipairs(map.save.ignore_patterns) do
+    if (portal_string == v) then
+          portal_matched = 1
+    end
+  end
 --[[  if (keylack_string == v) then
         keylack_matched = 1
   end 
@@ -36,8 +38,10 @@ for i,v in ipairs(map.save.ignore_patterns) do
   ]]--
 end
 
-if (portal_matched == 0) then
+if (portal_matched == 0) and map and map.make_ignore_pattern then
         map.make_ignore_pattern(portal_string)
+elseif (portal_matched == 0) then
+        cecho("<yellow>The DD_GUI GMCP mapper does not need text ignore patterns.<reset>\n")
 end
 --[[
 if (keylack_matched == 0) then
