@@ -156,7 +156,9 @@ data. The main panels are:
   area's mapped rooms and exits so the area can be remapped from scratch. A
   multi-area selection is rejected, and resetting a different area does not
   disturb the character's current map position. The confirmation expires
-  automatically.
+  automatically. On current Mudlet versions it opens a visible confirmation
+  dialog; if that is unavailable, use the displayed console link or type
+  `ddmap reset` (and `ddmap cancel` to cancel).
 
   The four status gauges use an even inset on all four sides inside the shared
   braided frame, so their black breathing room remains balanced when the gauge
@@ -200,6 +202,7 @@ These aliases are available from the Mudlet command line:
 | `ddmap audit` | Report map areas, rooms, overlaps, unnamed rooms, and dangling exits without changing map data. |
 | `ddmap fit` | Fit and centre the current mapped area. |
 | `ddmap safe` / `ddmap fast` | Toggle confirmation-based or immediate mapper speedwalks. |
+| `ddmap reset` / `ddmap cancel` | Confirm or cancel a pending mapper area reset when the dialog/link fallback is used. |
 | `ignores` | Preserve the legacy mapper command; the GMCP mapper reports that text ignore patterns are unnecessary when generic_mapper is absent. |
 | `ugui` | Uninstall the `DD_GUI` package. |
 | `reinstallgui` | Defer the uninstall, wait three seconds, reinstall the latest remote package with a profile-level handoff, and report its installed version without removing downloaded custom content. |
