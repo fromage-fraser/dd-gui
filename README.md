@@ -105,8 +105,15 @@ data. The main panels are:
   is a paper-doll view of every wear slot from `Char.Worn`, showing `[empty]`
   or `[prohibited]` where appropriate for the character's profession, class,
   or current form.
-- **Affects:** active affects from GMCP, with names left-aligned, modifiers
-  centred, and durations aligned at the right edge.
+- **Affects / Quest Status:** a two-tab panel beneath Inventory / Equipped.
+  `Affects` shows active effects from GMCP, with names left-aligned, modifiers
+  centred, and durations aligned at the right edge. `Quest Status` reads
+  `Char.Quest` and adapts to available, cooldown, active, and ready-to-return
+  states. It shows the objective, target, questgiver, area and room names with
+  their vnums, completion and time remaining, current and lifetime quest
+  points, and level-gate requirements. The Inventory / Equipped and Affects /
+  Quest Status panels share the remaining right-column height equally by
+  default.
 - **Gauges and compass:** current hits, mana, experience, movement, and the
   clickable navigation compass. The compass includes `EQ` for equipment and
   `SCAN` for scanning. Movement buttons briefly highlight their borders while

@@ -66,8 +66,12 @@ function DD_GUI.migrate_layout_defaults()
         local changed = false
         local inventory_width = DD_GUI.InventoryBox and DD_GUI.InventoryBox.get_width and
                 tonumber(DD_GUI.InventoryBox:get_width()) or nil
+        local inventory_height = DD_GUI.InventoryBox and DD_GUI.InventoryBox.get_height and
+                tonumber(DD_GUI.InventoryBox:get_height()) or nil
         local affect_width = DD_GUI.AffectBox and DD_GUI.AffectBox.get_width and
                 tonumber(DD_GUI.AffectBox:get_width()) or nil
+        local affect_height = DD_GUI.AffectBox and DD_GUI.AffectBox.get_height and
+                tonumber(DD_GUI.AffectBox:get_height()) or nil
 
         local map_x = DD_GUI.MapBox and DD_GUI.MapBox.get_x and
                 tonumber(DD_GUI.MapBox:get_x()) or nil
@@ -234,15 +238,19 @@ function DD_GUI.migrate_layout_defaults()
                 changed = true
         end
 
-        if approximately(inventory_width, right_width * 0.91, 8) and
-           approximately(affect_width, right_width * 0.91, 8) then
+        local previous_right_panel_layout = right_height and
+                approximately(inventory_width, right_width * 0.8929, 8) and
+                approximately(affect_width, right_width * 0.8929, 8) and
+                approximately(inventory_height, right_height * 0.3617, 8) and
+                approximately(affect_height, right_height * 0.2872, 8)
+        if previous_right_panel_layout then
                 reset_adjustable_box(
                         DD_GUI.InventoryBox,
-                        "0%", "35.11%", "89.29%", "36.17%"
+                        "0%", "35.11%", "89.29%", "32.445%"
                 )
                 reset_adjustable_box(
                         DD_GUI.AffectBox,
-                        "0%", "71.28%", "89.29%", "28.72%"
+                        "0%", "67.555%", "89.29%", "32.445%"
                 )
                 changed = true
         end
@@ -310,8 +318,8 @@ function DD_GUI.migrate_layout_defaults()
                 { DD_GUI.MapBox, "27%", "0%", "27%", "100%" },
                 { DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%" },
                 { DD_GUI.ChannelBox, "72%", "0%", "25%", "100%" },
-                { DD_GUI.InventoryBox, "0%", "35.11%", "89.29%", "36.17%" },
-                { DD_GUI.AffectBox, "0%", "71.28%", "89.29%", "28.72%" },
+                { DD_GUI.InventoryBox, "0%", "35.11%", "89.29%", "32.445%" },
+                { DD_GUI.AffectBox, "0%", "67.555%", "89.29%", "32.445%" },
         }
 
         for _, default_box in ipairs(defaults) do
@@ -355,8 +363,8 @@ function DD_GUI.reset_layout()
                 { DD_GUI.MapBox, "27%", "0%", "27%", "100%" },
                 { DD_GUI.CharsheetBox, "54%", "0%", "18%", "100%" },
                 { DD_GUI.ChannelBox, "72%", "0%", "25%", "100%" },
-                { DD_GUI.InventoryBox, "0%", "35.11%", "89.29%", "36.17%" },
-                { DD_GUI.AffectBox, "0%", "71.28%", "89.29%", "28.72%" },
+                { DD_GUI.InventoryBox, "0%", "35.11%", "89.29%", "32.445%" },
+                { DD_GUI.AffectBox, "0%", "67.555%", "89.29%", "32.445%" },
         }
 
         for _, default_box in ipairs(defaults) do

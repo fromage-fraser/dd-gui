@@ -144,6 +144,7 @@ local function raise_data_surfaces()
                 DD_GUI and DD_GUI.Inventory and DD_GUI.Inventory.stats_label,
                 DD_GUI and DD_GUI.InventoryPanelOutline,
                 AffectsConsole,
+                QuestStatusConsole,
                 DD_GUI and DD_GUI.AffectPanelOutline,
         }) do
                 raise_widget(widget)
@@ -192,8 +193,10 @@ local function raise_tab_controls()
                 end
         end
 
-        if DD_GUI and DD_GUI.Affects and DD_GUI.Affects.tab_button then
-                raise_widget(DD_GUI.Affects.tab_button)
+        if DD_GUI and DD_GUI.Affects and DD_GUI.Affects.tab_buttons then
+                for _, button in pairs(DD_GUI.Affects.tab_buttons) do
+                        raise_widget(button)
+                end
         end
 end
 
@@ -529,16 +532,16 @@ function define_boxes()
           name = "DD_GUI.InventoryBox",
           x = "0%", y = "35.11%",
           width = "89.29%",
-          height = "36.17%",
+          height = "32.445%",
         },DD_GUI.Right)
         DD_GUI.InventoryBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.InventoryBox:echo("<center>GUI.InventoryBox")
         
         DD_GUI.AffectBox = new_info_box({
           name = "DD_GUI.AffectBox",
-          x = "0%", y = "71.28%",
+          x = "0%", y = "67.555%",
           width = "89.29%",
-          height = "28.72%",
+          height = "32.445%",
         },DD_GUI.Right)
         DD_GUI.AffectBox:setStyleSheet(DD_GUI.BoxCSS:getCSS())
         --GUI.AffectBox:echo("<center>GUI.AffectBox")
