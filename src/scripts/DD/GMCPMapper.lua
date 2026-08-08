@@ -829,6 +829,183 @@ function load_dd_mapper()
                 return ok and type(selection) == "table" and selection.rooms or {}
         end
 
+        local function area_name(area_id)
+                if type(getRoomAreaName) == "function" then
+                        local ok, name = dd_mapper_call(getRoomAreaName, area_id)
+                        if ok and name then
+                                return tostring(name)
+                        end
+                end
+                for name, candidate_id in pairs(getAreaTable() or {}) do
+                        if tonumber(candidate_id) == tonumber(area_id) then
+                                return tostring(name)
+                        end
+                end
+                return "unknown area"
+        end
+
+        local function selected_area(rooms)
+                local selected_area_id
+                for _, room_id in ipairs(rooms or {}) do
+                        room_id = tonumber(room_id)
+                        if room_id and roomExists(room_id) then
+                                local current_area = room_area(room_id)
+                                if current_area then
+                                        if selected_area_id and selected_area_id ~= current_area then
+                                                return nil, "Select rooms from only one area."
+                                        end
+                                        selected_area_id = current_area
+                                end
+                        end
+                end
+
+                if not selected_area_id and map.room_info and map.room_info.vnum then
+                        selected_area_id = room_area(tonumber(map.room_info.vnum))
+                end
+                return selected_area_id
+        end
+
+        local function clear_pending_area_reset()
+                local pending = state.pending_area_reset
+                if pending and pending.timer then
+                        pcall(killTimer, pending.timer)
+                end
+                state.pending_area_reset = nil
+        end
+
+        local function request_area_reset(area_id)
+                if type(deleteArea) ~= "function" and type(deleteRoom) ~= "function" then
+                        mapper_echo("This Mudlet version cannot remove mapped areas.", true)
+                        return false
+                end
+
+                area_id = tonumber(area_id)
+                if not area_id then
+                        mapper_echo("No mapped area was selected.", true)
+                        return false
+                end
+
+                local rooms = {}
+                if type(getAreaRooms) == "function" then
+                        local ok, result = dd_mapper_call(getAreaRooms, area_id)
+                        if ok and type(result) == "table" then
+                                rooms = result
+                        end
+                end
+
+                clear_pending_area_reset()
+                state.pending_area_reset = {
+                        area_id = area_id,
+                        room_count = #rooms,
+                        area_name = area_name(area_id),
+                }
+                local pending = state.pending_area_reset
+                pending.timer = tempTimer(15, function()
+                        if state.pending_area_reset == pending then
+                                clear_pending_area_reset()
+                                mapper_echo("Area reset confirmation expired.", true)
+                        end
+                end)
+
+                mapper_echo(string.format(
+                        "Reset %s and remove all %d mapped rooms?",
+                        pending.area_name, pending.room_count
+                ), true)
+                if type(cechoLink) == "function" then
+                        cechoLink(
+                                "<red>[CONFIRM RESET]<reset>",
+                                "DD_GUI.mapper_confirm_area_reset(" .. tostring(area_id) .. ")",
+                                "Remove every mapped room in this area",
+                                true
+                        )
+                        cecho("  ")
+                        cechoLink(
+                                "<white>[CANCEL]<reset>",
+                                "DD_GUI.mapper_cancel_area_reset()",
+                                "Cancel area reset",
+                                true
+                        )
+                        cecho("\n")
+                end
+                return true
+        end
+
+        function DD_GUI.mapper_cancel_area_reset()
+                if state.pending_area_reset then
+                        clear_pending_area_reset()
+                        mapper_echo("Area reset cancelled.")
+                end
+        end
+
+        function DD_GUI.mapper_confirm_area_reset(area_id)
+                local pending = state.pending_area_reset
+                if not pending or tonumber(pending.area_id) ~= tonumber(area_id) then
+                        mapper_echo("That area reset confirmation has expired.", true)
+                        return false
+                end
+
+                clear_pending_area_reset()
+                local current_room = map.room_info and tonumber(map.room_info.vnum)
+                local current_area = current_room and room_area(current_room)
+                local rooms = {}
+                if type(getAreaRooms) == "function" then
+                        local ok, result = dd_mapper_call(getAreaRooms, area_id)
+                        if ok and type(result) == "table" then
+                                rooms = result
+                        end
+                end
+                for _, room_id in ipairs(rooms) do
+                        if DD_GUI.exit_status_by_room then
+                                DD_GUI.exit_status_by_room[tonumber(room_id)] = nil
+                        end
+                end
+
+                stop_route()
+                local success = false
+                local error_message
+                if type(deleteArea) == "function" then
+                        local ok, result, err = dd_mapper_call(deleteArea, area_id)
+                        success = ok and result == true
+                        error_message = err or result
+                elseif type(deleteRoom) == "function" then
+                        success = true
+                        for _, room_id in ipairs(rooms) do
+                                local ok, result = dd_mapper_call(deleteRoom, room_id)
+                                if not ok or result == false then
+                                        success = false
+                                        error_message = result
+                                        break
+                                end
+                        end
+                end
+
+                if not success then
+                        mapper_echo("Could not reset " .. pending.area_name .. ": " .. tostring(error_message or "unknown error") .. ".", true)
+                        return false
+                end
+
+                state.zoom_seen[tostring(area_id)] = nil
+                clear_highlights()
+                if type(clearMapSelection) == "function" then
+                        pcall(clearMapSelection)
+                end
+                if current_area == tonumber(area_id) then
+                        map.prev_info = {}
+                        map.room_info = {}
+                end
+                if type(updateMap) == "function" then
+                        pcall(updateMap)
+                end
+                if save_dd_mapper then
+                        pcall(save_dd_mapper)
+                end
+                mapper_echo(string.format(
+                        "Reset %s; removed %d mapped rooms. Move or look to begin remapping it.",
+                        pending.area_name, #rooms
+                ))
+                return true
+        end
+
         local function handle_mapper_menu(_, action)
                 local rooms = selected_rooms()
                 if action == "fit" then
@@ -879,8 +1056,15 @@ function load_dd_mapper()
                         else
                                 mapper_echo("The current quest destination is not mapped.", true)
                         end
+                elseif action == "reset_area" then
+                        local area_id, error_message = selected_area(rooms)
+                        if not area_id then
+                                mapper_echo(error_message or "No mapped area was selected.", true)
+                        else
+                                request_area_reset(area_id)
+                        end
                 end
-end
+        end
 
         local function register_mapper_menu()
                 if type(addMapMenu) ~= "function" or type(addMapEvent) ~= "function" then
@@ -900,6 +1084,7 @@ end
                         {"quest", "Show quest destination"},
                         {"avoid", "Avoid selected rooms"},
                         {"allow", "Allow selected rooms"},
+                        {"reset_area", "Reset selected area's rooms"},
                 }
                 for _, entry in ipairs(entries) do
                         pcall(removeMapEvent, "DD_GUI.Mapper." .. entry[1])

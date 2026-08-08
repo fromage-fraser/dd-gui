@@ -151,6 +151,12 @@ data. The main panels are:
   `ddmap safe` restores confirmation-based routing. The existing `[Exits: ...]`
   parser remains the compatibility fallback until richer exit state is sent
   through GMCP.
+  The `DD_GUI` mapper context menu also provides `Reset selected area's rooms`.
+  It asks for an explicit in-console confirmation, then removes the selected
+  area's mapped rooms and exits so the area can be remapped from scratch. A
+  multi-area selection is rejected, and resetting a different area does not
+  disturb the character's current map position. The confirmation expires
+  automatically.
 
   The four status gauges use an even inset on all four sides inside the shared
   braided frame, so their black breathing room remains balanced when the gauge
