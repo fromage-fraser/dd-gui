@@ -25,6 +25,8 @@ Theme.colors = {
         mana = "rgb(46,92,184)",
         xp = "rgb(188,145,43)",
         moves = "rgb(38,139,126)",
+        thirst = "rgb(35,112,153)",
+        hunger = "rgb(145,103,34)",
 }
 
 Theme.map_info_frame = {151, 27, 39}

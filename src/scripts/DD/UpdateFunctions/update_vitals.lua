@@ -63,6 +63,9 @@ function update_vitals()
   DD_GUI.Hitpoints:setValue(normalized_gauge_value(hp, maxhp),1000)
   DD_GUI.Mana:setValue(normalized_gauge_value(mana, maxmana),1000)
   DD_GUI.Moves:setValue(normalized_gauge_value(move, maxmove),1000)
+  if DD_GUI.update_character_condition_gauges then
+      DD_GUI.update_character_condition_gauges()
+  end
   --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
   local xplvl = tonumber(gmcp.Char.Worth.xplvl) or 0
   local xptnl = tonumber(gmcp.Char.Worth.xptnl) or 0

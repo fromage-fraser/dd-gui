@@ -39,15 +39,19 @@ local function add_gauge_segments(gauge, name)
     end
 end
 
-local function new_status_gauge(name, parent, label_text, color, value, maximum)
+local function new_status_gauge(name, parent, label_text, color, value, maximum,
+                                constraints)
+    constraints = constraints or {}
     local theme = DD_GUI.Theme
     local gauge = Geyser.Gauge:new({
       name = name,
       -- Keep the coloured row clear of both braid edges. The slight lower
       -- inset compensates for the transparent tile pixels at the frame
       -- edges, so the black breathing room reads evenly above and below.
-      x = "2%", y = "20%",
-      width = "96%", height = "70%",
+      x = constraints.x or "2%",
+      y = constraints.y or "20%",
+      width = constraints.width or "96%",
+      height = constraints.height or "70%",
       strict = true,
     }, parent)
 
@@ -84,6 +88,10 @@ local function new_status_gauge(name, parent, label_text, color, value, maximum)
 
     return gauge, label
 end
+
+-- Character-panel condition bars share the exact construction and segmented
+-- styling used by the footer gauges.
+DD_GUI.new_status_gauge = new_status_gauge
 
 function build_gauges()
     -- Package upgrades used shorter legacy label names. Remove both those
