@@ -63,6 +63,17 @@ function DD_GUI.update_character_condition_gauges()
     end
 end
 
+local function perceptual_icon_alpha(value, maximum)
+    value = tonumber(value) or 0
+    maximum = tonumber(maximum) or 0
+    if value <= 0 or maximum <= 0 then
+      return 0
+    end
+
+    local ratio = math.max(0, math.min(1, value / maximum))
+    return math.floor(255 * (ratio ^ 0.65) + 0.5)
+end
+
 local function drunk_icon_alpha()
     local vitals = gmcp and gmcp.Char and gmcp.Char.Vitals
     local drunk = type(vitals) == "table" and
@@ -76,13 +87,79 @@ local function drunk_icon_alpha()
       maximum = 48
     end
 
-    local ratio = math.max(0, math.min(1, drunk / maximum))
     -- A perceptual curve keeps low intoxication faintly legible while still
     -- reaching true transparency at zero and full brightness at the maximum.
-    return math.floor(255 * (ratio ^ 0.65) + 0.5)
+    return perceptual_icon_alpha(drunk, maximum)
 end
 
-local function set_drunk_part_style(part, stylesheet)
+local function normalized_affect_text(value)
+    local text = tostring(value or ""):lower()
+    return text:gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+local function strongest_affect_duration(matches)
+    local affect_data = gmcp and gmcp.Char and gmcp.Char.Affect
+    if type(affect_data) ~= "table" then
+      return nil
+    end
+
+    local strongest
+    local seen = {}
+    local function scan(value)
+      if type(value) ~= "table" or seen[value] then
+        return
+      end
+      seen[value] = true
+
+      local name = normalized_affect_text(value.name)
+      local gives = normalized_affect_text(value.gives)
+      if matches(name, gives, value) then
+        local duration = tonumber(value.duration)
+        if duration == nil then
+          duration = 1
+        elseif duration < 0 then
+          duration = 20
+        else
+          -- DD4 reports zero while less than one tick remains. Keep the icon
+          -- faint until the affect actually disappears from the GMCP list.
+          duration = math.max(1, duration)
+        end
+        strongest = math.max(strongest or 0, duration)
+      end
+
+      for _, child in pairs(value) do
+        if type(child) == "table" then
+          scan(child)
+        end
+      end
+    end
+
+    scan(affect_data)
+    return strongest
+end
+
+local function affect_duration_alpha(duration)
+    if not duration then
+      return 0
+    end
+    return perceptual_icon_alpha(math.min(duration, 20), 20)
+end
+
+local function poison_icon_alpha()
+    return affect_duration_alpha(strongest_affect_duration(
+      function(name, gives)
+        return name == "poison" or name == "nausea" or gives == "poison"
+      end))
+end
+
+local function hold_icon_alpha()
+    return affect_duration_alpha(strongest_affect_duration(
+      function(_, gives)
+        return gives == "hold"
+      end))
+end
+
+local function set_icon_part_style(part, stylesheet)
     if part and part.setStyleSheet then
       part:setStyleSheet(stylesheet)
     end
@@ -101,32 +178,32 @@ function DD_GUI.update_drunk_icon()
     end
 
     local soft_alpha = math.floor(alpha * 0.72 + 0.5)
-    set_drunk_part_style(DD_GUI.DrunkIconHandle, string.format([[
+    set_icon_part_style(DD_GUI.DrunkIconHandle, string.format([[
       background-color: rgba(0,0,0,0);
       border: 2px solid rgba(255,190,55,%d);
       border-left: 0px;
       border-radius: 2px;
     ]], alpha))
-    set_drunk_part_style(DD_GUI.DrunkIconBody, string.format([[
+    set_icon_part_style(DD_GUI.DrunkIconBody, string.format([[
       background-color: rgba(174,91,8,%d);
       border: 1px solid rgba(255,201,66,%d);
       border-radius: 1px;
     ]], alpha, alpha))
-    set_drunk_part_style(DD_GUI.DrunkIconShine, string.format([[
+    set_icon_part_style(DD_GUI.DrunkIconShine, string.format([[
       background-color: rgba(255,213,91,%d);
       border: 0px;
     ]], soft_alpha))
-    set_drunk_part_style(DD_GUI.DrunkIconFoam, string.format([[
+    set_icon_part_style(DD_GUI.DrunkIconFoam, string.format([[
       background-color: rgba(245,230,182,%d);
       border: 1px solid rgba(255,247,218,%d);
       border-radius: 2px;
     ]], alpha, alpha))
-    set_drunk_part_style(DD_GUI.DrunkIconBubbleLarge, string.format([[
+    set_icon_part_style(DD_GUI.DrunkIconBubbleLarge, string.format([[
       background-color: rgba(255,235,166,%d);
       border: 0px;
       border-radius: 2px;
     ]], alpha))
-    set_drunk_part_style(DD_GUI.DrunkIconBubbleSmall, string.format([[
+    set_icon_part_style(DD_GUI.DrunkIconBubbleSmall, string.format([[
       background-color: rgba(255,235,166,%d);
       border: 0px;
       border-radius: 2px;
@@ -138,9 +215,134 @@ function DD_GUI.update_drunk_icon()
     end
 end
 
-local function new_drunk_icon_part(name, constraints)
+function DD_GUI.update_poison_icon()
+    local icon = DD_GUI.PoisonIcon
+    if not icon then
+      return
+    end
+
+    local alpha = poison_icon_alpha()
+    if alpha <= 0 then
+      icon:hide()
+      return
+    end
+
+    local soft_alpha = math.floor(alpha * 0.68 + 0.5)
+    set_icon_part_style(DD_GUI.PoisonIconStopper, string.format([[
+      background-color: rgba(85,55,31,%d);
+      border: 1px solid rgba(189,145,73,%d);
+      border-radius: 1px;
+    ]], alpha, alpha))
+    set_icon_part_style(DD_GUI.PoisonIconNeck, string.format([[
+      background-color: rgba(21,72,30,%d);
+      border: 1px solid rgba(124,255,92,%d);
+      border-radius: 1px;
+    ]], soft_alpha, alpha))
+    set_icon_part_style(DD_GUI.PoisonIconBottle, string.format([[
+      background-color: rgba(12,54,22,%d);
+      border: 1px solid rgba(104,255,70,%d);
+      border-radius: 4px;
+    ]], soft_alpha, alpha))
+    set_icon_part_style(DD_GUI.PoisonIconLiquid, string.format([[
+      background-color: rgba(61,205,35,%d);
+      border: 0px;
+      border-radius: 2px;
+    ]], alpha))
+    set_icon_part_style(DD_GUI.PoisonIconShine, string.format([[
+      background-color: rgba(190,255,139,%d);
+      border: 0px;
+    ]], soft_alpha))
+    set_icon_part_style(DD_GUI.PoisonIconBubbleLarge, string.format([[
+      background-color: rgba(191,255,135,%d);
+      border: 0px;
+      border-radius: 2px;
+    ]], alpha))
+    set_icon_part_style(DD_GUI.PoisonIconBubbleSmall, string.format([[
+      background-color: rgba(191,255,135,%d);
+      border: 0px;
+      border-radius: 1px;
+    ]], soft_alpha))
+
+    icon:show()
+    if icon.raiseAll then
+      icon:raiseAll()
+    end
+end
+
+function DD_GUI.update_hold_icon()
+    local icon = DD_GUI.HoldIcon
+    if not icon then
+      return
+    end
+
+    local alpha = hold_icon_alpha()
+    if alpha <= 0 then
+      icon:hide()
+      return
+    end
+
+    local soft_alpha = math.floor(alpha * 0.68 + 0.5)
+    set_icon_part_style(DD_GUI.HoldIconLeftCuff, string.format([[
+      background-color: rgba(0,0,0,0);
+      border: 2px solid rgba(174,201,211,%d);
+      border-radius: 5px;
+    ]], alpha))
+    set_icon_part_style(DD_GUI.HoldIconRightCuff, string.format([[
+      background-color: rgba(0,0,0,0);
+      border: 2px solid rgba(174,201,211,%d);
+      border-radius: 5px;
+    ]], alpha))
+    set_icon_part_style(DD_GUI.HoldIconBridge, string.format([[
+      background-color: rgba(42,59,68,%d);
+      border: 2px solid rgba(213,229,234,%d);
+      border-radius: 2px;
+    ]], soft_alpha, alpha))
+    set_icon_part_style(DD_GUI.HoldIconLinkTop, string.format([[
+      background-color: rgba(128,158,170,%d);
+      border: 0px;
+      border-radius: 1px;
+    ]], alpha))
+    set_icon_part_style(DD_GUI.HoldIconLinkBottom, string.format([[
+      background-color: rgba(128,158,170,%d);
+      border: 0px;
+      border-radius: 1px;
+    ]], alpha))
+    set_icon_part_style(DD_GUI.HoldIconGlintLeft, string.format([[
+      background-color: rgba(241,249,250,%d);
+      border: 0px;
+      border-radius: 1px;
+    ]], soft_alpha))
+    set_icon_part_style(DD_GUI.HoldIconGlintRight, string.format([[
+      background-color: rgba(241,249,250,%d);
+      border: 0px;
+      border-radius: 1px;
+    ]], soft_alpha))
+
+    icon:show()
+    if icon.raiseAll then
+      icon:raiseAll()
+    end
+end
+
+local function new_portrait_icon(name, x)
+    local icon = Geyser.Label:new({
+      name = name,
+      x = x, y = "-29px",
+      width = "26px", height = "26px",
+    }, CharsheetPFPConsole)
+    icon:setStyleSheet([[
+      background-color: rgba(0,0,0,0);
+      border: 0px;
+    ]])
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(icon, true)
+    end
+    return icon
+end
+
+local function new_portrait_icon_part(parent, name, constraints)
     constraints.name = name
-    local part = Geyser.Label:new(constraints, DD_GUI.DrunkIcon)
+    local part = Geyser.Label:new(constraints, parent)
     part:setStyleSheet([[background-color: rgba(0,0,0,0); border: 0px;]])
     if DD_GUI.set_widget_clickthrough then
       DD_GUI.set_widget_clickthrough(part, true)
@@ -149,39 +351,84 @@ local function new_drunk_icon_part(name, constraints)
 end
 
 local function build_drunk_icon()
-    DD_GUI.DrunkIcon = Geyser.Label:new({
-      name = "DD_GUI.DrunkIcon",
-      x = "-28px", y = "-29px",
-      width = "26px", height = "26px",
-    }, CharsheetPFPConsole)
-    DD_GUI.DrunkIcon:setStyleSheet([[
-      background-color: rgba(0,0,0,0);
-      border: 0px;
-    ]])
-    if DD_GUI.set_widget_clickthrough then
-      DD_GUI.set_widget_clickthrough(DD_GUI.DrunkIcon, true)
-    end
+    DD_GUI.DrunkIcon = new_portrait_icon("DD_GUI.DrunkIcon", "-28px")
 
-    DD_GUI.DrunkIconHandle = new_drunk_icon_part(
+    DD_GUI.DrunkIconHandle = new_portrait_icon_part(DD_GUI.DrunkIcon,
       "DD_GUI.DrunkIcon.Handle",
       {x = "16px", y = "11px", width = "7px", height = "9px"})
-    DD_GUI.DrunkIconBody = new_drunk_icon_part(
+    DD_GUI.DrunkIconBody = new_portrait_icon_part(DD_GUI.DrunkIcon,
       "DD_GUI.DrunkIcon.Body",
       {x = "3px", y = "9px", width = "15px", height = "14px"})
-    DD_GUI.DrunkIconShine = new_drunk_icon_part(
+    DD_GUI.DrunkIconShine = new_portrait_icon_part(DD_GUI.DrunkIcon,
       "DD_GUI.DrunkIcon.Shine",
       {x = "6px", y = "12px", width = "2px", height = "8px"})
-    DD_GUI.DrunkIconFoam = new_drunk_icon_part(
+    DD_GUI.DrunkIconFoam = new_portrait_icon_part(DD_GUI.DrunkIcon,
       "DD_GUI.DrunkIcon.Foam",
       {x = "2px", y = "6px", width = "17px", height = "6px"})
-    DD_GUI.DrunkIconBubbleLarge = new_drunk_icon_part(
+    DD_GUI.DrunkIconBubbleLarge = new_portrait_icon_part(DD_GUI.DrunkIcon,
       "DD_GUI.DrunkIcon.BubbleLarge",
       {x = "7px", y = "1px", width = "4px", height = "4px"})
-    DD_GUI.DrunkIconBubbleSmall = new_drunk_icon_part(
+    DD_GUI.DrunkIconBubbleSmall = new_portrait_icon_part(DD_GUI.DrunkIcon,
       "DD_GUI.DrunkIcon.BubbleSmall",
       {x = "14px", y = "3px", width = "3px", height = "3px"})
 
     DD_GUI.update_drunk_icon()
+end
+
+local function build_poison_icon()
+    DD_GUI.PoisonIcon = new_portrait_icon("DD_GUI.PoisonIcon", "-56px")
+
+    DD_GUI.PoisonIconStopper = new_portrait_icon_part(DD_GUI.PoisonIcon,
+      "DD_GUI.PoisonIcon.Stopper",
+      {x = "9px", y = "2px", width = "9px", height = "4px"})
+    DD_GUI.PoisonIconNeck = new_portrait_icon_part(DD_GUI.PoisonIcon,
+      "DD_GUI.PoisonIcon.Neck",
+      {x = "10px", y = "6px", width = "7px", height = "6px"})
+    DD_GUI.PoisonIconBottle = new_portrait_icon_part(DD_GUI.PoisonIcon,
+      "DD_GUI.PoisonIcon.Bottle",
+      {x = "4px", y = "10px", width = "18px", height = "14px"})
+    DD_GUI.PoisonIconLiquid = new_portrait_icon_part(DD_GUI.PoisonIcon,
+      "DD_GUI.PoisonIcon.Liquid",
+      {x = "6px", y = "17px", width = "14px", height = "5px"})
+    DD_GUI.PoisonIconShine = new_portrait_icon_part(DD_GUI.PoisonIcon,
+      "DD_GUI.PoisonIcon.Shine",
+      {x = "7px", y = "12px", width = "2px", height = "8px"})
+    DD_GUI.PoisonIconBubbleLarge = new_portrait_icon_part(DD_GUI.PoisonIcon,
+      "DD_GUI.PoisonIcon.BubbleLarge",
+      {x = "11px", y = "13px", width = "3px", height = "3px"})
+    DD_GUI.PoisonIconBubbleSmall = new_portrait_icon_part(DD_GUI.PoisonIcon,
+      "DD_GUI.PoisonIcon.BubbleSmall",
+      {x = "16px", y = "15px", width = "2px", height = "2px"})
+
+    DD_GUI.update_poison_icon()
+end
+
+local function build_hold_icon()
+    DD_GUI.HoldIcon = new_portrait_icon("DD_GUI.HoldIcon", "-84px")
+
+    DD_GUI.HoldIconLeftCuff = new_portrait_icon_part(DD_GUI.HoldIcon,
+      "DD_GUI.HoldIcon.LeftCuff",
+      {x = "1px", y = "7px", width = "10px", height = "13px"})
+    DD_GUI.HoldIconRightCuff = new_portrait_icon_part(DD_GUI.HoldIcon,
+      "DD_GUI.HoldIcon.RightCuff",
+      {x = "15px", y = "7px", width = "10px", height = "13px"})
+    DD_GUI.HoldIconBridge = new_portrait_icon_part(DD_GUI.HoldIcon,
+      "DD_GUI.HoldIcon.Bridge",
+      {x = "9px", y = "11px", width = "8px", height = "6px"})
+    DD_GUI.HoldIconLinkTop = new_portrait_icon_part(DD_GUI.HoldIcon,
+      "DD_GUI.HoldIcon.LinkTop",
+      {x = "11px", y = "8px", width = "4px", height = "4px"})
+    DD_GUI.HoldIconLinkBottom = new_portrait_icon_part(DD_GUI.HoldIcon,
+      "DD_GUI.HoldIcon.LinkBottom",
+      {x = "11px", y = "16px", width = "4px", height = "4px"})
+    DD_GUI.HoldIconGlintLeft = new_portrait_icon_part(DD_GUI.HoldIcon,
+      "DD_GUI.HoldIcon.GlintLeft",
+      {x = "4px", y = "9px", width = "2px", height = "2px"})
+    DD_GUI.HoldIconGlintRight = new_portrait_icon_part(DD_GUI.HoldIcon,
+      "DD_GUI.HoldIcon.GlintRight",
+      {x = "20px", y = "9px", width = "2px", height = "2px"})
+
+    DD_GUI.update_hold_icon()
 end
 
 local function build_character_condition_gauges()
@@ -294,6 +541,8 @@ function build_charsheet_console()
       }
     )
 
+    build_hold_icon()
+    build_poison_icon()
     build_drunk_icon()
     build_character_condition_gauges()
 end

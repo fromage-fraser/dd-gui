@@ -126,7 +126,13 @@ data. The main panels are:
   do not provide the new current/maximum fields. Any positive GMCP `drunk`
   value adds a small tankard over the portrait's lower-right corner. Its
   brightness follows `drunk/maxdrunk`, from transparent when sober to fully
-  bright at maximum intoxication.
+  bright at maximum intoxication. A toxic-green vial appears immediately to
+  its left while `poison` or `nausea` is present in `Char.Affect`, or whenever
+  an affect reports `gives = "poison"` (DD4's `AFF_POISON`). The vial is fully
+  bright at 20 or more ticks, fades with the longest matching duration, and
+  disappears as soon as all matching affects are gone. A steel restraint icon
+  occupies the next slot to the left whenever an affect reports
+  `gives = "hold"` (DD4's `AFF_HOLD`), using the same 20-tick brightness scale.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
   tab is always first. Other tabs appear only when GMCP reports that the
   character can access and has enabled that channel. Messages include their
