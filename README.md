@@ -180,8 +180,9 @@ data. The main panels are:
   frame as the main panels, and keyboard/button movement uses the same brief
   border-only pressed highlight.
 
-  Mapper speedwalks now wait for each expected GMCP room transition, stop when
-  movement fails or diverges from the known route, include current
+  Clicking a reachable room in the native mapper starts an automatic walk to
+  it. Mapper speedwalks wait for each expected GMCP room transition, stop when
+  movement fails or genuinely diverges from the known route, include current
   closed/locked door commands, and use the richer exit costs when available.
   `ddmap fast` restores immediate route sending; `ddmap safe` restores
   confirmation-based routing. The existing `[Exits: ...]` parser remains a
