@@ -468,7 +468,7 @@ end
 local PORTRAIT_ICON_SPECS = {
   drunk = {
     root = "DrunkIcon",
-    tooltip = "Drunk: your current intoxication. Brightness shows how drunk you are.",
+    tooltip = "Drunk: your current intoxication.",
     parts = {
       {"Handle", 10, 7, 4, 6, {border = {255,190,55}, radius = 2,
         extra = "border-left: 0px;"}},
@@ -484,7 +484,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   poison = {
     root = "PoisonIcon",
-    tooltip = "Poisoned: poison or nausea is affecting you. Brightness shows remaining duration.",
+    tooltip = "Poisoned: poison or nausea is affecting you.",
     parts = {
       {"Stopper", 5, 1, 6, 3, {fill = {85,55,31}, border = {189,145,73},
         radius = 1}},
@@ -501,7 +501,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   hold = {
     root = "HoldIcon",
-    tooltip = "Held: you are trapped, paralysed, or otherwise restrained. Brightness shows remaining duration.",
+    tooltip = "Held: you are trapped, paralysed, or otherwise restrained.",
     parts = {
       {"LeftCuff", 0, 4, 6, 8, {border = {174,201,211}, radius = 3}},
       {"RightCuff", 9, 4, 6, 8, {border = {174,201,211}, radius = 3}},
@@ -517,7 +517,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   curse = {
     root = "CurseIcon",
-    tooltip = "Cursed: a magical curse is affecting you and may prevent recall. Brightness shows remaining duration.",
+    tooltip = "Cursed: a magical curse is affecting you and may prevent recall.",
     parts = {
       {"Eye", 1, 4, 13, 8, {fill = {39,7,53}, fill_opacity = 0.72,
         border = {221,81,255}, radius = 6}},
@@ -533,7 +533,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   slow = {
     root = "SlowIcon",
-    tooltip = "Slowed: your actions and movement are slowed. Brightness shows remaining duration.",
+    tooltip = "Slowed: your actions and movement are slowed.",
     parts = {
       {"TopBar", 2, 1, 11, 2, {fill = {164,229,255}, radius = 1}},
       {"BottomBar", 2, 12, 11, 2, {fill = {164,229,255}, radius = 1}},
@@ -546,7 +546,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   confusion = {
     root = "ConfusionIcon",
-    tooltip = "Confused: confusion is affecting your actions. Brightness shows remaining duration.",
+    tooltip = "Confused: confusion is affecting your actions.",
     parts = {
       {"ArcTop", 4, 1, 8, 3, {fill = {240,77,224}, radius = 2}},
       {"ArcRight", 10, 3, 3, 7, {fill = {209,48,198}, radius = 2}},
@@ -558,7 +558,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   dazed = {
     root = "DazedIcon",
-    tooltip = "Dazed: you may be temporarily unable to act. Brightness shows remaining duration.",
+    tooltip = "Dazed: you may be temporarily unable to act.",
     parts = {
       {"Horizontal", 2, 7, 11, 2, {fill = {245,185,38}}},
       {"Vertical", 7, 2, 2, 11, {fill = {245,185,38}}},
@@ -570,7 +570,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   no_recall = {
     root = "NoRecallIcon",
-    tooltip = "No recall: magical recall is blocked. Brightness shows remaining duration.",
+    tooltip = "No recall: magical recall is blocked.",
     parts = {
       {"Top", 3, 2, 9, 2, {fill = {211,87,82}}},
       {"Left", 3, 3, 2, 10, {fill = {157,45,45}}},
@@ -583,7 +583,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   swallowed = {
     root = "SwallowedIcon",
-    tooltip = "Swallowed: you are inside a creature. Brightness shows remaining duration.",
+    tooltip = "Swallowed: you are inside a creature.",
     parts = {
       {"TopJaw", 1, 2, 13, 5, {fill = {63,105,47},
         border = {145,211,91}, radius = 3}},
@@ -598,7 +598,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   plague = {
     root = "PlagueIcon",
-    tooltip = "Plagued: a virulent magical disease is affecting you. Brightness shows remaining duration.",
+    tooltip = "Plagued: a virulent magical disease is affecting you.",
     parts = {
       {"Head", 3, 1, 9, 9, {fill = {94,116,31},
         border = {202,231,91}, radius = 5}},
@@ -614,7 +614,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   dot = {
     root = "DotIcon",
-    tooltip = "Damage over time: an ongoing effect is repeatedly hurting you. Brightness shows remaining duration.",
+    tooltip = "Damage over time: an ongoing effect is repeatedly hurting you.",
     parts = {
       {"Flame", 4, 3, 8, 11, {fill = {171,23,27},
         border = {255,91,45}, radius = 5}},
@@ -626,7 +626,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   prone = {
     root = "ProneIcon",
-    tooltip = "Prone: you have been knocked down. Brightness shows remaining duration.",
+    tooltip = "Prone: you have been knocked down.",
     parts = {
       {"Ground", 1, 12, 13, 2, {fill = {151,160,170}, radius = 1}},
       {"Head", 1, 7, 4, 4, {fill = {221,178,121},
@@ -641,7 +641,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   eye_trauma = {
     root = "EyeTraumaIcon",
-    tooltip = "Eye trauma: your eyes have been injured. Brightness shows remaining duration.",
+    tooltip = "Eye trauma: your eyes have been injured.",
     parts = {
       {"Eye", 1, 5, 13, 7, {fill = {40,31,34},
         border = {220,202,190}, radius = 6}},
@@ -654,7 +654,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   head_trauma = {
     root = "HeadTraumaIcon",
-    tooltip = "Head trauma: your head has been injured. Brightness shows remaining duration.",
+    tooltip = "Head trauma: your head has been injured.",
     parts = {
       {"Head", 3, 2, 9, 10, {fill = {184,153,120},
         border = {239,211,171}, radius = 5}},
@@ -666,7 +666,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   arm_trauma = {
     root = "ArmTraumaIcon",
-    tooltip = "Arm trauma: one of your arms has been injured. Brightness shows remaining duration.",
+    tooltip = "Arm trauma: one of your arms has been injured.",
     parts = {
       {"Head", 6, 1, 4, 4, {fill = {204,211,217}, radius = 2}},
       {"Torso", 6, 5, 4, 6, {fill = {108,121,135}, radius = 1}},
@@ -679,7 +679,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   leg_trauma = {
     root = "LegTraumaIcon",
-    tooltip = "Leg trauma: one of your legs has been injured. Brightness shows remaining duration.",
+    tooltip = "Leg trauma: one of your legs has been injured.",
     parts = {
       {"Head", 6, 1, 4, 4, {fill = {204,211,217}, radius = 2}},
       {"Torso", 6, 5, 4, 6, {fill = {108,121,135}, radius = 1}},
@@ -692,7 +692,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   heart_trauma = {
     root = "HeartTraumaIcon",
-    tooltip = "Heart trauma: your heart has been injured. Brightness shows remaining duration.",
+    tooltip = "Heart trauma: your heart has been injured.",
     parts = {
       {"LeftLobe", 3, 3, 6, 6, {fill = {171,20,32},
         border = {255,82,83}, radius = 4}},
@@ -705,7 +705,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   tail_trauma = {
     root = "TailTraumaIcon",
-    tooltip = "Tail trauma: your tail has been injured. Brightness shows remaining duration.",
+    tooltip = "Tail trauma: your tail has been injured.",
     parts = {
       {"Head", 2, 3, 4, 4, {fill = {181,190,199}, radius = 2}},
       {"Body", 5, 5, 6, 6, {fill = {105,119,132}, radius = 2}},
@@ -718,7 +718,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   torso_trauma = {
     root = "TorsoTraumaIcon",
-    tooltip = "Torso trauma: your body has been injured. Brightness shows remaining duration.",
+    tooltip = "Torso trauma: your body has been injured.",
     parts = {
       {"Head", 6, 1, 4, 4, {fill = {204,211,217}, radius = 2}},
       {"Torso", 6, 5, 4, 6, {fill = {220,43,48},
@@ -731,7 +731,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   faerie_fire = {
     root = "FaerieFireIcon",
-    tooltip = "Faerie fire: revealing magical flames surround you. Brightness shows remaining duration.",
+    tooltip = "Faerie fire: revealing magical flames surround you.",
     parts = {
       {"Flame", 4, 3, 8, 11, {fill = {116,35,170},
         border = {227,105,255}, radius = 5}},
@@ -744,7 +744,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   sleep = {
     root = "SleepIcon",
-    tooltip = "Asleep: magical sleep is preventing you from acting. Brightness shows remaining duration.",
+    tooltip = "Asleep: magical sleep is preventing you from acting.",
     parts = {
       {"Bed", 1, 8, 13, 5, {fill = {35,58,101},
         border = {128,177,238}, radius = 2}},
@@ -759,7 +759,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   charm = {
     root = "CharmIcon",
-    tooltip = "Charmed: another creature is influencing your will. Brightness shows remaining duration.",
+    tooltip = "Charmed: another creature is influencing your will.",
     parts = {
       {"LeftLobe", 3, 3, 6, 6, {fill = {198,45,131},
         border = {255,133,207}, radius = 4}},
@@ -774,7 +774,7 @@ local PORTRAIT_ICON_SPECS = {
   },
   blind = {
     root = "BlindIcon",
-    tooltip = "Blind: you cannot see normally. Brightness shows remaining duration.",
+    tooltip = "Blind: you cannot see normally.",
     parts = {
       {"Band", 1, 5, 13, 6, {fill = {28,31,37},
         border = {184,194,207}, radius = 2}},
@@ -858,14 +858,18 @@ function DD_GUI.update_affect_icons()
     DD_GUI.layout_portrait_condition_icons()
 end
 
+local PORTRAIT_TOOLTIP_DURATION = 6
+
 local function configure_portrait_icon_hover(widget, tooltip)
     local configured = false
     if widget and type(widget.setToolTip) == "function" then
-      configured = pcall(widget.setToolTip, widget, tooltip, 12)
+      configured = pcall(widget.setToolTip, widget, tooltip,
+        PORTRAIT_TOOLTIP_DURATION)
     end
     if not configured and widget and widget.name and
        type(setLabelToolTip) == "function" then
-      configured = pcall(setLabelToolTip, widget.name, tooltip, 12)
+      configured = pcall(setLabelToolTip, widget.name, tooltip,
+        PORTRAIT_TOOLTIP_DURATION)
     end
 
     if DD_GUI.set_widget_clickthrough then
@@ -873,7 +877,7 @@ local function configure_portrait_icon_hover(widget, tooltip)
     end
 end
 
-local function new_portrait_icon(name, tooltip)
+local function new_portrait_icon(name)
     local icon = Geyser.Label:new({
       name = name,
       x = 0, y = 0,
@@ -883,12 +887,14 @@ local function new_portrait_icon(name, tooltip)
       background-color: rgba(0,0,0,0);
       border: 0px;
     ]])
-    configure_portrait_icon_hover(icon, tooltip)
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(icon, false)
+    end
     icon:hide()
     return icon
 end
 
-local function new_portrait_icon_part(parent, name, part_spec, tooltip)
+local function new_portrait_icon_part(parent, name, part_spec)
     local part = Geyser.Label:new({
       name = name,
       x = scaled_icon_metric(part_spec[2]),
@@ -897,8 +903,24 @@ local function new_portrait_icon_part(parent, name, part_spec, tooltip)
       height = scaled_icon_metric(part_spec[5], 1),
     }, parent)
     part:setStyleSheet([[background-color: rgba(0,0,0,0); border: 0px;]])
-    configure_portrait_icon_hover(part, tooltip)
+    if DD_GUI.set_widget_clickthrough then
+      DD_GUI.set_widget_clickthrough(part, true)
+    end
     return part
+end
+
+local function new_portrait_icon_hover(parent, name, tooltip)
+    local hover = Geyser.Label:new({
+      name = name,
+      x = 0, y = 0,
+      width = "100%", height = "100%",
+    }, parent)
+    hover:setStyleSheet([[
+      background-color: rgba(0,0,0,0);
+      border: 0px;
+    ]])
+    configure_portrait_icon_hover(hover, tooltip)
+    return hover
 end
 
 local function build_portrait_condition_icons()
@@ -909,17 +931,22 @@ local function build_portrait_condition_icons()
     for _, key in ipairs(PORTRAIT_ICON_BUILD_ORDER) do
       local spec = PORTRAIT_ICON_SPECS[key]
       local root_name = "DD_GUI." .. spec.root
-      local icon = new_portrait_icon(root_name, spec.tooltip)
+      local icon = new_portrait_icon(root_name)
       DD_GUI[spec.root] = icon
       local surfaces = {icon}
 
       for _, part_spec in ipairs(spec.parts) do
         local suffix = part_spec[1]
         local part = new_portrait_icon_part(icon,
-          root_name .. "." .. suffix, part_spec, spec.tooltip)
+          root_name .. "." .. suffix, part_spec)
         DD_GUI[spec.root .. suffix] = part
         table.insert(surfaces, part)
       end
+
+      local hover = new_portrait_icon_hover(icon,
+        root_name .. ".Hover", spec.tooltip)
+      DD_GUI[spec.root .. "Hover"] = hover
+      table.insert(surfaces, hover)
 
       registry[key] = {
         key = key,
