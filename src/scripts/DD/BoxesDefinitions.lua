@@ -139,29 +139,6 @@ local function raise_data_surfaces()
                 CharsheetConsole,
                 CharsheetPFPConsole,
                 CharsheetImageFrame,
-                DD_GUI and DD_GUI.HoldIcon,
-                DD_GUI and DD_GUI.HoldIconLeftCuff,
-                DD_GUI and DD_GUI.HoldIconRightCuff,
-                DD_GUI and DD_GUI.HoldIconBridge,
-                DD_GUI and DD_GUI.HoldIconLinkTop,
-                DD_GUI and DD_GUI.HoldIconLinkBottom,
-                DD_GUI and DD_GUI.HoldIconGlintLeft,
-                DD_GUI and DD_GUI.HoldIconGlintRight,
-                DD_GUI and DD_GUI.PoisonIcon,
-                DD_GUI and DD_GUI.PoisonIconStopper,
-                DD_GUI and DD_GUI.PoisonIconNeck,
-                DD_GUI and DD_GUI.PoisonIconBottle,
-                DD_GUI and DD_GUI.PoisonIconLiquid,
-                DD_GUI and DD_GUI.PoisonIconShine,
-                DD_GUI and DD_GUI.PoisonIconBubbleLarge,
-                DD_GUI and DD_GUI.PoisonIconBubbleSmall,
-                DD_GUI and DD_GUI.DrunkIcon,
-                DD_GUI and DD_GUI.DrunkIconHandle,
-                DD_GUI and DD_GUI.DrunkIconBody,
-                DD_GUI and DD_GUI.DrunkIconShine,
-                DD_GUI and DD_GUI.DrunkIconFoam,
-                DD_GUI and DD_GUI.DrunkIconBubbleLarge,
-                DD_GUI and DD_GUI.DrunkIconBubbleSmall,
                 DD_GUI and DD_GUI.CharsheetConditions,
                 DD_GUI and DD_GUI.Thirst,
                 DD_GUI and DD_GUI.Hunger,
@@ -176,6 +153,14 @@ local function raise_data_surfaces()
                 DD_GUI and DD_GUI.AffectPanelOutline,
         }) do
                 raise_widget(widget)
+        end
+
+        if DD_GUI and DD_GUI.PortraitConditionIcons then
+                for _, state in pairs(DD_GUI.PortraitConditionIcons) do
+                        for _, widget in ipairs(state.surfaces or {}) do
+                                raise_widget(widget)
+                        end
+                end
         end
 
         if DD_GUI and DD_GUI.Comms and DD_GUI.Comms.consoles then

@@ -56,11 +56,8 @@ local function emit_name_line(name, duration, width, duration_width)
 end
 
 function update_affects()
-  if DD_GUI.update_hold_icon then
-    DD_GUI.update_hold_icon()
-  end
-  if DD_GUI.update_poison_icon then
-    DD_GUI.update_poison_icon()
+  if DD_GUI.update_affect_icons then
+    DD_GUI.update_affect_icons()
   end
 
   if not AffectsConsole then
