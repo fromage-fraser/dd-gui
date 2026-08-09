@@ -477,7 +477,19 @@ function Theme:profile_style_sheet()
                 menu_arrow
         )
 
-        return console_stylesheet .. mapper_stylesheet .. popup_stylesheet
+        local tooltip_stylesheet = string.format([[
+                QToolTip {
+                        background-color: %s;
+                        color: %s;
+                        border: 1px solid %s;
+                        border-radius: 0px;
+                        padding: 3px 5px;
+                        opacity: 255;
+                }
+        ]], c.ink, c.white, c.frame)
+
+        return console_stylesheet .. mapper_stylesheet .. popup_stylesheet ..
+               tooltip_stylesheet
 end
 
 function Theme:apply_profile_style()

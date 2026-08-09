@@ -137,7 +137,8 @@ data. The main panels are:
   Each affect icon uses the longest matching duration, is fully bright at 20
   or more ticks, fades toward expiry, and disappears immediately when no
   matching GMCP affect remains. Hovering over any icon identifies the
-  condition, briefly explains its effect, and describes the brightness scale.
+  condition and briefly explains its effect in a black, white, and red tooltip
+  matching the rest of the GUI.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
   tab is always first. Other tabs appear only when GMCP reports that the
   character can access and has enabled that channel. Messages include their
