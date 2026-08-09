@@ -124,16 +124,20 @@ data. The main panels are:
   `THIRST` and `HUNGER` gauges from `Char.Vitals`. The gauges are hidden for
   Vampires, whose DD4 condition values do not decay, and on older servers that
   do not provide the new current/maximum fields. Character conditions appear
-  in a compact portrait grid that starts at the lower-right, fills six icons
+  in a compact portrait grid that starts at the lower-right, fills five icons
   right-to-left, and wraps upward. Icons retain their first-detected activation
   order while active and compact when one clears. The tankard's brightness
   follows `drunk/maxdrunk`. Affect icons cover poison/nausea or `AFF_POISON`
   (`gives = "poison"`), `AFF_HOLD` (`hold`), `AFF_CURSE` (`curse`), `AFF_SLOW`
   (`slow`), `AFF_CONFUSION` (`confused`), `AFF_DAZED` (`dazed`),
   `AFF_NO_RECALL` (`no_recall`), `AFF_SWALLOWED` (`swallowed`), and `AFF_BLIND`
-  (`blindness`). Each affect icon uses the longest matching duration, is fully
-  bright at 20 or more ticks, fades toward expiry, and disappears immediately
-  when no matching GMCP affect remains.
+  (`blindness`), plus `AFF_PRAYER_PLAGUE` (`plague`), `AFF_DOT` (`DOT`), and
+  `AFF_PRONE` (`prone`). It also covers eye, head, arm, leg, heart, tail, and
+  torso trauma, along with `AFF_FAERIE_FIRE`, `AFF_SLEEP`, and `AFF_CHARM`.
+  Each affect icon uses the longest matching duration, is fully bright at 20
+  or more ticks, fades toward expiry, and disappears immediately when no
+  matching GMCP affect remains. Hovering over any icon identifies the
+  condition, briefly explains its effect, and describes the brightness scale.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
   tab is always first. Other tabs appear only when GMCP reports that the
   character can access and has enabled that channel. Messages include their
