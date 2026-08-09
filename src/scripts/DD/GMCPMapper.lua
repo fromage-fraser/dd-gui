@@ -1175,13 +1175,35 @@ function load_dd_mapper()
                         return false
                 end
 
-                local path = {}
+                local encountered = {}
                 local directions = {}
                 for index, value in ipairs(speedWalkPath or {}) do
-                        path[index] = tonumber(value)
+                        encountered[index] = tonumber(value)
                 end
                 for index, value in ipairs(speedWalkDir or {}) do
                         directions[index] = value
+                end
+
+                -- Mudlet normally returns only the rooms encountered after
+                -- leaving the source room. Some older mapper integrations
+                -- included the source, so accept both shapes and normalise to
+                -- one room at each end of every direction.
+                local path = {}
+                if #encountered == #directions then
+                        path[1] = current
+                        for index, value in ipairs(encountered) do
+                                path[index + 1] = value
+                        end
+                elseif #encountered == #directions + 1 and encountered[1] == current then
+                        path = encountered
+                else
+                        mapper_echo("The mapper returned an invalid route.", true)
+                        return false
+                end
+
+                if path[#path] ~= room_id then
+                        mapper_echo("The mapper returned an incomplete route.", true)
+                        return false
                 end
 
                 local actions = {}
