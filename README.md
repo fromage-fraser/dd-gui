@@ -123,16 +123,17 @@ data. The main panels are:
   resistances. Characters below level 100 also receive compact segmented
   `THIRST` and `HUNGER` gauges from `Char.Vitals`. The gauges are hidden for
   Vampires, whose DD4 condition values do not decay, and on older servers that
-  do not provide the new current/maximum fields. Any positive GMCP `drunk`
-  value adds a small tankard over the portrait's lower-right corner. Its
-  brightness follows `drunk/maxdrunk`, from transparent when sober to fully
-  bright at maximum intoxication. A toxic-green vial appears immediately to
-  its left while `poison` or `nausea` is present in `Char.Affect`, or whenever
-  an affect reports `gives = "poison"` (DD4's `AFF_POISON`). The vial is fully
-  bright at 20 or more ticks, fades with the longest matching duration, and
-  disappears as soon as all matching affects are gone. A steel restraint icon
-  occupies the next slot to the left whenever an affect reports
-  `gives = "hold"` (DD4's `AFF_HOLD`), using the same 20-tick brightness scale.
+  do not provide the new current/maximum fields. Character conditions appear
+  in a compact portrait grid that starts at the lower-right, fills six icons
+  right-to-left, and wraps upward. Icons retain their first-detected activation
+  order while active and compact when one clears. The tankard's brightness
+  follows `drunk/maxdrunk`. Affect icons cover poison/nausea or `AFF_POISON`
+  (`gives = "poison"`), `AFF_HOLD` (`hold`), `AFF_CURSE` (`curse`), `AFF_SLOW`
+  (`slow`), `AFF_CONFUSION` (`confused`), `AFF_DAZED` (`dazed`),
+  `AFF_NO_RECALL` (`no_recall`), `AFF_SWALLOWED` (`swallowed`), and `AFF_BLIND`
+  (`blindness`). Each affect icon uses the longest matching duration, is fully
+  bright at 20 or more ticks, fades toward expiry, and disappears immediately
+  when no matching GMCP affect remains.
 - **Comms:** communications received from the GMCP `Comm` structure. The `All`
   tab is always first. Other tabs appear only when GMCP reports that the
   character can access and has enabled that channel. Messages include their
