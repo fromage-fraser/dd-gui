@@ -7,6 +7,47 @@ local function gauge_value(value, maximum)
     return math.max(0, math.min(1000, (value * 1000) / maximum))
 end
 
+local function gauge_ratio(value, maximum)
+    value = tonumber(value) or 0
+    maximum = tonumber(maximum) or 0
+    if maximum <= 0 then
+      return 0
+    end
+    return math.max(0, math.min(1, value / maximum))
+end
+
+local function gauge_front_css(color, ratio)
+    local theme = DD_GUI.Theme
+    local fill_color = color
+    if theme and theme.gauge_fill_color then
+      fill_color = theme:gauge_fill_color(color, ratio)
+    end
+
+    if theme and theme.gauge_front_css then
+      return theme:gauge_front_css(fill_color)
+    end
+
+    return string.format([[
+      background-color: %s;
+      border: 1px solid black;
+      border-radius: 0px;
+    ]], fill_color or "grey")
+end
+
+local function update_gauge_fill_color(gauge, color, value, maximum)
+    if not gauge or not gauge.front then
+      return
+    end
+
+    local css = gauge_front_css(color, gauge_ratio(value, maximum))
+    if gauge._dd_gui_fill_css == css then
+      return
+    end
+
+    gauge._dd_gui_fill_css = css
+    gauge.front:setStyleSheet(css)
+end
+
 local function delete_existing_widget(widget)
     if not widget then
       return
@@ -60,11 +101,11 @@ local function new_status_gauge(name, parent, label_text, color, value, maximum,
       border: 1px solid grey;
       border-radius: 0px;
     ]])
-    gauge.front:setStyleSheet(theme and theme:gauge_front_css(color) or [[
-      background-color: grey;
-      border: 1px solid black;
-      border-radius: 0px;
-    ]])
+    local native_set_value = gauge.setValue
+    function gauge:setValue(current, limit, ...)
+      update_gauge_fill_color(self, color, current, limit)
+      return native_set_value(self, current, limit, ...)
+    end
     gauge:setValue(gauge_value(value, maximum), 1000)
     add_gauge_segments(gauge, name)
 

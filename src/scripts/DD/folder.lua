@@ -1,43 +1,131 @@
 DD_GUI = DD_GUI or {}
 mudlet = mudlet or {}
+local GENERIC_MAPPER_PACKAGE = "generic_mapper"
+
+-- Register DD_GUI as the profile's mapper before touching the bundled mapper
+-- package. Mudlet ships generic_mapper in new profiles and uses this flag to
+-- recognise that another mapper owns the profile.
+mudlet.mapper_script = true
 
 -- Mudlet builds without getPackageInfo() still need a reliable way to show
 -- the installed GUI version and decide whether bootstrap() may be reused.
-DD_GUI.package_version = "0.0.130"
+DD_GUI.package_version = "0.0.131"
+
+-- Return nil when Mudlet cannot answer the package query. In that case the
+-- removal attempt is still made, because leaving the package installed is the
+-- more dangerous failure mode for this profile.
+local function generic_mapper_is_installed()
+        -- getPackages() reports package presence directly. This is more
+        -- reliable than probing version metadata, since the bundled mapper's
+        -- metadata is not guaranteed to contain a version on older Mudlet
+        -- profiles.
+        if type(getPackages) == "function" then
+                local ok, packages = pcall(getPackages)
+                if ok and type(packages) == "table" then
+                        for _, package_name in pairs(packages) do
+                                if tostring(package_name):lower() ==
+                                   GENERIC_MAPPER_PACKAGE then
+                                        return true
+                                end
+                        end
+                        return false
+                end
+        end
+
+        if type(getPackageInfo) ~= "function" then
+                return nil
+        end
+
+        local ok, version = pcall(
+                getPackageInfo,
+                GENERIC_MAPPER_PACKAGE,
+                "version"
+        )
+        if not ok then
+                return nil
+        end
+
+        return version ~= nil and tostring(version) ~= ""
+end
 
 -- DD_GUI owns the native mapper surface. Remove the legacy generic mapper as
 -- early as possible so its profile-level map/autosave.dat is not loaded beside
--- the DD_GUI map during a local development reload.
-function DD_GUI.remove_conflicting_generic_mapper(force)
-        if DD_GUI.generic_mapper_checked and not force then
-                return DD_GUI.generic_mapper_removed == true
+-- the DD_GUI map during a local development reload. This deliberately avoids
+-- a permanent "already checked" cache: the package can be installed again by
+-- Mudlet or by its own updater after the first cleanup.
+function DD_GUI.remove_conflicting_generic_mapper(_force)
+        if DD_GUI.generic_mapper_uninstalling then
+                return false
         end
-
-        DD_GUI.generic_mapper_checked = true
-        DD_GUI.generic_mapper_removed = false
 
         if type(uninstallPackage) ~= "function" then
                 return false
         end
 
-        local installed = true
-        if type(getPackageInfo) == "function" then
-                local ok, version = pcall(getPackageInfo, "generic_mapper", "version")
-                installed = ok and version ~= nil and tostring(version) ~= ""
+        local installed = generic_mapper_is_installed()
+        if installed == false then
+                DD_GUI.generic_mapper_removed = false
+                return false
         end
 
-        if installed then
-                local ok, result = pcall(uninstallPackage, "generic_mapper")
-                DD_GUI.generic_mapper_removed = ok and result ~= false
-                if DD_GUI.generic_mapper_removed and type(cecho) == "function" then
-                        cecho("<yellow>Removed the conflicting generic_mapper package; DD_GUI owns the mapper.<reset>\n")
-                end
+        DD_GUI.generic_mapper_uninstalling = true
+        local ok, result = pcall(
+                uninstallPackage,
+                GENERIC_MAPPER_PACKAGE
+        )
+        DD_GUI.generic_mapper_uninstalling = false
+
+        DD_GUI.generic_mapper_removed = ok and result ~= false
+        if DD_GUI.generic_mapper_removed and type(cecho) == "function" then
+                cecho("<yellow>Removed the conflicting generic_mapper package; DD_GUI owns the mapper.<reset>\n")
         end
 
         return DD_GUI.generic_mapper_removed == true
 end
 
-DD_GUI.remove_conflicting_generic_mapper()
+function DD_GUI.cancel_generic_mapper_cleanup()
+        if DD_GUI.generic_mapper_cleanup_timer and type(killTimer) == "function" then
+                pcall(killTimer, DD_GUI.generic_mapper_cleanup_timer)
+        end
+        DD_GUI.generic_mapper_cleanup_timer = nil
+end
+
+-- A package-install event can arrive after the initial folder script has run.
+-- Give Mudlet time to finish registering the package, then remove it again;
+-- retry briefly because the bundled mapper may install asynchronously.
+function DD_GUI.schedule_generic_mapper_cleanup(watch_install)
+        DD_GUI.cancel_generic_mapper_cleanup()
+
+        local attempts = 0
+        local function cleanup()
+                DD_GUI.generic_mapper_cleanup_timer = nil
+                attempts = attempts + 1
+
+                local installed = generic_mapper_is_installed()
+                if installed == false and not watch_install then
+                        return
+                end
+
+                if installed ~= false then
+                        DD_GUI.remove_conflicting_generic_mapper(true)
+                end
+                if attempts < 12 and type(tempTimer) == "function" then
+                        DD_GUI.generic_mapper_cleanup_timer = tempTimer(
+                                0.25,
+                                cleanup
+                        )
+                end
+        end
+
+        if type(tempTimer) == "function" then
+                DD_GUI.generic_mapper_cleanup_timer = tempTimer(0.05, cleanup)
+        else
+                cleanup()
+        end
+end
+
+DD_GUI.remove_conflicting_generic_mapper(true)
+DD_GUI.schedule_generic_mapper_cleanup(false)
 
 local profile_path = string.gsub(getMudletHomeDir(), "\\", "/")
 local package_path = profile_path .. "/DD_GUI"
@@ -141,19 +229,24 @@ function DD_GUI.migrate_legacy_content()
         )
 end
 
-mudlet.mapper_script = true
-
 function myScriptInstalled(_, name)
+        if tostring(name or ""):lower() == GENERIC_MAPPER_PACKAGE then
+                DD_GUI.schedule_generic_mapper_cleanup(true)
+                return
+        end
+
         if name ~= "DD_GUI" then
                 return
         end
-        DD_GUI.remove_conflicting_generic_mapper()
+        DD_GUI.remove_conflicting_generic_mapper(true)
+        DD_GUI.schedule_generic_mapper_cleanup(true)
         DD_GUI.migrate_legacy_content()
         bootstrap()
 end
 
 function myScriptUninstalled(_, name)
         if name == "DD_GUI" then
+                DD_GUI.cancel_generic_mapper_cleanup()
                 if DD_GUI.unregister_data_refresh_handlers then
                         DD_GUI.unregister_data_refresh_handlers()
                 end
