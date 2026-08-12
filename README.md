@@ -130,11 +130,12 @@ data. The main panels are:
   `THIRST` and `HUNGER` gauges from `Char.Vitals`. The gauges are hidden for
   Vampires, whose DD4 condition values do not decay, and on older servers that
   do not provide the new current/maximum fields. Character conditions appear
-  in a compact portrait grid of touching square black tiles with dark-red edges
+  in a compact portrait grid of touching 19px square black tiles with dark-red edges
   that starts at the lower-right, fills five icons right-to-left, and wraps
-  upward. The tile and its icon artwork share the same affect-strength alpha.
-  Icons retain their first-detected activation order while active and compact when
-  one clears. The tankard's brightness
+  upward. Each icon's artwork bounds are centered inside its tile automatically,
+  so the different symbols keep even black margins. The tile and its icon artwork
+  share the same affect-strength alpha. Icons retain their first-detected
+  activation order while active and compact when one clears. The tankard's brightness
   follows `drunk/maxdrunk`. Affect icons cover poison/nausea or `AFF_POISON`
   (`gives = "poison"`), `AFF_HOLD` (`hold`), `AFF_CURSE` (`curse`), `AFF_SLOW`
   (`slow`), `AFF_CONFUSION` (`confused`), `AFF_DAZED` (`dazed`),
