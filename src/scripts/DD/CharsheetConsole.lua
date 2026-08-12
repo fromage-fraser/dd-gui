@@ -64,7 +64,7 @@ function DD_GUI.update_character_condition_gauges()
 end
 
 local PORTRAIT_ICON_BASE_SIZE = 15
-local PORTRAIT_ICON_SIZE = 18
+local PORTRAIT_ICON_SIZE = 19
 local PORTRAIT_ICON_GAP = 0
 local PORTRAIT_ICON_COLUMNS = 5
 local PORTRAIT_ICON_RIGHT = 2
@@ -437,6 +437,38 @@ local function scaled_icon_metric(value, minimum)
     local scaled = math.floor((tonumber(value) or 0) *
       PORTRAIT_ICON_SIZE / PORTRAIT_ICON_BASE_SIZE + 0.5)
     return math.max(minimum or 0, scaled)
+end
+
+local function portrait_icon_art_offset(spec)
+    local min_x = PORTRAIT_ICON_BASE_SIZE
+    local min_y = PORTRAIT_ICON_BASE_SIZE
+    local max_x = 0
+    local max_y = 0
+
+    for _, part_spec in ipairs(spec.parts or {}) do
+      local x = tonumber(part_spec[2]) or 0
+      local y = tonumber(part_spec[3]) or 0
+      local width = tonumber(part_spec[4]) or 0
+      local height = tonumber(part_spec[5]) or 0
+      min_x = math.min(min_x, x)
+      min_y = math.min(min_y, y)
+      max_x = math.max(max_x, x + width)
+      max_y = math.max(max_y, y + height)
+    end
+
+    if max_x <= min_x or max_y <= min_y then
+      return {x = 0, y = 0}
+    end
+
+    local scale = PORTRAIT_ICON_SIZE / PORTRAIT_ICON_BASE_SIZE
+    local tile_center = PORTRAIT_ICON_SIZE / 2
+    local artwork_center_x = ((min_x + max_x) / 2) * scale
+    local artwork_center_y = ((min_y + max_y) / 2) * scale
+
+    return {
+      x = math.floor(tile_center - artwork_center_x + 0.5),
+      y = math.floor(tile_center - artwork_center_y + 0.5),
+    }
 end
 
 local function rgba(color, alpha)
@@ -906,11 +938,12 @@ local function new_portrait_icon(name)
     return icon
 end
 
-local function new_portrait_icon_part(parent, name, part_spec)
+local function new_portrait_icon_part(parent, name, part_spec, art_offset)
+    art_offset = art_offset or {x = 0, y = 0}
     local part = Geyser.Label:new({
       name = name,
-      x = scaled_icon_metric(part_spec[2]),
-      y = scaled_icon_metric(part_spec[3]),
+      x = scaled_icon_metric(part_spec[2]) + (art_offset.x or 0),
+      y = scaled_icon_metric(part_spec[3]) + (art_offset.y or 0),
       width = scaled_icon_metric(part_spec[4], 1),
       height = scaled_icon_metric(part_spec[5], 1),
     }, parent)
@@ -946,11 +979,12 @@ local function build_portrait_condition_icons()
       local icon = new_portrait_icon(root_name)
       DD_GUI[spec.root] = icon
       local surfaces = {icon}
+      local art_offset = portrait_icon_art_offset(spec)
 
       for _, part_spec in ipairs(spec.parts) do
         local suffix = part_spec[1]
         local part = new_portrait_icon_part(icon,
-          root_name .. "." .. suffix, part_spec)
+          root_name .. "." .. suffix, part_spec, art_offset)
         DD_GUI[spec.root .. suffix] = part
         table.insert(surfaces, part)
       end
