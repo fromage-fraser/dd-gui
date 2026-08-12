@@ -65,10 +65,18 @@ end
 
 local PORTRAIT_ICON_BASE_SIZE = 15
 local PORTRAIT_ICON_SIZE = 18
-local PORTRAIT_ICON_GAP = 1
+local PORTRAIT_ICON_GAP = 0
 local PORTRAIT_ICON_COLUMNS = 5
 local PORTRAIT_ICON_RIGHT = 2
 local PORTRAIT_ICON_BOTTOM = 3
+local PORTRAIT_ICON_TILE_STYLE = {
+    fill = {0, 0, 0},
+    fill_opacity = 0.78,
+    border = {104, 18, 29},
+    border_opacity = 0.95,
+    border_width = 1,
+    radius = 0,
+}
 
 local function perceptual_icon_alpha(value, maximum)
     value = tonumber(value) or 0
@@ -803,6 +811,9 @@ local function render_portrait_condition_icon(key, alpha, defer_layout)
 
     alpha = tonumber(alpha) or 0
     if alpha > 0 and state.alpha ~= alpha then
+      -- The tile is part of the condition's visual state, so its fill and
+      -- edge fade with the same duration/intensity as the icon artwork.
+      style_icon_part(state.icon, alpha, PORTRAIT_ICON_TILE_STYLE)
       for _, part_spec in ipairs(spec.parts) do
         style_icon_part(DD_GUI[spec.root .. part_spec[1]], alpha,
           part_spec[6])
@@ -886,6 +897,7 @@ local function new_portrait_icon(name)
     icon:setStyleSheet([[
       background-color: rgba(0,0,0,0);
       border: 0px;
+      border-radius: 0px;
     ]])
     if DD_GUI.set_widget_clickthrough then
       DD_GUI.set_widget_clickthrough(icon, false)
