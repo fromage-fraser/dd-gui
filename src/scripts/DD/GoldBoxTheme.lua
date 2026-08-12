@@ -105,6 +105,34 @@ function Theme:gauge_back_css()
         ]], self.colors.panel_alt, self.colors.dark_frame)
 end
 
+local function parse_rgb(color)
+        local red, green, blue = tostring(color or ""):match(
+                "^%s*rgb%s*%(%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*%)%s*$"
+        )
+        if not red then
+                return nil
+        end
+        return tonumber(red), tonumber(green), tonumber(blue)
+end
+
+function Theme:gauge_fill_color(color, ratio)
+        local red, green, blue = parse_rgb(color)
+        if not red then
+                return color
+        end
+
+        ratio = math.max(0, math.min(1, tonumber(ratio) or 0))
+        -- Keep the hue consistent while lifting a full bar toward a bright
+        -- highlight and letting an empty bar settle into the dark frame.
+        local brightness = 0.32 + (ratio * 1.03)
+        return string.format(
+                "rgb(%d,%d,%d)",
+                math.min(255, math.floor((red * brightness) + 0.5)),
+                math.min(255, math.floor((green * brightness) + 0.5)),
+                math.min(255, math.floor((blue * brightness) + 0.5))
+        )
+end
+
 function Theme:gauge_front_css(color)
         return string.format([[
                 background-color: %s;

@@ -496,10 +496,24 @@ function build_enemy_console()
       width = "92%", height = "10%",
     }, DD_GUI.EnemyBox)
     local theme = DD_GUI.Theme
+    local enemy_gauge_color = theme and theme.colors.hp or "rgb(180,0,0)"
+    local function enemy_gauge_front_css(ratio)
+      local fill_color = enemy_gauge_color
+      if theme and theme.gauge_fill_color then
+        fill_color = theme:gauge_fill_color(enemy_gauge_color, ratio)
+      end
+      if theme and theme.gauge_front_css then
+        return theme:gauge_front_css(fill_color)
+      end
+      return string.format(
+        "background-color: %s; border: 1px solid black; border-radius: 0px;",
+        fill_color
+      )
+    end
     EnemyConsoleHitpointsGaugeBackCSS = CSSMan.new(theme and
       theme:gauge_back_css() or [[background-color: rgb(0,0,0);]])
     EnemyConsoleHitpointsGaugeFrontCSS = CSSMan.new(theme and
-      theme:gauge_front_css(theme.colors.hp) or
+      enemy_gauge_front_css(0) or
       [[background-color: rgb(180,0,0);]])
 
     EnemyConsoleHitpointsContainer:setStyleSheet(
@@ -521,6 +535,11 @@ function build_enemy_console()
       local ratio = 0
       if limit > 0 then
         ratio = math.max(0, math.min(1, current / limit))
+      end
+      local front_css = enemy_gauge_front_css(ratio)
+      if self._dd_gui_fill_css ~= front_css then
+        self._dd_gui_fill_css = front_css
+        self:setStyleSheet(front_css)
       end
       -- The track starts at 4% and is 92% wide. Resize the fill against
       -- that track rather than the whole panel, or a full bar overruns the

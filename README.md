@@ -103,10 +103,12 @@ data. The main panels are:
   it removes Mudlet's conflicting `generic_mapper` package, whose obsolete
   updater can otherwise request a dead `versions.lua` URL. The cleanup now runs
   as soon as the DD_GUI folder loads, before the GUI starts its own mapper, so
-  the generic package's profile-level `map\autosave.dat` is not loaded beside
-  DD_GUI during development reloads. `ddmap cleanup` repeats that removal if a
-  local profile still has the old package installed; restart Mudlet afterward if
-  it was freezing while reading the generic map.
+  the generic package's profile-level `map\\autosave.dat` is not loaded beside
+  DD_GUI during development reloads. DD_GUI also watches package-install events
+  and retries removal if Mudlet or the generic updater attempts to bring the
+  package back. `ddmap cleanup` remains available as a manual forced removal if
+  a local profile still has the old package installed; restart Mudlet afterward
+  if it was freezing while reading the generic map.
   The custom mapper accepts both the original direction-to-vnum exit shape and
   the current richer DD4 payload. Native mapper doors are updated with `0`
   (removed), `1` (open), `2` (closed), or `3` (locked); up/down states remain
@@ -221,8 +223,10 @@ data. The main panels are:
 
   The four footer status gauges use an even inset on all four sides inside the
   shared braided frame, so their black breathing room remains balanced when
-  the gauge band is resized. The character sheet's hunger and thirst bars use
-  the same segmented gauge treatment in a compact two-column row.
+  the gauge band is resized. The character sheet's hunger, thirst, blood, and
+  rage bars use the same segmented gauge treatment in a compact adaptive row.
+  Every filled gauge interpolates from a dim version of its hue at empty to a
+  bright version at full, including enemy hitpoints.
 
 The main MUD console and panel consoles use the profile's shared scrollbar
 style: narrow black tracks have restrained dark-red edges, while the moving
@@ -318,11 +322,13 @@ and workflow changes.
 
 If a local package reload drives Mudlet CPU usage high or leaves it frozen on
 `Reading map ... map\autosave.dat`, the profile is still loading the legacy
-`generic_mapper` package. Run `ddmap cleanup` once the profile responds, close
-and restart Mudlet, and then load DD_GUI again. DD_GUI also guards its own
-persistent `dragons_domain_mapper.dat` load so repeated `bootstrap()` calls do
-not parse the native map repeatedly in one session. If Mudlet cannot respond
-long enough to run the command, make a backup of the profile's
+`generic_mapper` package. Current DD_GUI builds mark the profile as mapper-owned
+and automatically quarantine later generic-mapper install attempts; run
+`ddmap cleanup` once the profile responds only if an older build left the
+package active. Close and restart Mudlet, and then load DD_GUI again. DD_GUI
+also guards its own persistent `dragons_domain_mapper.dat` load so repeated
+`bootstrap()` calls do not parse the native map repeatedly in one session. If
+Mudlet cannot respond long enough to run the command, make a backup of the profile's
 `map\autosave.dat`, rename that file, restart Mudlet, and let DD_GUI rebuild
 from its own persistent map; the generic file is not used by DD_GUI.
 
