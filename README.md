@@ -20,7 +20,7 @@ If you have any issues with the automated installation and update system for the
 
 To uninstall the GUI, you can simply type:
 
-`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed. To safely uninstall and reinstall the latest remote package, use `reinstallgui`; it lets the alias return, waits three seconds between the two operations so Mudlet can finish removing the old package, then installs from the canonical `.mpackage` URL and reports the installed package version. The handoff uses profile-level named timers and install/uninstall events so the reinstall callback survives removal of the old package.
+`lua uninstallPackage("DD_GUI")`, use the built-in `ugui` alias, or use Mudlet's graphical package manager. The GUI copies any legacy downloaded content into the profile-owned `DD_GUI_Content` directory before removal when needed. To safely uninstall and reinstall the latest remote package, use `reinstallgui`. It first downloads the package to a local staging file, waits for the download-complete event, then schedules the uninstall and installs that completed local file after Mudlet has had time to remove the old package. The handoff uses profile-level named timers and event handlers, retries transient download or install failures, accepts a reinstall of the same version, and reports either the installed package version or the actual failure. Downloaded custom content is not removed.
 
 ## Layout controls
 
@@ -271,7 +271,7 @@ These aliases are available from the Mudlet command line:
 | `ddmap reset` / `ddmap cancel` | Confirm or cancel a pending mapper area reset when the dialog/link fallback is used. |
 | `ignores` | Preserve the legacy mapper command; the GMCP mapper reports that text ignore patterns are unnecessary when generic_mapper is absent. |
 | `ugui` | Uninstall the `DD_GUI` package. |
-| `reinstallgui` | Defer the uninstall, wait three seconds, reinstall the latest remote package with a profile-level handoff, and report its installed version without removing downloaded custom content. |
+| `reinstallgui` | Download the latest package locally, safely remove and reinstall `DD_GUI`, retry transient failures, and report the installed version without removing downloaded custom content. |
 
 
 ## Keyboard controls

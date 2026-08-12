@@ -9,7 +9,7 @@ mudlet.mapper_script = true
 
 -- Mudlet builds without getPackageInfo() still need a reliable way to show
 -- the installed GUI version and decide whether bootstrap() may be reused.
-DD_GUI.package_version = "0.0.131"
+DD_GUI.package_version = "0.0.132"
 
 -- Return nil when Mudlet cannot answer the package query. In that case the
 -- removal attempt is still made, because leaving the package installed is the
