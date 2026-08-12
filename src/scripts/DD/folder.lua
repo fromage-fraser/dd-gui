@@ -3,7 +3,7 @@ mudlet = mudlet or {}
 
 -- Mudlet builds without getPackageInfo() still need a reliable way to show
 -- the installed GUI version and decide whether bootstrap() may be reused.
-DD_GUI.package_version = "0.0.125"
+DD_GUI.package_version = "0.0.126"
 
 -- DD_GUI owns the native mapper surface. Remove the legacy generic mapper as
 -- early as possible so its profile-level map/autosave.dat is not loaded beside
