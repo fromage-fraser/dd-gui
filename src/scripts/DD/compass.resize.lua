@@ -245,19 +245,25 @@ function build_compass()
 
   function compass.door_status(name)
     local direction = compass.door_directions[name]
-    if not direction or type(map) ~= "table" or
-       type(map.room_info) ~= "table" then
+    if not direction then
       return nil
     end
 
-    local room_id = tonumber(map.room_info.vnum)
+    local room_id
+    if gmcp and gmcp.Room and type(gmcp.Room.Info) == "table" then
+      room_id = tonumber(gmcp.Room.Info.vnum)
+    end
+    if not room_id and type(map) == "table" and
+       type(map.room_info) == "table" then
+      room_id = tonumber(map.room_info.vnum)
+    end
     if not room_id then
       return nil
     end
 
     local parsed_status = DD_GUI.exit_status_by_room and
       DD_GUI.exit_status_by_room[room_id]
-    if parsed_status then
+    if parsed_status and parsed_status[name] ~= nil then
       return tonumber(parsed_status[name]) or 0
     end
 
@@ -282,10 +288,19 @@ function build_compass()
     if status == 4 then
       return
     elseif status == 3 then
+      if DD_GUI.note_exit_move then
+        DD_GUI.note_exit_move(name)
+      end
       sendAll(0.2, "unlock " .. command, "open " .. command, command)
     elseif status == 2 then
+      if DD_GUI.note_exit_move then
+        DD_GUI.note_exit_move(name)
+      end
       sendAll(0.2, "open " .. command, command)
     else
+      if DD_GUI.note_exit_move then
+        DD_GUI.note_exit_move(name)
+      end
       send(command)
     end
   end
