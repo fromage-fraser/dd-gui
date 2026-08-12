@@ -13,6 +13,14 @@
                         {
                                 "pattern": "^It\\'s locked\\.$",
                                 "type": "regex"
+                        },
+                        {
+                                "pattern": "^The .+ is closed\\.$",
+                                "type": "regex"
+                        },
+                        {
+                                "pattern": "^The .+ are closed\\.$",
+                                "type": "regex"
                         }
                 ]
         },

@@ -112,6 +112,12 @@ data. The main panels are:
   (removed), `1` (open), `2` (closed), or `3` (locked); up/down states remain
   available to compass routing through the GUI's per-room cache because older
   Mudlet native door drawing only supports compass-plane directions. Exit
+  states from DD4's complete `Room.Info.exit_details` snapshot are the
+  authoritative source for compass and speedwalk decisions. The snapshot is
+  applied by room vnum as soon as `gmcp.Room.Info` arrives, including during
+  bootstrap and reconnect, and an empty `exit_details` object deliberately
+  clears stale door state. Legacy destination-only `Room.Info.exits` data is
+  never interpreted as a door state.
   movement costs bias native pathfinding through per-exit weights, and arrival
   metadata repairs the previous room's outbound link when a newly discovered
   room was previously only an exit stub. DD4 wall exits remain visible as
@@ -167,13 +173,18 @@ data. The main panels are:
   clickable navigation compass. The compass includes `EQ` for equipment and
   `SCAN` for scanning. Movement buttons briefly highlight their borders while
   leaving the black cell background unchanged. For mapped rooms, movement
-  parses the current MUD `[Exits: ...]` line before sending: plain exits are
-  open, `(direction)` is closed, and `[direction]` is locked. A locked exit
-  sends `unlock`, `open`, then the movement command in sequence; a closed exit
-  sends `open`, then the movement command in sequence. The parsed state is kept per room, with
-  Mudlet mapper door data as a fallback when no current Exits line is
-  available. If neither source has a state, it sends the normal movement
-  command. Status gauges clamp GMCP current values to their reported maximums
+  uses the current room's rich GMCP exit state before sending: `open` sends
+  the direction, `closed` sends `open direction` then the direction, and
+  `locked` sends `unlock direction`, `open direction`, then the direction.
+  Walls are treated as non-routable. The legacy MUD `[Exits: ...]` line is a
+  complete compatibility snapshot when rich GMCP exit data is unavailable:
+  plain exits are open, `(direction)` is closed, and `[direction]` is locked.
+  The parser replaces stale directions instead of merging them forever, and
+  the native Mudlet door table remains a per-direction fallback for older or
+  partial profiles. If a compass or mapper movement still receives a closed,
+  locked, missing-key, or wall response, the attempted direction is corrected
+  immediately for the next attempt. If neither source has a state, it sends
+  the normal movement command. Status gauges clamp GMCP current values to their reported maximums
   and keep their fills inside their parent panels. Enemy hitpoints are rendered
   in a dedicated overlay below the enemy text, so the red gauge remains visible
   when the enemy console refreshes and disappears outside combat. The compass has the same shared braided

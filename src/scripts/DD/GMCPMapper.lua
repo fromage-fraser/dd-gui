@@ -103,9 +103,24 @@ function load_dd_mapper()
                 return move_vectors[short_direction(direction)]
         end
 
+        local function current_room_id()
+                if gmcp and gmcp.Room and type(gmcp.Room.Info) == "table" then
+                        local room_id = dd_mapper_number(gmcp.Room.Info.vnum)
+                        if room_id then
+                                return room_id
+                        end
+                end
+                return map.room_info and dd_mapper_number(map.room_info.vnum)
+        end
+
         local function normalise_door_status(value)
                 if type(value) == "number" then
-                        return math.max(0, math.min(3, math.floor(value)))
+                        return math.max(0, math.min(4, math.floor(value)))
+                end
+
+                local numeric = tonumber(value)
+                if numeric then
+                        return math.max(0, math.min(4, math.floor(numeric)))
                 end
 
                 local text = tostring(value or ""):lower()
@@ -137,10 +152,22 @@ function load_dd_mapper()
                                 value.to or value.vnum or value.room or value.id or value.destination
                         )
                         local raw_status = value.status or value.state or value.door_state
+                        if raw_status == nil then
+                                if value.wall == true or value.blocked == true then
+                                        raw_status = "wall"
+                                elseif value.locked == true or value.is_locked == true then
+                                        raw_status = "locked"
+                                elseif value.closed == true or value.is_closed == true then
+                                        raw_status = "closed"
+                                elseif value.open == true or value.is_open == true then
+                                        raw_status = "open"
+                                end
+                        end
                         if raw_status ~= nil then
                                 result.status = normalise_door_status(raw_status)
                                 result.has_status = true
-                                result.blocked = tostring(raw_status):lower() == "wall" or
+                                result.blocked = result.status == 4 or
+                                        tostring(raw_status):lower() == "wall" or
                                         tostring(raw_status):lower() == "blocked"
                         end
                         result.door = value.door or value.door_name
@@ -248,11 +275,13 @@ function load_dd_mapper()
                 end
 
                 local exits = {}
+                local has_exit_status = false
                 if type(source.exits) == "table" then
                         for direction, value in pairs(source.exits) do
                                 local short = short_direction(direction)
                                 if direction_names[short] then
                                         exits[short] = normalise_exit(value)
+                                        has_exit_status = has_exit_status or exits[short].has_status
                                 end
                         end
                 end
@@ -264,6 +293,10 @@ function load_dd_mapper()
                 if type(exit_details) == "table" then
                         for direction, value in pairs(exit_details) do
                                 merge_exit_detail(exits, direction, value)
+                                local detail = exits[short_direction(direction)]
+                                if detail then
+                                        has_exit_status = has_exit_status or detail.has_status
+                                end
                         end
                 end
 
@@ -283,6 +316,7 @@ function load_dd_mapper()
                         flags = source.flags,
                         tags = normalise_tags(source.tags),
                         exits = exits,
+                        exit_status_complete = type(exit_details) == "table" or has_exit_status,
                         special_exits = normalise_special_exits(
                                 source.special_exits or source.specialExits or source.special_exit_details
                         ),
@@ -618,7 +652,11 @@ function load_dd_mapper()
                         w = true, s = true, se = true, sw = true,
                 }
                 if present and native_door_directions[short] and type(setDoor) == "function" then
-                        local native_status = math.max(0, math.min(3, tonumber(status) or 0))
+                        local numeric_status = tonumber(status) or 0
+                        -- A wall is a mapper stub, not a locked door. Clear
+                        -- any old native door marker if the room was rebuilt.
+                        local native_status = numeric_status == 4 and 0 or
+                                math.max(0, math.min(3, numeric_status))
                         pcall(setDoor, room_id, short, native_status)
                 end
         end
@@ -636,7 +674,17 @@ function load_dd_mapper()
                 end
 
                 DD_GUI.exit_status_by_room = DD_GUI.exit_status_by_room or {}
-                DD_GUI.exit_status_by_room[info.vnum] = DD_GUI.exit_status_by_room[info.vnum] or {}
+                if info.exit_status_complete and DD_GUI.apply_exit_status then
+                        local snapshot = {}
+                        for direction, exit in pairs(info.exits) do
+                                if exit.has_status then
+                                        snapshot[direction] = exit.status
+                                end
+                        end
+                        DD_GUI.apply_exit_status(info.vnum, snapshot, "gmcp", true)
+                end
+                DD_GUI.exit_status_by_room[info.vnum] =
+                        DD_GUI.exit_status_by_room[info.vnum] or {}
                 for direction, exit in pairs(info.exits) do
                         if exit.blocked then
                                 pcall(setExitStub, info.vnum, direction, true)
@@ -658,7 +706,11 @@ function load_dd_mapper()
                                         tostring(exit.door or "") == "" then
                                         native_status = 0
                                 end
-                                set_exit_door(info.vnum, direction, native_status, true)
+                                if exit.status == 4 then
+                                        set_exit_door(info.vnum, direction, 0, true)
+                                else
+                                        set_exit_door(info.vnum, direction, native_status, true)
+                                end
                         end
                         if exit.cost and type(setExitWeight) == "function" then
                                 local cost_weight = math.max(0, math.floor(exit.cost) - 1)
@@ -1128,7 +1180,10 @@ function load_dd_mapper()
                 end
 
                 route.awaiting = action.to
-                route.last_room = map.room_info.vnum
+                route.last_room = current_room_id() or map.room_info.vnum
+                if DD_GUI.note_exit_move then
+                        DD_GUI.note_exit_move(action.direction, action.from)
+                end
                 local commands = movement_commands(action.from, action.direction)
                 if #commands == 0 then
                         stop_route("Speedwalk stopped: the next exit is a wall.")
@@ -1160,7 +1215,7 @@ function load_dd_mapper()
                         return false
                 end
 
-                local current = tonumber(map.room_info.vnum)
+                local current = current_room_id()
                 if not current then
                         mapper_echo("The current room is not known yet.", true)
                         return false
@@ -1236,6 +1291,9 @@ function load_dd_mapper()
                 map.walkDirs = directions
                 if not map.configs.dd_safe_speedwalk then
                         for _, action in ipairs(actions) do
+                                if DD_GUI.note_exit_move then
+                                        DD_GUI.note_exit_move(action.direction, action.from)
+                                end
                                 for _, command in ipairs(movement_commands(action.from, action.direction)) do
                                         send(command)
                                 end
@@ -1263,18 +1321,36 @@ function load_dd_mapper()
                 end
         end
 
-        function DD_GUI.mapper_set_exit_status(room_id, statuses)
+        function DD_GUI.mapper_set_exit_status(room_id, statuses, draw_doors,
+                                                complete, previous)
                 room_id = tonumber(room_id)
                 if not room_id or type(statuses) ~= "table" then
                         return
                 end
                 DD_GUI.exit_status_by_room = DD_GUI.exit_status_by_room or {}
-                DD_GUI.exit_status_by_room[room_id] = DD_GUI.exit_status_by_room[room_id] or {}
+                local old_statuses = previous or DD_GUI.exit_status_by_room[room_id] or {}
+                if complete == true then
+                        for direction in pairs(old_statuses) do
+                                if statuses[direction] == nil then
+                                        set_exit_door(room_id, direction, 0, true)
+                                end
+                        end
+                        DD_GUI.exit_status_by_room[room_id] = {}
+                end
+                DD_GUI.exit_status_by_room[room_id] =
+                        DD_GUI.exit_status_by_room[room_id] or {}
                 for direction, status in pairs(statuses) do
                         local short = short_direction(direction)
                         local numeric_status = tonumber(status) or 0
                         DD_GUI.exit_status_by_room[room_id][short] = numeric_status
-                        set_exit_door(room_id, short, numeric_status, true)
+                        if draw_doors ~= false then
+                                set_exit_door(
+                                        room_id,
+                                        short,
+                                        numeric_status == 4 and 0 or numeric_status,
+                                        true
+                                )
+                        end
                 end
         end
 

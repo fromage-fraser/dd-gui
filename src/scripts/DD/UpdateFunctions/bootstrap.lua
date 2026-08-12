@@ -398,6 +398,9 @@ local function dd_gui_bootstrap_impl()
         end
         initialise_mapper()
         load_dd_mapper()
+        if DD_GUI.refresh_exit_status_from_gmcp then
+                DD_GUI.refresh_exit_status_from_gmcp()
+        end
         if DD_GUI.apply_mapper_theme then
                 DD_GUI.apply_mapper_theme()
         end
