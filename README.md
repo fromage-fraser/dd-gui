@@ -126,10 +126,17 @@ data. The main panels are:
   stale-link cleanup. The native mapper context menu includes `Show DD4 room
   data`, and `ddmap info` prints the current room's persisted record.
 - **Character sheet:** profile image, character details, statistics, and
-  resistances. Characters below level 100 also receive compact segmented
-  `THIRST` and `HUNGER` gauges from `Char.Vitals`. The gauges are hidden for
-  Vampires, whose DD4 condition values do not decay, and on older servers that
-  do not provide the new current/maximum fields. Character conditions appear
+  resistances. Characters below level 100 receive role-aware compact segmented
+  condition gauges from `Char.Vitals`: ordinary characters have `THIRST` and
+  `HUNGER`, Vampires replace those with a red `BLOOD` gauge backed by
+  `rage/maxrage`, and Werewolves retain `THIRST` and `HUNGER` while gaining a
+  red `RAGE` gauge. DD4 exempts Vampires from normal hunger/thirst decay; their
+  rage resource is the blood reserve. Werewolf rage rises in wolf or direwolf
+  form, drains outside those forms, and becomes compulsive above 90. At level
+  100 and above, ordinary hunger/thirst bars are hidden while a Vampire's
+  `BLOOD` or a Werewolf's `RAGE` remains available. The gauges are also hidden
+  on older servers that do not provide the relevant current/maximum fields.
+  Character conditions appear
   in a compact portrait grid of touching 19px square black tiles with dark-red edges
   that starts at the lower-right, fills five icons right-to-left, and wraps
   upward. Each icon's artwork bounds are centered inside its tile automatically,

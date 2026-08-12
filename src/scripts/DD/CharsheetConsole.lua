@@ -8,58 +8,159 @@ local function condition_gauge_value(value, maximum)
     return math.max(0, math.min(1000, (value * 1000) / maximum))
 end
 
-local function character_condition_gauges_visible()
+local CONDITION_GAUGE_DEFINITIONS = {
+    thirst = {
+      property = "Thirst",
+      label_property = "ThirstLabel",
+      label = "THIRST",
+      value_field = "thirst",
+      maximum_field = "maxthirst",
+      color_key = "thirst",
+    },
+    hunger = {
+      property = "Hunger",
+      label_property = "HungerLabel",
+      label = "HUNGER",
+      value_field = "hunger",
+      maximum_field = "maxhunger",
+      color_key = "hunger",
+    },
+    blood = {
+      property = "Blood",
+      label_property = "BloodLabel",
+      label = "BLOOD",
+      value_field = "rage",
+      maximum_field = "maxrage",
+      color_key = "blood",
+    },
+    rage = {
+      property = "Rage",
+      label_property = "RageLabel",
+      label = "RAGE",
+      value_field = "rage",
+      maximum_field = "maxrage",
+      color_key = "rage",
+    },
+}
+local CONDITION_GAUGE_ORDER = {"thirst", "hunger", "blood", "rage"}
+
+local function condition_gauge_specs()
     local char = gmcp and gmcp.Char
     local base = char and char.Base
     local vitals = char and char.Vitals
     local worth = char and char.Worth
     if type(base) ~= "table" or type(vitals) ~= "table" or
        type(worth) ~= "table" then
-      return false
+      return {}
     end
 
     local level = tonumber(worth.level)
     local subclass = tostring(base.subclass or ""):lower()
-    return level ~= nil and level < 100 and subclass ~= "vampire" and
-           tonumber(vitals.maxthirst or 0) > 0 and
-           tonumber(vitals.maxhunger or 0) > 0
+    if level == nil then
+      return {}
+    end
+
+    -- DD4 exempts vampires from normal food and water decay. Their rage
+    -- value is the blood reserve instead, so show that resource in their
+    -- place. Werewolves retain the ordinary conditions and also use rage.
+    if subclass == "vampire" then
+      if tonumber(vitals.maxrage or 0) > 0 then
+        return {CONDITION_GAUGE_DEFINITIONS.blood}
+      end
+      return {}
+    end
+
+    local gauges = {}
+    if level < 100 then
+      if tonumber(vitals.maxthirst or 0) > 0 then
+        table.insert(gauges, CONDITION_GAUGE_DEFINITIONS.thirst)
+      end
+      if tonumber(vitals.maxhunger or 0) > 0 then
+        table.insert(gauges, CONDITION_GAUGE_DEFINITIONS.hunger)
+      end
+    end
+    if subclass == "werewolf" and tonumber(vitals.maxrage or 0) > 0 then
+      table.insert(gauges, CONDITION_GAUGE_DEFINITIONS.rage)
+    end
+
+    if subclass ~= "werewolf" and level >= 100 then
+      return {}
+    end
+
+    return gauges
 end
 
-local function set_condition_gauges_visible(visible)
-    local widgets = {
-      DD_GUI.CharsheetConditions,
-      DD_GUI.Thirst,
-      DD_GUI.Hunger,
-      DD_GUI.ThirstLabel,
-      DD_GUI.HungerLabel,
-    }
+local function set_condition_gauges_visible(gauges)
+    local all_gauges = {}
+    for _, key in ipairs(CONDITION_GAUGE_ORDER) do
+      local definition = CONDITION_GAUGE_DEFINITIONS[key]
+      local gauge = DD_GUI[definition.property]
+      local label = DD_GUI[definition.label_property]
+      if gauge then
+        table.insert(all_gauges, gauge)
+      end
+      if label then
+        table.insert(all_gauges, label)
+      end
+    end
 
-    for _, widget in ipairs(widgets) do
-      if widget then
-        if visible and widget.show then
-          widget:show()
-        elseif not visible and widget.hide then
-          widget:hide()
+    for _, widget in ipairs(all_gauges) do
+      if widget.hide then
+        widget:hide()
+      end
+    end
+
+    if type(gauges) ~= "table" or #gauges == 0 then
+      if DD_GUI.CharsheetConditions and DD_GUI.CharsheetConditions.hide then
+        DD_GUI.CharsheetConditions:hide()
+      end
+      return
+    end
+
+    if DD_GUI.CharsheetConditions and DD_GUI.CharsheetConditions.show then
+      DD_GUI.CharsheetConditions:show()
+    end
+
+    local gap = #gauges > 1 and 2 or 0
+    local width = (100 - (gap * (#gauges - 1))) / #gauges
+    for index, definition in ipairs(gauges) do
+      local gauge = DD_GUI[definition.property]
+      local label = DD_GUI[definition.label_property]
+      local x = (index - 1) * (width + gap)
+      if gauge then
+        if gauge.move then
+          gauge:move(string.format("%.3f%%", x), "0%")
         end
+        if gauge.resize then
+          gauge:resize(string.format("%.3f%%", width), "100%")
+        end
+        if gauge.show then
+          gauge:show()
+        end
+      end
+      if label and label.show then
+        label:show()
       end
     end
 end
 
 function DD_GUI.update_character_condition_gauges()
-    local visible = character_condition_gauges_visible()
-    set_condition_gauges_visible(visible)
-    if not visible then
+    local gauges = condition_gauge_specs()
+    set_condition_gauges_visible(gauges)
+    if #gauges == 0 then
       return
     end
 
     local vitals = gmcp.Char.Vitals
-    if DD_GUI.Thirst then
-      DD_GUI.Thirst:setValue(
-        condition_gauge_value(vitals.thirst, vitals.maxthirst), 1000)
-    end
-    if DD_GUI.Hunger then
-      DD_GUI.Hunger:setValue(
-        condition_gauge_value(vitals.hunger, vitals.maxhunger), 1000)
+    for _, definition in ipairs(gauges) do
+      local gauge = DD_GUI[definition.property]
+      if gauge then
+        gauge:setValue(
+          condition_gauge_value(
+            vitals[definition.value_field],
+            vitals[definition.maximum_field]),
+          1000)
+      end
     end
 end
 
@@ -1017,21 +1118,34 @@ local function build_character_condition_gauges()
       width = "92%", height = "9%",
     }, DD_GUI.CharsheetBox)
 
-    local colors = DD_GUI.Theme and DD_GUI.Theme.colors or {
-      thirst = "rgb(35,112,153)",
-      hunger = "rgb(145,103,34)",
+    local theme_colors = DD_GUI.Theme and DD_GUI.Theme.colors or {}
+    local colors = {
+      thirst = theme_colors.thirst or "rgb(35,112,153)",
+      hunger = theme_colors.hunger or "rgb(145,103,34)",
+      blood = theme_colors.blood or "rgb(176,18,28)",
+      rage = theme_colors.rage or "rgb(181,42,48)",
     }
     local vitals = gmcp.Char.Vitals
 
-    DD_GUI.Thirst, DD_GUI.ThirstLabel = DD_GUI.new_status_gauge(
-      "DD_GUI.Thirst", DD_GUI.CharsheetConditions, "THIRST", colors.thirst,
-      vitals.thirst, vitals.maxthirst,
-      {x = "0%", y = "0%", width = "49%", height = "100%"})
+    DD_GUI.ConditionGauges = {}
+    for _, key in ipairs(CONDITION_GAUGE_ORDER) do
+      local definition = CONDITION_GAUGE_DEFINITIONS[key]
+      local gauge, label = DD_GUI.new_status_gauge(
+        "DD_GUI." .. definition.property,
+        DD_GUI.CharsheetConditions,
+        definition.label,
+        colors[definition.color_key],
+        vitals[definition.value_field],
+        vitals[definition.maximum_field],
+        {x = "0%", y = "0%", width = "100%", height = "100%"})
 
-    DD_GUI.Hunger, DD_GUI.HungerLabel = DD_GUI.new_status_gauge(
-      "DD_GUI.Hunger", DD_GUI.CharsheetConditions, "HUNGER", colors.hunger,
-      vitals.hunger, vitals.maxhunger,
-      {x = "51%", y = "0%", width = "49%", height = "100%"})
+      DD_GUI[definition.property] = gauge
+      DD_GUI[definition.label_property] = label
+      DD_GUI.ConditionGauges[key] = {
+        gauge = gauge,
+        label = label,
+      }
+    end
 
     DD_GUI.update_character_condition_gauges()
 end

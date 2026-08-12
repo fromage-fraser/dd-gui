@@ -27,6 +27,8 @@ Theme.colors = {
         moves = "rgb(38,139,126)",
         thirst = "rgb(35,112,153)",
         hunger = "rgb(145,103,34)",
+        blood = "rgb(176,18,28)",
+        rage = "rgb(181,42,48)",
 }
 
 Theme.map_info_frame = {151, 27, 39}
