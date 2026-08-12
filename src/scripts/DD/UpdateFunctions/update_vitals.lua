@@ -252,16 +252,6 @@ if (current_affect_name() == "mist walk")  then
     )
 end
 
-if (gmcp.Char.Base.subclass == "Werewolf") or (gmcp.Char.Base.subclass == "Vampire") then
-  CharsheetConsole:cecho(
-    "<white>"
-    ..string.format("                <white>Rage:  <red>%s<reset>/<red>%s<reset>\n",
-        gmcp.Char.Vitals.rage,
-        gmcp.Char.Vitals.maxrage)
-    .."<reset>"
-  )
-end
-
 CharsheetConsole:cecho(""
     ..string.format("\n                <white>Str: <cyan>%s<reset>(<ansi_cyan>%s<reset>)",
         gmcp.Char.Stats.str_mod,

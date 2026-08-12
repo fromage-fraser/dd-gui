@@ -134,8 +134,9 @@ data. The main panels are:
   rage resource is the blood reserve. Werewolf rage rises in wolf or direwolf
   form, drains outside those forms, and becomes compulsive above 90. At level
   100 and above, ordinary hunger/thirst bars are hidden while a Vampire's
-  `BLOOD` or a Werewolf's `RAGE` remains available. The gauges are also hidden
-  on older servers that do not provide the relevant current/maximum fields.
+  `BLOOD` or a Werewolf's `RAGE` remains available; these gauges are the sole
+  character-sheet display for those resources. The gauges are also hidden on
+  older servers that do not provide the relevant current/maximum fields.
   Character conditions appear
   in a compact portrait grid of touching 19px square black tiles with dark-red edges
   that starts at the lower-right, fills five icons right-to-left, and wraps
