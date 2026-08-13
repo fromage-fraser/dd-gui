@@ -13,11 +13,25 @@ DD_GUI.content_download_queue = downloadQueue
 isDownloadingFileList = DD_GUI.content_download_list_active == true
 local active_download_path = DD_GUI.content_download_path
 
+-- A previous package source can leave a manifest scan timer alive while
+-- Mudlet replaces the package. Cancel that callback before installing the
+-- new handler set; otherwise two scanners can walk the same 8,000+ rows.
+if DD_GUI.content_manifest_timer and type(killTimer) == "function" then
+  pcall(killTimer, DD_GUI.content_manifest_timer)
+end
+if DD_GUI.content_manifest_scan and not DD_GUI.content_download_path then
+  DD_GUI.content_download_active = false
+end
+DD_GUI.content_manifest_timer = nil
+DD_GUI.content_manifest_scan = nil
+
 -- Large first-run content sets can contain thousands of files. Keep one
 -- request active and yield between completion callbacks so the client can
 -- continue painting and processing input. Persist the state on DD_GUI so a
 -- package reload can replace handlers without losing the queue.
 local CONTENT_DOWNLOAD_DELAY = 0.05
+local CONTENT_MANIFEST_CHUNK_SIZE = 80
+local CONTENT_MANIFEST_DELAY = 0.01
 
 local function set_list_download_active(active)
   isDownloadingFileList = active == true
@@ -49,6 +63,25 @@ local function schedule_next_download(delay)
     function()
       DD_GUI.content_download_timer = nil
       start_next_download()
+    end
+  )
+end
+
+local function schedule_manifest_chunk(delay, callback)
+  if DD_GUI.content_manifest_timer then
+    return
+  end
+
+  if type(tempTimer) ~= "function" then
+    callback()
+    return
+  end
+
+  DD_GUI.content_manifest_timer = tempTimer(
+    delay or CONTENT_MANIFEST_DELAY,
+    function()
+      DD_GUI.content_manifest_timer = nil
+      callback()
     end
   )
 end
@@ -337,6 +370,47 @@ function get_custom_content()
 end
 
 -- Read, queue, and start
+local function process_file_list_chunk(scan)
+  if DD_GUI.content_manifest_scan ~= scan then
+    return
+  end
+
+  local first = scan.index
+  local last = math.min(#scan.lines, first + CONTENT_MANIFEST_CHUNK_SIZE - 1)
+  for index = first, last do
+    local v = scan.lines[index]
+    local result  = split_str(v, '|')
+    local sizeStr = (result[1] or ""):gsub("%s+$", "")
+    local relPath = (result[2] or ""):gsub("\r", ""):gsub("^%s+", ""):gsub("%s+$", "")
+
+    -- Ignore blank lines, directory entries, and malformed rows. The
+    -- persistent profile cache is checked before the package fallback so
+    -- existing content avoids an unnecessary download.
+    if relPath ~= "" and looks_like_file(relPath) then
+      local saveto = ms_path .. "/" .. relPath
+      local existing_path = DD_GUI.asset_path and
+        DD_GUI.asset_path(relPath) or saveto
+      local existing = lfs.attributes(existing_path, "size")
+
+      if existing == nil or tonumber(sizeStr) ~= tonumber(existing) then
+        table.insert(downloadQueue, { url = CONTENT_BASE .. relPath, saveto = saveto })
+      end
+    end
+  end
+
+  scan.index = last + 1
+  if scan.index <= #scan.lines then
+    schedule_manifest_chunk(CONTENT_MANIFEST_DELAY, function()
+      process_file_list_chunk(scan)
+    end)
+    return
+  end
+
+  DD_GUI.content_manifest_scan = nil
+  DD_GUI.prioritize_content_queue(true)
+  schedule_next_download(0)
+end
+
 function process_file_list()
   if not file_exists(FILELIST_LOCAL) then
     cecho("\n<white>Custom media unable to be checked.\n")
@@ -345,30 +419,16 @@ function process_file_list()
   end
 
   clear_content_download_queue()
-  local lines = lines_from(FILELIST_LOCAL)
+  local scan = {
+    lines = lines_from(FILELIST_LOCAL),
+    index = 1,
+  }
+  DD_GUI.content_manifest_scan = scan
 
-  for _, v in ipairs(lines) do
-    local result  = split_str(v, '|')
-    local sizeStr = (result[1] or ""):gsub("%s+$", "")
-    local relPath = (result[2] or ""):gsub("\r", ""):gsub("^%s+", ""):gsub("%s+$", "")
-
-    -- NEW: ignore blank lines and *directory* entries
-    if relPath ~= "" and looks_like_file(relPath) then
-      local saveto   = ms_path .. "/" .. relPath
-      local url      = CONTENT_BASE .. relPath
-      local existing_path = DD_GUI.asset_path and
-        DD_GUI.asset_path(relPath) or saveto
-      local existing = lfs.attributes(existing_path, "size")
-
-      if existing == nil or tonumber(sizeStr) ~= tonumber(existing) then
-        table.insert(downloadQueue, { url = url, saveto = saveto })
-      end
-    -- else: it's a directory or bad line — skip it
-    end
-  end
-
-  DD_GUI.prioritize_content_queue(true)
-  schedule_next_download(0)
+  -- Yield between small batches. The old implementation performed every
+  -- filesystem stat in the download-completion callback, which could freeze
+  -- Mudlet for a large profile even when the cache was already complete.
+  process_file_list_chunk(scan)
 end
 
 function start_next_download()

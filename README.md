@@ -7,7 +7,7 @@ This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by
 
 ## Installation (players)
 
-To install and use the GUI, connect to the MUD through Mudlet at **dragons-domain.org** on port **8888**. The GUI should automatically install when you connect, and the extra custom content should automatically download after you log in. The content synchronizer downloads one asset at a time with a short event-loop yield, so a first-run cache containing thousands of assets does not monopolize Mudlet; an interrupted sync resumes from the profile-owned cache. When GMCP identifies the current room, active enemy, or character portrait, matching images are promoted ahead of the background queue.
+To install and use the GUI, connect to the MUD through Mudlet at **dragons-domain.org** on port **8888**. The GUI should automatically install when you connect, and the extra custom content should automatically download after you log in. The content synchronizer checks the manifest in small yielding batches, then downloads one asset at a time with a short event-loop yield, so a first-run cache containing thousands of assets does not monopolize Mudlet; an interrupted sync resumes from the profile-owned cache. When GMCP identifies the current room, active enemy, or character portrait, matching images are promoted ahead of the background queue.
 
 You should expect a short delay while content downloads the first time you connect. Downloaded sounds, images, layouts, and other custom content are stored in the profile-owned `DD_GUI_Content` directory, separate from the installable package, so uninstalling and reinstalling the GUI does not remove them. Later connections and package updates reuse the existing content and only download new or changed assets. GUI settings, maps, comms history, and comms tab order are kept with the active Mudlet profile rather than inside the package.
 
@@ -88,8 +88,9 @@ data. The main panels are:
   even internal padding, and its title is kept to one compact room/vnum line
   with no extra rule beneath it, so northern rooms remain visible even when a
   room name is long. Newly visited areas receive a one-time density-based zoom
-  so a sparse map does not collapse into a tiny cluster; manual zoom remains
-  persistent. Use `ddmap fit` to refit the current area at any time.
+  so a sparse map does not collapse into a tiny cluster; that first-fit scan is
+  chunked so loading a large mapped area does not block Mudlet. Manual zoom
+  remains persistent. Use `ddmap fit` to refit the current area at any time.
   Mapped quest destinations receive a restrained gold highlight, and selected
   rooms can be routed to, avoided, or centred from the native mapper context
   menu. The mapper consumes DD4's structured `Room.Info` fields: stable
@@ -248,11 +249,16 @@ dropdown menus, and right-click context menus consistently.
 The GUI refreshes these views from the latest GMCP snapshot after login and
 reconnect. `bootstrap()` is idempotent for the installed package version, so
 running `lua bootstrap()` after reconnect refreshes the existing widgets
-without stacking another copy of the interface. When a package update really
-does require new widgets, the previous GUI roots are hidden safely before the
-new tree is built and then explicitly shown again after Mudlet reuses any named
-containers. The enemy hitpoint bar is a direct label overlay rather than a
-nested native gauge, which keeps it visible above the enemy console surface.
+without stacking another copy of the interface. Repeated bootstrap refreshes
+are deferred until Mudlet has finished the current event, and source reloads
+cancel stale settle timers. When a package update really does require new
+widgets, the previous GUI roots are hidden safely before the new tree is built
+and then explicitly shown again after Mudlet reuses any named containers. The
+inventory/equipment views redraw on item or worn-data updates rather than every
+vitals tick, and the character sheet avoids repainting its portrait and text
+when only a gauge changed. The enemy hitpoint bar is a direct label overlay
+rather than a nested native gauge, which keeps it visible above the enemy
+console surface.
 
 
 ## Aliases
@@ -331,8 +337,10 @@ and automatically quarantine later generic-mapper install attempts; run
 `ddmap cleanup` once the profile responds only if an older build left the
 package active. Close and restart Mudlet, and then load DD_GUI again. DD_GUI
 also guards its own persistent `dragons_domain_mapper.dat` load so repeated
-`bootstrap()` calls do not parse the native map repeatedly in one session. If
-Mudlet cannot respond long enough to run the command, make a backup of the profile's
+`bootstrap()` calls do not parse the native map repeatedly in one session. The
+custom-media manifest scan is also deliberately incremental, so a large cached
+content directory should not create a long synchronous CPU spike during login.
+If Mudlet cannot respond long enough to run the command, make a backup of the profile's
 `map\autosave.dat`, rename that file, restart Mudlet, and let DD_GUI rebuild
 from its own persistent map; the generic file is not used by DD_GUI.
 

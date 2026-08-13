@@ -2,6 +2,12 @@ DD_GUI = DD_GUI or {}
 
 -- A source reload must not let a timer from the previous package tree flush
 -- into widgets while this script set is still being replaced.
+DD_GUI.bootstrap_source_generation =
+        (tonumber(DD_GUI.bootstrap_source_generation) or 0) + 1
+if DD_GUI.bootstrap_refresh_timer and type(killTimer) == "function" then
+        pcall(killTimer, DD_GUI.bootstrap_refresh_timer)
+end
+DD_GUI.bootstrap_refresh_timer = nil
 DD_GUI.bootstrap_ready = false
 
 local function remove_conflicting_generic_mapper()
@@ -88,7 +94,7 @@ end
 -- event and coalesce a burst into one short deferred update pass. Named event
 -- handlers prevent a local source reload from stacking another copy.
 local data_refresh_specs = {
-        {key = "vitals", event = "gmcp.Char.Vitals", updates = {"update_vitals", "update_equipped"}},
+        {key = "vitals", event = "gmcp.Char.Vitals", updates = {"update_vitals"}},
         {key = "affects", event = "gmcp.Char.Affect", updates = {"update_affects"}},
         {key = "quest", event = "gmcp.Char.Quest", updates = {"update_quest_status"}},
         {key = "inventory", event = "gmcp.Char.Items", updates = {"update_inventory"}},
@@ -344,6 +350,7 @@ local function dd_gui_bootstrap_impl()
         remove_conflicting_generic_mapper()
 
         local package_version = dd_gui_installed_version()
+        local source_generation = DD_GUI.bootstrap_source_generation
 
         if DD_GUI.Theme and DD_GUI.Theme.apply_profile_style then
                 DD_GUI.Theme:apply_profile_style()
@@ -357,23 +364,37 @@ local function dd_gui_bootstrap_impl()
                 end
 
                 dd_gui_show_current_roots()
-                DD_GUI.refresh_data()
-                if DD_GUI.raise_info_box_contents then
-                        DD_GUI.raise_info_box_contents()
-                end
-                if DD_GUI.apply_mapper_theme then
-                        DD_GUI.apply_mapper_theme()
-                end
-                if DD_GUI.Layout then
-                        DD_GUI.Layout:apply(false)
-                end
-                if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
-                        DD_GUI.FrameGrid:schedule_refresh(0.05)
-                end
+                -- Keep repeated bootstrap requests out of the event that
+                -- delivered GMCP/package-install data. A deferred settle
+                -- pass lets Mudlet finish its own widget/layout repaint first.
+                DD_GUI.bootstrap_refresh_timer = tempTimer(0, function()
+                        DD_GUI.bootstrap_refresh_timer = nil
+                        if DD_GUI.bootstrap_source_generation ~= source_generation then
+                                return
+                        end
+                        DD_GUI.refresh_data()
+                        if DD_GUI.raise_info_box_contents then
+                                DD_GUI.raise_info_box_contents()
+                        end
+                        if DD_GUI.apply_mapper_theme then
+                                DD_GUI.apply_mapper_theme()
+                        end
+                        if DD_GUI.Layout then
+                                DD_GUI.Layout:apply(false)
+                        end
+                        if DD_GUI.FrameGrid and DD_GUI.FrameGrid.schedule_refresh then
+                                DD_GUI.FrameGrid:schedule_refresh(0.05)
+                        end
+                end)
                 return
         end
 
-        if DD_GUI.bootstrap_ready then
+        -- bootstrap.lua is sourced again during a live package replacement,
+        -- before bootstrap_ready can be restored. Existing roots still need
+        -- to be hidden or the replacement creates a second repaint tree.
+        local has_existing_roots = (ui and ui.mainconsole_container) or
+                DD_GUI.Top or DD_GUI.Right or DD_GUI.Bottom
+        if DD_GUI.bootstrap_ready or has_existing_roots then
                 dd_gui_hide_previous_roots()
         end
 
@@ -446,6 +467,9 @@ local function dd_gui_bootstrap_impl()
         end
         DD_GUI.bootstrap_refresh_timer = tempTimer(0.1, function()
                 DD_GUI.bootstrap_refresh_timer = nil
+                if DD_GUI.bootstrap_source_generation ~= source_generation then
+                        return
+                end
                 DD_GUI.refresh_data()
                 if DD_GUI.raise_info_box_contents then
                         DD_GUI.raise_info_box_contents()
