@@ -27,6 +27,10 @@ function update_enemy()
         local position = gmcp and gmcp.Char and gmcp.Char.Vitals and
                 tonumber(gmcp.Char.Vitals.position)
 
+        if DD_GUI.prioritize_content_queue then
+                DD_GUI.prioritize_content_queue()
+        end
+
         if type(enemy) == "table" and
            position == 6 then
 

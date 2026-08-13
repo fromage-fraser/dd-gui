@@ -1,8 +1,11 @@
 function replace_char(pos, str, r)
+        str = tostring(str or "")
+        r = tostring(r or "")
         return table.concat{str:sub(1,pos-1), r, str:sub(pos+1)}
 end
     
 function split_str (inputstr, sep)
+        inputstr = tostring(inputstr or "")
         if sep == nil then
                 sep = "%s"
         end
@@ -14,9 +17,9 @@ function split_str (inputstr, sep)
 end
     
 function firstToUpper(str)
-        return (str:gsub("^%l", string.upper))
+        return (tostring(str or ""):gsub("^%l", string.upper))
 end
 
 function firstToLower(str)
-        return (str:gsub("^%u", string.lower))
+        return (tostring(str or ""):gsub("^%u", string.lower))
 end

@@ -1,7 +1,8 @@
 local function dd_gui_character_data_ready()
         return gmcp and gmcp.Char and gmcp.Char.Base and gmcp.Char.Vitals and
                 gmcp.Char.Stats and gmcp.Char.Worth and
-                gmcp.Char.Base.name and gmcp.Char.Vitals.hp
+                gmcp.Char.Base.name and gmcp.Char.Base.race and
+                gmcp.Char.Base.class and gmcp.Char.Vitals.hp
 end
 
 local attempts = 0

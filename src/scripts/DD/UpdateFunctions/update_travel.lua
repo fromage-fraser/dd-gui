@@ -10,6 +10,10 @@ function update_travel()
             return
     end
 
+    if DD_GUI.prioritize_content_queue then
+            DD_GUI.prioritize_content_queue()
+    end
+
     if (tonumber(vitals.position) ~= 6) then
 
             if DD_GUI.set_enemy_hitpoints_visible then

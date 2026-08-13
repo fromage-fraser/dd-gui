@@ -1152,6 +1152,9 @@ end
 
 function build_charsheet_console()
 
+    local character_base = gmcp and gmcp.Char and
+      type(gmcp.Char.Base) == "table" and gmcp.Char.Base or {}
+
     CharsheetConsole = Geyser.MiniConsole:new({
       name="CharsheetConsole",
       x = "4%", y = "2%",
@@ -1197,14 +1200,14 @@ function build_charsheet_console()
     if not pfp_filename then
       local chsex_string = 'male'
 
-      if (gmcp.Char.Base.sex == 0) then
+      if (tonumber(character_base.sex) == 0) then
         chsex_string = 'neutral'
-      elseif (gmcp.Char.Base.sex == 2) then
+      elseif (tonumber(character_base.sex) == 2) then
         chsex_string = 'female'
       end
 
-      pfp_filename = firstToLower(gmcp.Char.Base.race) .. '_'
-                         ..firstToLower(gmcp.Char.Base.class) .. '_'
+      pfp_filename = firstToLower(character_base.race) .. '_'
+                         ..firstToLower(character_base.class) .. '_'
                          ..chsex_string .. '_1.png'
     end
     --display(pfp_filename)
