@@ -9,7 +9,12 @@ mudlet.mapper_script = true
 
 -- Mudlet builds without getPackageInfo() still need a reliable way to show
 -- the installed GUI version and decide whether bootstrap() may be reused.
-DD_GUI.package_version = "0.0.132"
+DD_GUI.package_version = "0.0.134"
+
+local profile_path = string.gsub(tostring(getMudletHomeDir() or ""), "\\", "/")
+local package_path = profile_path .. "/DD_GUI"
+local content_path = profile_path .. "/DD_GUI_Content"
+local lfs = require "lfs"
 
 -- Return nil when Mudlet cannot answer the package query. In that case the
 -- removal attempt is still made, because leaving the package installed is the
@@ -22,8 +27,10 @@ local function generic_mapper_is_installed()
         if type(getPackages) == "function" then
                 local ok, packages = pcall(getPackages)
                 if ok and type(packages) == "table" then
-                        for _, package_name in pairs(packages) do
+                        for package_key, package_name in pairs(packages) do
                                 if tostring(package_name):lower() ==
+                                   GENERIC_MAPPER_PACKAGE or
+                                   tostring(package_key):lower() ==
                                    GENERIC_MAPPER_PACKAGE then
                                         return true
                                 end
@@ -46,6 +53,74 @@ local function generic_mapper_is_installed()
         end
 
         return version ~= nil and tostring(version) ~= ""
+end
+
+-- Mudlet's legacy generic mapper may leave a profile-level autosave behind
+-- even after its package is removed. On the next profile start Mudlet can
+-- read that file before DD_GUI gets control and spend minutes in a blocking
+-- map load. Keep every copy reversible, and leave DD_GUI's own map untouched.
+local function quarantine_legacy_mapper_file(legacy_path)
+        if lfs.attributes(legacy_path, "mode") ~= "file" then
+                return false
+        end
+
+        local backup_path = legacy_path .. ".dd_gui_disabled"
+        local suffix = 1
+        while lfs.attributes(backup_path, "mode") do
+                suffix = suffix + 1
+                backup_path = legacy_path .. ".dd_gui_disabled." .. suffix
+        end
+
+        local ok, error_message = os.rename(legacy_path, backup_path)
+        if ok then
+                DD_GUI.legacy_mapper_autosave_quarantined = true
+                if type(cecho) == "function" then
+                        cecho("<yellow>Quarantined legacy mapper autosave; DD_GUI uses its own persistent map.<reset>\n")
+                end
+                return true
+        end
+
+        if type(cecho) == "function" then
+                cecho("<red>Could not quarantine legacy mapper autosave: " ..
+                      tostring(error_message or "unknown error") .. "<reset>\n")
+        end
+        return false
+end
+
+function DD_GUI.quarantine_legacy_mapper_autosave()
+        local moved = quarantine_legacy_mapper_file(
+                profile_path .. "/map/autosave.dat"
+        )
+
+        -- Mudlet also keeps dated native-map snapshots. The generic mapper
+        -- can make the newest one the file read during profile startup, so
+        -- quarantine that snapshot as well. Older snapshots remain available
+        -- for manual recovery and DD_GUI uses dragons_domain_mapper.dat.
+        if DD_GUI.legacy_mapper_snapshot_quarantined then
+                return moved
+        end
+
+        local map_directory = profile_path .. "/map"
+        local newest_path
+        local newest_time = -1
+        if lfs.attributes(map_directory, "mode") == "directory" then
+                for name in lfs.dir(map_directory) do
+                        if name:match("^%d%d%d%d%-%d%d%-%d%d#%d%d%-%d%d%-%d%dmap%.dat$") then
+                                local candidate = map_directory .. "/" .. name
+                                local modified = lfs.attributes(candidate, "modification") or 0
+                                if modified > newest_time then
+                                        newest_path = candidate
+                                        newest_time = modified
+                                end
+                        end
+                end
+        end
+
+        if newest_path then
+                moved = quarantine_legacy_mapper_file(newest_path) or moved
+                DD_GUI.legacy_mapper_snapshot_quarantined = true
+        end
+        return moved
 end
 
 -- DD_GUI owns the native mapper surface. Remove the legacy generic mapper as
@@ -102,13 +177,16 @@ function DD_GUI.schedule_generic_mapper_cleanup(watch_install)
                 attempts = attempts + 1
 
                 local installed = generic_mapper_is_installed()
+                if installed ~= false then
+                        DD_GUI.remove_conflicting_generic_mapper(true)
+                        installed = generic_mapper_is_installed()
+                end
+
+                DD_GUI.quarantine_legacy_mapper_autosave()
                 if installed == false and not watch_install then
                         return
                 end
 
-                if installed ~= false then
-                        DD_GUI.remove_conflicting_generic_mapper(true)
-                end
                 if attempts < 12 and type(tempTimer) == "function" then
                         DD_GUI.generic_mapper_cleanup_timer = tempTimer(
                                 0.25,
@@ -125,12 +203,8 @@ function DD_GUI.schedule_generic_mapper_cleanup(watch_install)
 end
 
 DD_GUI.remove_conflicting_generic_mapper(true)
+DD_GUI.quarantine_legacy_mapper_autosave()
 DD_GUI.schedule_generic_mapper_cleanup(false)
-
-local profile_path = string.gsub(getMudletHomeDir(), "\\", "/")
-local package_path = profile_path .. "/DD_GUI"
-local content_path = profile_path .. "/DD_GUI_Content"
-local lfs = require "lfs"
 
 local function ensure_directory(path)
         if lfs.attributes(path, "mode") ~= "directory" then

@@ -27,6 +27,10 @@ function update_vitals()
         return
     end
 
+  if DD_GUI.prioritize_content_queue then
+      DD_GUI.prioritize_content_queue()
+  end
+
     if not hasFocus() then
         lost_focus = true
       end
@@ -85,7 +89,8 @@ function update_vitals()
     chsex_string = 'female'
   end
 
-  local pfp_filename = gmcp.Char.Base.race:lower():gsub("-", "_") .. '_'
+  local race_name = tostring(gmcp.Char.Base.race or "unknown")
+  local pfp_filename = race_name:lower():gsub("-", "_") .. '_'
   ..chsex_string .. '_1.png'
 
   local profile_avatar = DD_GUI.profile_avatar_filename and

@@ -7,7 +7,7 @@ This is the codebase for the [Mudlet](https://www.mudlet.org/)-based GUI used by
 
 ## Installation (players)
 
-To install and use the GUI, connect to the MUD through Mudlet at **dragons-domain.org** on port **8888**. The GUI should automatically install when you connect, and the extra custom content should automatically download after you log in.
+To install and use the GUI, connect to the MUD through Mudlet at **dragons-domain.org** on port **8888**. The GUI should automatically install when you connect, and the extra custom content should automatically download after you log in. The content synchronizer downloads one asset at a time with a short event-loop yield, so a first-run cache containing thousands of assets does not monopolize Mudlet; an interrupted sync resumes from the profile-owned cache. When GMCP identifies the current room, active enemy, or character portrait, matching images are promoted ahead of the background queue.
 
 You should expect a short delay while content downloads the first time you connect. Downloaded sounds, images, layouts, and other custom content are stored in the profile-owned `DD_GUI_Content` directory, separate from the installable package, so uninstalling and reinstalling the GUI does not remove them. Later connections and package updates reuse the existing content and only download new or changed assets. GUI settings, maps, comms history, and comms tab order are kept with the active Mudlet profile rather than inside the package.
 
@@ -104,7 +104,11 @@ data. The main panels are:
   updater can otherwise request a dead `versions.lua` URL. The cleanup now runs
   as soon as the DD_GUI folder loads, before the GUI starts its own mapper, so
   the generic package's profile-level `map\\autosave.dat` is not loaded beside
-  DD_GUI during development reloads. DD_GUI also watches package-install events
+  DD_GUI during development reloads. If that legacy autosave already exists,
+  DD_GUI moves it, and the newest dated legacy `map\\*map.dat` snapshot, to a
+  `.dd_gui_disabled` backup (adding a numeric suffix when needed) instead of
+  deleting them; DD_GUI never touches its own `dragons_domain_mapper.dat`.
+  DD_GUI also watches package-install events
   and retries removal if Mudlet or the generic updater attempts to bring the
   package back. `ddmap cleanup` remains available as a manual forced removal if
   a local profile still has the old package installed; restart Mudlet afterward
