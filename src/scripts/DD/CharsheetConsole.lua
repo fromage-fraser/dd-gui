@@ -91,6 +91,16 @@ local function condition_gauge_specs()
 end
 
 local function set_condition_gauges_visible(gauges)
+    local layout_key = {}
+    for _, definition in ipairs(gauges or {}) do
+      layout_key[#layout_key + 1] = definition.property
+    end
+    layout_key = table.concat(layout_key, ",")
+    if DD_GUI.condition_gauge_layout_key == layout_key then
+      return
+    end
+    DD_GUI.condition_gauge_layout_key = layout_key
+
     local all_gauges = {}
     for _, key in ipairs(CONDITION_GAUGE_ORDER) do
       local definition = CONDITION_GAUGE_DEFINITIONS[key]
@@ -1112,6 +1122,7 @@ local function build_character_condition_gauges()
       return
     end
 
+    DD_GUI.condition_gauge_layout_key = nil
     DD_GUI.CharsheetConditions = Geyser.Container:new({
       name = "DD_GUI.CharsheetConditions",
       x = "4%", y = "89%",

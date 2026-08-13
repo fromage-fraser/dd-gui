@@ -34,6 +34,9 @@ function load_dd_mapper()
         state.handlers = state.handlers or {}
         state.menu_events = state.menu_events or {}
         state.zoom_seen = state.zoom_seen or {}
+        state.auto_fit_jobs = {}
+        state.auto_fit_generation =
+                (tonumber(state.auto_fit_generation) or 0) + 1
         state.highlights = state.highlights or {}
         state.route = nil
 
@@ -1107,18 +1110,87 @@ function load_dd_mapper()
                         return
                 end
 
+                if state.auto_fit_jobs[key] then
+                        return
+                end
+
                 local seen = false
                 if type(getAreaUserData) == "function" then
                         local ok, value = dd_mapper_call(getAreaUserData, area_id, "dd_gui.autofit")
                         seen = ok and tostring(value) == "1"
                 end
-                if not seen then
-                        fit_area(area_id)
+                if seen then
                         state.zoom_seen[key] = true
-                        if type(setAreaUserData) == "function" then
-                                pcall(setAreaUserData, area_id, "dd_gui.autofit", "1")
-                        end
+                        return
                 end
+                local rooms_ok, rooms = dd_mapper_call(getAreaRooms, area_id)
+                if not rooms_ok or type(rooms) ~= "table" or #rooms == 0 then
+                        return
+                end
+
+                        -- The first room event after loading a large map used
+                        -- to scan every room in one callback. Keep the manual
+                        -- ddmap fit command synchronous, but yield automatic
+                        -- startup fitting so Mudlet can continue handling
+                        -- GMCP, painting, and input.
+                        local job = {
+                                rooms = rooms,
+                                index = 1,
+                                min_x = nil,
+                                max_x = nil,
+                                min_y = nil,
+                                max_y = nil,
+                                generation = state.auto_fit_generation,
+                        }
+                        state.auto_fit_jobs[key] = job
+
+                        local function finish()
+                                if state.auto_fit_jobs[key] ~= job or
+                                   state.auto_fit_generation ~= job.generation then
+                                        return
+                                end
+
+                                state.auto_fit_jobs[key] = nil
+                                local span = math.max(
+                                        (job.max_x or 0) - (job.min_x or 0),
+                                        (job.max_y or 0) - (job.min_y or 0)
+                                )
+                                local zoom = math.max(3.5, math.min(16, 4.5 + span * 0.65))
+                                pcall(setMapZoom, zoom, area_id)
+                                state.zoom_seen[key] = true
+                                if type(setAreaUserData) == "function" then
+                                        pcall(setAreaUserData, area_id, "dd_gui.autofit", "1")
+                                end
+                        end
+
+                        local function scan_chunk()
+                                if state.auto_fit_jobs[key] ~= job or
+                                   state.auto_fit_generation ~= job.generation then
+                                        return
+                                end
+
+                                local last = math.min(#rooms, job.index + 99)
+                                for index = job.index, last do
+                                        local coordinates = room_coordinates(rooms[index])
+                                        if coordinates then
+                                                job.min_x = job.min_x and math.min(job.min_x, coordinates[1]) or coordinates[1]
+                                                job.max_x = job.max_x and math.max(job.max_x, coordinates[1]) or coordinates[1]
+                                                job.min_y = job.min_y and math.min(job.min_y, coordinates[2]) or coordinates[2]
+                                                job.max_y = job.max_y and math.max(job.max_y, coordinates[2]) or coordinates[2]
+                                        end
+                                end
+                                job.index = last + 1
+
+                                if job.index <= #rooms and type(tempTimer) == "function" then
+                                        tempTimer(0.01, scan_chunk)
+                                elseif job.index <= #rooms then
+                                        scan_chunk()
+                                else
+                                        finish()
+                                end
+                        end
+
+                scan_chunk()
         end
 
         local function door_status(room_id, direction)

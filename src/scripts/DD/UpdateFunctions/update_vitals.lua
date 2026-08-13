@@ -10,6 +10,43 @@ local function current_affect_name()
     return tostring(affects[1][1].name or "")
 end
 
+local CHARACTER_SHEET_FIELDS = {
+    base = {"name", "race", "class", "subclass", "sex"},
+    stats = {
+        "str", "str_mod", "int", "int_mod", "wis", "wis_mod",
+        "dex", "dex_mod", "con", "con_mod", "fame", "crit", "swift",
+        "hitroll", "damroll", "ac", "r_acid", "r_lightning", "r_heat",
+        "r_cold", "save_vs",
+    },
+    worth = {
+        "level", "alignment", "xplvl", "xptnl", "platinum", "gold",
+        "silver", "copper", "steel", "titanium", "adamantite", "electrum",
+        "starmetal",
+    },
+    vitals = {"form"},
+}
+
+local function character_sheet_signature()
+    local char = gmcp and gmcp.Char or {}
+    local signature = {}
+
+    for _, scope_name in ipairs({"base", "stats", "worth", "vitals"}) do
+        local scope = char[scope_name == "base" and "Base" or
+            scope_name == "stats" and "Stats" or
+            scope_name == "worth" and "Worth" or "Vitals"] or {}
+        for _, field in ipairs(CHARACTER_SHEET_FIELDS[scope_name]) do
+            signature[#signature + 1] = scope_name .. ":" .. field .. "=" ..
+                tostring(scope[field] or "")
+        end
+    end
+
+    signature[#signature + 1] = "affect=" .. current_affect_name()
+    local profile_avatar = DD_GUI.profile_avatar_filename and
+        DD_GUI.profile_avatar_filename() or ""
+    signature[#signature + 1] = "avatar=" .. tostring(profile_avatar)
+    return table.concat(signature, "\31")
+end
+
 local function normalized_gauge_value(value, maximum)
     value = tonumber(value) or 0
     maximum = tonumber(maximum) or 0
@@ -70,6 +107,7 @@ function update_vitals()
   if DD_GUI.update_character_condition_gauges then
       DD_GUI.update_character_condition_gauges()
   end
+
   --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
   local xplvl = tonumber(gmcp.Char.Worth.xplvl) or 0
   local xptnl = tonumber(gmcp.Char.Worth.xptnl) or 0
@@ -78,6 +116,18 @@ function update_vitals()
   else
       DD_GUI.Xp:setValue(1000, 1000)
   end
+
+  -- Vitals arrive frequently. Avoid clearing and repainting the complete
+  -- character sheet, including its image, when only a gauge changed.
+  local sheet_signature = character_sheet_signature()
+  if DD_GUI.character_sheet_signature == sheet_signature then
+      if DD_GUI.update_drunk_icon then
+          DD_GUI.update_drunk_icon()
+      end
+      return
+  end
+  DD_GUI.character_sheet_signature = sheet_signature
+
   CharsheetConsole:clear()
   CharsheetConsole:resetAutoWrap()
 
