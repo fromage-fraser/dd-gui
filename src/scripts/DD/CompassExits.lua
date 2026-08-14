@@ -29,10 +29,14 @@ local compass_exit_aliases = {
         out = "out",
 }
 
+local function short_direction(direction)
+        return compass_exit_aliases[tostring(direction or ""):lower()]
+end
+
 local function copy_statuses(statuses)
         local copy = {}
         for direction, status in pairs(statuses or {}) do
-                local short = compass_exit_aliases[tostring(direction):lower()]
+                local short = short_direction(direction)
                 if short then
                         copy[short] = tonumber(status) or 0
                 end
@@ -61,6 +65,18 @@ local function decode_table(value)
         -- Mudlet normally exposes nested GMCP objects as tables. Keep a
         -- guarded fallback for profiles or protocol bridges that leave an
         -- object as its JSON string instead.
+        if type(yajl) == "table" and type(yajl.to_value) == "function" then
+                local ok, decoded = pcall(yajl.to_value, text)
+                if ok and type(decoded) == "table" then
+                        return decoded
+                end
+        end
+        if type(json_to_value) == "function" then
+                local ok, decoded = pcall(json_to_value, text)
+                if ok and type(decoded) == "table" then
+                        return decoded
+                end
+        end
         if type(json) == "table" and type(json.decode) == "function" then
                 local ok, decoded = pcall(json.decode, text)
                 if ok and type(decoded) == "table" then
@@ -111,6 +127,65 @@ local function normalise_status(value)
                 return 1
         end
         return nil
+end
+
+local function embedded_direction(value)
+        if type(value) ~= "table" then
+                return nil
+        end
+
+        return short_direction(
+                value.direction or value.dir or value.name or value.exit or
+                        value.command or value.move
+        )
+end
+
+-- DD4's COLOR_CODE_FIX representation makes GMCP object members arrive in
+-- Mudlet as one or more anonymous array layers, for example:
+--     exit_details = { { { n = { state = "closed" } } } }
+-- Walk those layers as well as the ordinary direction-keyed object form.
+local function walk_exit_detail_tree(source, callback, visited)
+        source = decode_table(source)
+        if type(source) ~= "table" or type(callback) ~= "function" then
+                return false
+        end
+
+        visited = visited or {}
+        if visited[source] then
+                return false
+        end
+        visited[source] = true
+
+        local found = false
+        for direction, value in pairs(source) do
+                local short = short_direction(direction)
+                if short then
+                        callback(short, value)
+                        found = true
+                end
+        end
+
+        local direction = embedded_direction(source)
+        if direction then
+                callback(direction, source)
+                found = true
+        end
+
+        if not found then
+                for _, value in pairs(source) do
+                        if type(value) == "table" or type(value) == "string" then
+                                if walk_exit_detail_tree(value, callback, visited) then
+                                        found = true
+                                end
+                        end
+                end
+        end
+
+        return found
+end
+
+function DD_GUI.walk_gmcp_exit_details(source, callback)
+        return walk_exit_detail_tree(source, callback, {})
 end
 
 local function current_room_id()
@@ -173,33 +248,21 @@ local function gmcp_exit_statuses(info)
         local has_rich_payload = #rich_sources > 0
 
         local function read(source, allow_scalar)
-                source = decode_table(source)
-                if type(source) ~= "table" then
-                        return
-                end
-                for direction, value in pairs(source) do
+                DD_GUI.walk_gmcp_exit_details(source, function(short, value)
                         -- Room.Info.exits is historically a direction -> room
                         -- id table. Only its nested rich form may contribute
                         -- a scalar state; otherwise a destination such as
                         -- "3025" would look like a blocked status.
                         value = decode_table(value)
                         if not allow_scalar and type(value) ~= "table" then
-                                value = nil
+                                return
                         end
-                        local short = compass_exit_aliases[tostring(direction):lower()]
-                        if not short and type(value) == "table" then
-                                local embedded_direction = value.direction or value.dir or
-                                        value.name or value.exit or value.command
-                                short = compass_exit_aliases[
-                                        tostring(embedded_direction or ""):lower()
-                                ]
-                        end
-                        local status = short and normalise_status(value)
-                        if short and status ~= nil then
+                        local status = normalise_status(value)
+                        if status ~= nil then
                                 statuses[short] = status
                                 has_rich_status = true
                         end
-                end
+                end)
         end
 
         for _, source in ipairs(rich_sources) do
@@ -220,20 +283,9 @@ local function gmcp_exit_statuses(info)
         -- it; otherwise preserve the text/native fallback for partial GMCP.
         local has_legacy_exits = false
         for _, source in ipairs(fallback_sources) do
-                for direction, value in pairs(source) do
-                        local short = compass_exit_aliases[tostring(direction):lower()]
-                        if not short and type(value) == "table" then
-                                local embedded_direction = value.direction or value.dir or
-                                        value.name or value.exit or value.command
-                                short = compass_exit_aliases[
-                                        tostring(embedded_direction or ""):lower()
-                                ]
-                        end
-                        if short then
-                                has_legacy_exits = true
-                                break
-                        end
-                end
+                DD_GUI.walk_gmcp_exit_details(source, function()
+                        has_legacy_exits = true
+                end)
                 if has_legacy_exits then
                         break
                 end
@@ -467,13 +519,7 @@ function DD_GUI.update_exit_status(exit_text, complete_snapshot)
 end
 
 function DD_GUI.get_current_exit_status(direction, preserve_text_overrides)
-        local short
-        for alias, value in pairs(compass_exit_aliases) do
-                if tostring(alias):lower() == tostring(direction or ""):lower() then
-                        short = value
-                        break
-                end
-        end
+        local short = short_direction(direction)
         if not short then
                 return nil
         end
