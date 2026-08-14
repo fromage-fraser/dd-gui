@@ -191,20 +191,21 @@ data. The main panels are:
   clickable navigation compass. The compass includes `EQ` for equipment and
   `SCAN` for scanning. Movement buttons briefly highlight their borders while
   leaving the black cell background unchanged. For mapped rooms, movement
-  uses the current room's rich GMCP exit state before sending: `open` sends
+  uses one normalized per-direction exit-state resolver before sending: `open` sends
   the direction, `closed` sends `open direction` then the direction, and
   `locked` sends `unlock direction`, `open direction`, then the direction.
   Walls are treated as non-routable. The legacy MUD `[Exits: ...]` line is a
-  complete compatibility snapshot when rich GMCP exit data is unavailable:
+  compatibility source as well:
   plain exits are open, `(direction)` is closed, and `[direction]` is locked.
   The parser replaces stale directions instead of merging them forever, and
   the native Mudlet door table remains a per-direction fallback for older or
-  partial profiles. The GUI also refreshes the GMCP snapshot immediately when
-  a compass direction is pressed and once more shortly after a room event, so
-  a delayed `exit_details` update cannot leave a freshly entered room using
-  stale door state. If a compass or mapper movement still receives a closed,
-  locked, missing-key, or wall response, the attempted direction is corrected
-  immediately for the next attempt. If neither source has a state, it sends
+  partial profiles. Explicit closed/locked text markers are retained through
+  the click-time refresh, so a delayed or incomplete GMCP update cannot make a
+  door button fall back to the raw direction. A fresh room/GMCP snapshot
+  replaces that temporary text override, allowing a door opened or unlocked
+  in-game to be learned normally. If a compass or mapper movement still
+  receives a closed, locked, missing-key, or wall response, the attempted
+  direction is corrected immediately for the next attempt. If neither source has a state, it sends
   the normal movement command. Hovering over the `HITS`, `MANA`, `XP`, or `MOVES`
   gauge shows its live current/maximum values. Vampire `BLOOD` and Werewolf
   `RAGE` gauges expose the same tooltip; `THIRST` and `HUNGER` intentionally
