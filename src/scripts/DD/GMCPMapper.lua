@@ -154,15 +154,20 @@ function load_dd_mapper()
                         result.to = dd_mapper_number(
                                 value.to or value.vnum or value.room or value.id or value.destination
                         )
-                        local raw_status = value.status or value.state or value.door_state
+                        local raw_status = value.status or value.state or value.door_state or
+                                value.door_status or value.exit_state
                         if raw_status == nil then
-                                if value.wall == true or value.blocked == true then
+                                if value.wall == true or value.blocked == true or
+                                        value.wall == "true" or value.blocked == "true" then
                                         raw_status = "wall"
-                                elseif value.locked == true or value.is_locked == true then
+                                elseif value.locked == true or value.is_locked == true or
+                                        value.isLocked == true or value.locked == "true" then
                                         raw_status = "locked"
-                                elseif value.closed == true or value.is_closed == true then
+                                elseif value.closed == true or value.is_closed == true or
+                                        value.isClosed == true or value.closed == "true" then
                                         raw_status = "closed"
-                                elseif value.open == true or value.is_open == true then
+                                elseif value.open == true or value.is_open == true or
+                                        value.isOpen == true or value.open == "true" then
                                         raw_status = "open"
                                 end
                         end
@@ -303,6 +308,37 @@ function load_dd_mapper()
                         end
                 end
 
+                -- CompassExits owns the compatibility normalization for
+                -- alternate GMCP shapes. Reuse its state snapshot here so
+                -- mapper doors and compass commands cannot disagree when a
+                -- profile receives delayed or list-shaped exit details.
+                if DD_GUI.get_gmcp_exit_statuses then
+                        local status_ok, statuses, complete = pcall(
+                                DD_GUI.get_gmcp_exit_statuses, source
+                        )
+                        if status_ok and type(statuses) == "table" then
+                                for direction, status in pairs(statuses) do
+                                        local detail = exits[direction] or {
+                                                to = nil,
+                                                status = nil,
+                                                has_status = false,
+                                                blocked = false,
+                                                door = nil,
+                                                command = nil,
+                                                cost = nil,
+                                        }
+                                        detail.status = tonumber(status) or 0
+                                        detail.has_status = true
+                                        detail.blocked = detail.status == 4
+                                        exits[direction] = detail
+                                        has_exit_status = true
+                                end
+                                if complete == true then
+                                        has_exit_status = true
+                                end
+                        end
+                end
+
                 local arrival = source.arrival or source.transition or source.move_info
                 if type(arrival) ~= "table" then
                         arrival = nil
@@ -319,7 +355,11 @@ function load_dd_mapper()
                         flags = source.flags,
                         tags = normalise_tags(source.tags),
                         exits = exits,
-                        exit_status_complete = type(exit_details) == "table" or has_exit_status,
+                        -- A present but empty/malformed rich object must not
+                        -- suppress the legacy text/native door fallback when
+                        -- the ordinary exit list still contains destinations.
+                        exit_status_complete = has_exit_status or
+                                (type(exit_details) == "table" and next(exits) == nil),
                         special_exits = normalise_special_exits(
                                 source.special_exits or source.specialExits or source.special_exit_details
                         ),

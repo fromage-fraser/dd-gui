@@ -249,6 +249,13 @@ function build_compass()
       return nil
     end
 
+    -- A click can arrive between the room text and the final GMCP update.
+    -- Refresh immediately so the command uses the current room's latest
+    -- locked/closed state instead of a stale per-room cache.
+    if DD_GUI.refresh_exit_status_from_gmcp then
+      pcall(DD_GUI.refresh_exit_status_from_gmcp)
+    end
+
     local room_id
     if gmcp and gmcp.Room and type(gmcp.Room.Info) == "table" then
       room_id = tonumber(gmcp.Room.Info.vnum)

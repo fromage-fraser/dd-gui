@@ -199,7 +199,10 @@ data. The main panels are:
   plain exits are open, `(direction)` is closed, and `[direction]` is locked.
   The parser replaces stale directions instead of merging them forever, and
   the native Mudlet door table remains a per-direction fallback for older or
-  partial profiles. If a compass or mapper movement still receives a closed,
+  partial profiles. The GUI also refreshes the GMCP snapshot immediately when
+  a compass direction is pressed and once more shortly after a room event, so
+  a delayed `exit_details` update cannot leave a freshly entered room using
+  stale door state. If a compass or mapper movement still receives a closed,
   locked, missing-key, or wall response, the attempted direction is corrected
   immediately for the next attempt. If neither source has a state, it sends
   the normal movement command. Status gauges clamp GMCP current values to their reported maximums
