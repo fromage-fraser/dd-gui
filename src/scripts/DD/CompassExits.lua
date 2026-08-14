@@ -39,18 +39,59 @@ local function copy_statuses(statuses)
         return copy
 end
 
+local function truthy(value)
+        if value == true or value == 1 then
+                return true
+        end
+        local text = tostring(value or ""):lower()
+        return text == "true" or text == "yes" or text == "on" or text == "1"
+end
+
+local function decode_table(value)
+        if type(value) ~= "string" then
+                return value
+        end
+
+        local text = value:gsub("^%s+", ""):gsub("%s+$", "")
+        if text == "" then
+                return nil
+        end
+
+        -- Mudlet normally exposes nested GMCP objects as tables. Keep a
+        -- guarded fallback for profiles or protocol bridges that leave an
+        -- object as its JSON string instead.
+        if type(json) == "table" and type(json.decode) == "function" then
+                local ok, decoded = pcall(json.decode, text)
+                if ok and type(decoded) == "table" then
+                        return decoded
+                end
+        end
+        if type(decodeJson) == "function" then
+                local ok, decoded = pcall(decodeJson, text)
+                if ok and type(decoded) == "table" then
+                        return decoded
+                end
+        end
+        return value
+end
+
 local function normalise_status(value)
+        value = decode_table(value)
         if type(value) == "table" then
-                if value.wall == true or value.blocked == true then
+                if truthy(value.wall) or truthy(value.blocked) then
                         return 4
-                elseif value.locked == true or value.is_locked == true then
+                elseif truthy(value.locked) or truthy(value.is_locked) or
+                       truthy(value.isLocked) then
                         return 3
-                elseif value.closed == true or value.is_closed == true then
+                elseif truthy(value.closed) or truthy(value.is_closed) or
+                       truthy(value.isClosed) then
                         return 2
-                elseif value.open == true or value.is_open == true then
+                elseif truthy(value.open) or truthy(value.is_open) or
+                       truthy(value.isOpen) then
                         return 1
                 end
-                value = value.status or value.state or value.door_state
+                value = value.status or value.state or value.door_state or
+                        value.door_status or value.exit_state
         end
 
         local numeric = tonumber(value)
@@ -94,11 +135,44 @@ local function gmcp_exit_statuses(info)
         end
 
         local statuses = {}
-        local details = info.exit_details or info.exitDetails or info.exit_detail
-        local has_rich_payload = type(details) == "table"
+        local rich_sources = {}
+        local fallback_sources = {}
         local has_rich_status = false
 
+        local function add_source(collection, source)
+                source = decode_table(source)
+                if type(source) == "table" then
+                        table.insert(collection, source)
+                end
+        end
+
+        local function add_rich_source(source)
+                source = decode_table(source)
+                if type(source) ~= "table" then
+                        return
+                end
+
+                -- Accept both a direction-keyed object and a wrapper used by
+                -- a few GMCP bridges (`{ exits = { ... } }`).
+                local nested = source.exit_details or source.exitDetails or
+                        source.exit_detail or source.exits or source.data
+                add_source(rich_sources, nested or source)
+        end
+
+        add_rich_source(info.exit_details or info.exitDetails or info.exit_detail)
+        if gmcp and gmcp.Room then
+                add_rich_source(gmcp.Room.ExitDetails or gmcp.Room.exit_details or
+                        gmcp.Room.exitDetails or gmcp.Room.ExitDetail)
+        end
+        add_source(fallback_sources, info.exits)
+        if gmcp and gmcp.Room then
+                add_source(fallback_sources, gmcp.Room.Exits or gmcp.Room.exits)
+        end
+
+        local has_rich_payload = #rich_sources > 0
+
         local function read(source, allow_scalar)
+                source = decode_table(source)
                 if type(source) ~= "table" then
                         return
                 end
@@ -107,10 +181,18 @@ local function gmcp_exit_statuses(info)
                         -- id table. Only its nested rich form may contribute
                         -- a scalar state; otherwise a destination such as
                         -- "3025" would look like a blocked status.
+                        value = decode_table(value)
                         if not allow_scalar and type(value) ~= "table" then
                                 value = nil
                         end
                         local short = compass_exit_aliases[tostring(direction):lower()]
+                        if not short and type(value) == "table" then
+                                local embedded_direction = value.direction or value.dir or
+                                        value.name or value.exit or value.command
+                                short = compass_exit_aliases[
+                                        tostring(embedded_direction or ""):lower()
+                                ]
+                        end
                         local status = short and normalise_status(value)
                         if short and status ~= nil then
                                 statuses[short] = status
@@ -119,19 +201,49 @@ local function gmcp_exit_statuses(info)
                 end
         end
 
-        read(details, true)
+        for _, source in ipairs(rich_sources) do
+                read(source, true)
+        end
 
         -- Keep compatibility with a future/alternate Room.Info shape that
         -- embeds state directly in `exits` instead of `exit_details`.
-        if not has_rich_payload or not has_rich_status then
-                read(info.exits, false)
+        if not has_rich_status then
+                for _, source in ipairs(fallback_sources) do
+                        read(source, false)
+                end
         end
 
         -- DD4 sends exit_details as a complete object, including an empty
-        -- object for a room with no traversable exits. That is authoritative
-        -- even when there are no individual statuses to copy.
-        return statuses, has_rich_payload or has_rich_status
+        -- object for a room with no traversable exits. An empty rich object
+        -- is authoritative only when there is no legacy exit list alongside
+        -- it; otherwise preserve the text/native fallback for partial GMCP.
+        local has_legacy_exits = false
+        for _, source in ipairs(fallback_sources) do
+                for direction, value in pairs(source) do
+                        local short = compass_exit_aliases[tostring(direction):lower()]
+                        if not short and type(value) == "table" then
+                                local embedded_direction = value.direction or value.dir or
+                                        value.name or value.exit or value.command
+                                short = compass_exit_aliases[
+                                        tostring(embedded_direction or ""):lower()
+                                ]
+                        end
+                        if short then
+                                has_legacy_exits = true
+                                break
+                        end
+                end
+                if has_legacy_exits then
+                        break
+                end
+        end
+
+        local complete = has_rich_status or
+                (has_rich_payload and not has_legacy_exits)
+        return statuses, complete
 end
+
+DD_GUI.get_gmcp_exit_statuses = gmcp_exit_statuses
 
 local function apply_statuses(room_id, statuses, source, complete)
         room_id = tonumber(room_id)
@@ -319,6 +431,20 @@ local function kill_handler(handler_id)
         end
 end
 
+local function schedule_exit_status_refresh(delay)
+        if DD_GUI.exit_status_refresh_timer and type(killTimer) == "function" then
+                pcall(killTimer, DD_GUI.exit_status_refresh_timer)
+        end
+        DD_GUI.exit_status_refresh_timer = nil
+        if type(tempTimer) ~= "function" then
+                return
+        end
+        DD_GUI.exit_status_refresh_timer = tempTimer(delay or 0.05, function()
+                DD_GUI.exit_status_refresh_timer = nil
+                DD_GUI.refresh_exit_status_from_gmcp()
+        end)
+end
+
 -- Replace handlers left by an older live package tree. This matters during
 -- reinstallgui/bootstrap, where globals survive package removal.
 kill_handler(DD_GUI.exit_status_event_handler)
@@ -336,6 +462,7 @@ if type(registerAnonymousEventHandler) == "function" then
                 "gmcp.Room.Info",
                 function()
                         DD_GUI.refresh_exit_status_from_gmcp()
+                        schedule_exit_status_refresh(0.05)
                 end
         )
         DD_GUI.exit_status_event_handler = DD_GUI.exit_status_handlers.room
@@ -345,17 +472,10 @@ if type(registerAnonymousEventHandler) == "function" then
                 function()
                         clear_pending_exit_move()
                         DD_GUI.refresh_exit_status_from_gmcp()
-                        if type(tempTimer) == "function" then
-                                if DD_GUI.exit_status_refresh_timer and type(killTimer) == "function" then
-                                        pcall(killTimer, DD_GUI.exit_status_refresh_timer)
-                                end
-                                DD_GUI.exit_status_refresh_timer = tempTimer(0.1, function()
-                                        DD_GUI.exit_status_refresh_timer = nil
-                                        DD_GUI.refresh_exit_status_from_gmcp()
-                                end)
-                        end
+                        schedule_exit_status_refresh(0.1)
                 end
         )
 end
 
 DD_GUI.refresh_exit_status_from_gmcp()
+schedule_exit_status_refresh(0.05)
