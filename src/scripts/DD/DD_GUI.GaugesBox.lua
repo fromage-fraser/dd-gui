@@ -48,6 +48,50 @@ local function update_gauge_fill_color(gauge, color, value, maximum)
     gauge.front:setStyleSheet(css)
 end
 
+local STATUS_GAUGE_TOOLTIP_DURATION = 6
+
+local function format_gauge_number(value)
+    local number = tonumber(value)
+    if number then
+      if number == math.floor(number) then
+        return string.format("%.0f", number)
+      end
+      return tostring(number)
+    end
+    return tostring(value or 0)
+end
+
+local function set_status_gauge_tooltip(gauge, label, tooltip_label,
+                                        value, maximum)
+    if not tooltip_label then
+      return
+    end
+
+    local tooltip = string.format("%s: %s / %s", tooltip_label,
+      format_gauge_number(value), format_gauge_number(maximum))
+
+    if gauge and gauge._dd_gui_tooltip == tooltip and
+       (not label or label._dd_gui_tooltip == tooltip) then
+      return
+    end
+
+    -- Geyser.Gauge puts its tooltip on the full-size text label. Keep the
+    -- separate centered label in sync as well so the hint remains available
+    -- across Mudlet versions with different click-through behaviour.
+    if gauge and type(gauge.setToolTip) == "function" then
+      pcall(gauge.setToolTip, gauge, tooltip,
+        STATUS_GAUGE_TOOLTIP_DURATION)
+      gauge._dd_gui_tooltip = tooltip
+    end
+    if label and type(label.setToolTip) == "function" then
+      pcall(label.setToolTip, label, tooltip,
+        STATUS_GAUGE_TOOLTIP_DURATION)
+      label._dd_gui_tooltip = tooltip
+    end
+end
+
+DD_GUI.update_status_gauge_tooltip = set_status_gauge_tooltip
+
 local function delete_existing_widget(widget)
     if not widget then
       return
@@ -81,7 +125,7 @@ local function add_gauge_segments(gauge, name)
 end
 
 local function new_status_gauge(name, parent, label_text, color, value, maximum,
-                                constraints)
+                                constraints, tooltip_label)
     constraints = constraints or {}
     local theme = DD_GUI.Theme
     local gauge = Geyser.Gauge:new({
@@ -126,6 +170,8 @@ local function new_status_gauge(name, parent, label_text, color, value, maximum,
     if DD_GUI.set_widget_clickthrough then
       DD_GUI.set_widget_clickthrough(label, true)
     end
+
+    set_status_gauge_tooltip(gauge, label, tooltip_label, value, maximum)
 
     return gauge, label
 end
@@ -204,21 +250,24 @@ function build_gauges()
 
     DD_GUI.Hitpoints, HitpointsLabel = new_status_gauge(
       "DD_GUI.Hitpoints", DD_GUI.FirstColumn, "HITS", colors.hp,
-      gmcp.Char.Vitals.hp, gmcp.Char.Vitals.maxhp)
+      gmcp.Char.Vitals.hp, gmcp.Char.Vitals.maxhp, nil, "HITS")
 
     DD_GUI.Mana, ManaLabel = new_status_gauge(
       "DD_GUI.Mana", DD_GUI.SecondColumn, "MANA", colors.mana,
-      gmcp.Char.Vitals.mana, gmcp.Char.Vitals.maxmana)
+      gmcp.Char.Vitals.mana, gmcp.Char.Vitals.maxmana, nil, "MANA")
 
     local xplvl = tonumber(gmcp.Char.Worth.xplvl) or 0
     local xptnl = tonumber(gmcp.Char.Worth.xptnl) or 0
+    local xp = tonumber(gmcp.Char.Worth.xp) or 0
+    local maxxp = tonumber(gmcp.Char.Worth.maxxp) or 0
     local xp_value = xptnl > 0 and math.max(0, xplvl - xptnl) or 1
     local xp_maximum = xptnl > 0 and xplvl or 1
     DD_GUI.Xp, XpLabel = new_status_gauge(
       "DD_GUI.Xp", DD_GUI.ThirdColumn, "XP", colors.xp,
-      xp_value, xp_maximum)
+      xp_value, xp_maximum, nil, "XP")
+    set_status_gauge_tooltip(DD_GUI.Xp, XpLabel, "XP", xp, maxxp)
 
     DD_GUI.Moves, MovesLabel = new_status_gauge(
       "DD_GUI.Moves", DD_GUI.FourthColumn, "MOVES", colors.moves,
-      gmcp.Char.Vitals.move, gmcp.Char.Vitals.maxmove)
+      gmcp.Char.Vitals.move, gmcp.Char.Vitals.maxmove, nil, "MOVES")
 end
