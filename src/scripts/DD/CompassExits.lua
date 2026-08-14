@@ -2,6 +2,7 @@ DD_GUI = DD_GUI or {}
 
 DD_GUI.exit_status_by_room = DD_GUI.exit_status_by_room or {}
 DD_GUI.exit_status_meta_by_room = DD_GUI.exit_status_meta_by_room or {}
+DD_GUI.exit_status_text_by_room = DD_GUI.exit_status_text_by_room or {}
 
 local compass_exit_aliases = {
         n = "n",
@@ -251,14 +252,6 @@ local function apply_statuses(room_id, statuses, source, complete)
                 return false
         end
 
-        local metadata = DD_GUI.exit_status_meta_by_room[room_id]
-        if source == "text" and metadata and metadata.source == "gmcp" and
-           metadata.complete then
-                -- The legacy [Exits: ...] line must never overwrite DD4's
-                -- richer, authoritative door state.
-                return false
-        end
-
         local previous = DD_GUI.exit_status_by_room[room_id]
         local normalised = {}
         if complete == true then
@@ -287,6 +280,28 @@ local function apply_statuses(room_id, statuses, source, complete)
                 )
         end
         return true
+end
+
+local function apply_text_overrides(room_id)
+        local snapshot = DD_GUI.exit_status_text_by_room[room_id]
+        if type(snapshot) ~= "table" or type(snapshot.explicit) ~= "table" then
+                return false
+        end
+
+        local has_override = false
+        for _ in pairs(snapshot.explicit) do
+                has_override = true
+                break
+        end
+        if not has_override then
+                return false
+        end
+
+        -- The text line is especially useful when a profile receives a
+        -- delayed or incomplete GMCP object. Keep explicit `(closed)` and
+        -- `[locked]` markers visible to the compass during the click that
+        -- follows the room description.
+        return apply_statuses(room_id, snapshot.explicit, "text", false)
 end
 
 -- GMCPMapper uses this same path when it reconciles a fresh Room.Info
@@ -347,7 +362,7 @@ function DD_GUI.mark_pending_exit_failed(state)
         return true
 end
 
-function DD_GUI.refresh_exit_status_from_gmcp()
+function DD_GUI.refresh_exit_status_from_gmcp(preserve_text_overrides)
         local info = gmcp and gmcp.Room and gmcp.Room.Info
         local room_id = type(info) == "table" and tonumber(info.vnum)
         if not room_id then
@@ -358,13 +373,24 @@ function DD_GUI.refresh_exit_status_from_gmcp()
 
         local statuses, complete = gmcp_exit_statuses(info)
         if complete then
-                return apply_statuses(room_id, statuses, "gmcp", true)
+                local applied = apply_statuses(room_id, statuses, "gmcp", true)
+                if preserve_text_overrides == true then
+                        apply_text_overrides(room_id)
+                else
+                        -- A fresh Room.Info event is newer than the last
+                        -- room-description line. Let it replace text-only
+                        -- state, while compass clicks explicitly preserve
+                        -- marked doors until the server confirms a change.
+                        DD_GUI.exit_status_text_by_room[room_id] = nil
+                end
+                return applied
         end
 
         -- Do not let a rich snapshot from an earlier connection suppress the
         -- text fallback when this session is using an older/partial payload.
         local metadata = DD_GUI.exit_status_meta_by_room[room_id]
-        if metadata and metadata.source == "gmcp" then
+        if metadata and metadata.source == "gmcp" and
+           type(DD_GUI.exit_status_text_by_room[room_id]) ~= "table" then
                 DD_GUI.exit_status_meta_by_room[room_id] = nil
                 DD_GUI.exit_status_by_room[room_id] = nil
         end
@@ -377,13 +403,18 @@ function DD_GUI.update_exit_status(exit_text, complete_snapshot)
                 return false
         end
 
-        local metadata = DD_GUI.exit_status_meta_by_room[room_id]
-        if metadata and metadata.source == "gmcp" and metadata.complete then
-                return false
-        end
-
         local text = tostring(exit_text or "")
         text = text:gsub("\27%[[0-9;]*m", ""):lower()
+
+        -- Accept either the trigger capture (`north east (south)`) or the
+        -- complete matched line (`[Exits: north east (south)]`). This keeps
+        -- the parser working across Mudlet trigger-capture variations.
+        local marker_start = text:find("%[exits:%s*")
+        if marker_start then
+                text = text:sub(marker_start)
+                        :gsub("^%[exits:%s*", "")
+                        :gsub("%]%s*$", "")
+        end
 
         -- [Exits: ...] is a complete snapshot. Start empty so a door which
         -- was just opened/closed cannot retain its previous state forever.
@@ -422,7 +453,68 @@ function DD_GUI.update_exit_status(exit_text, complete_snapshot)
         if found == 0 and complete_snapshot ~= true then
                 return false
         end
+        DD_GUI.exit_status_text_by_room[room_id] = {
+                statuses = copy_statuses(statuses),
+                explicit = {},
+        }
+        for direction, status in pairs(statuses) do
+                if tonumber(status) == 2 or tonumber(status) == 3 then
+                        DD_GUI.exit_status_text_by_room[room_id].explicit[direction] = status
+                end
+        end
+
         return apply_statuses(room_id, statuses, "text", true)
+end
+
+function DD_GUI.get_current_exit_status(direction, preserve_text_overrides)
+        local short
+        for alias, value in pairs(compass_exit_aliases) do
+                if tostring(alias):lower() == tostring(direction or ""):lower() then
+                        short = value
+                        break
+                end
+        end
+        if not short then
+                return nil
+        end
+
+        if DD_GUI.refresh_exit_status_from_gmcp then
+                pcall(
+                        DD_GUI.refresh_exit_status_from_gmcp,
+                        preserve_text_overrides == true
+                )
+        end
+
+        local room_id = current_room_id()
+        if not room_id then
+                return nil
+        end
+
+        local parsed_status = DD_GUI.exit_status_by_room and
+                DD_GUI.exit_status_by_room[room_id]
+        if parsed_status and parsed_status[short] ~= nil then
+                return tonumber(parsed_status[short]) or 0
+        end
+
+        if type(getDoors) ~= "function" then
+                return nil
+        end
+        local ok, doors = pcall(getDoors, room_id)
+        if not ok or type(doors) ~= "table" then
+                return nil
+        end
+
+        local status = doors[short]
+        if status == nil then
+                local long_names = {
+                        n = "north", ne = "northeast", nw = "northwest",
+                        e = "east", se = "southeast", s = "south",
+                        sw = "southwest", w = "west", u = "up", d = "down",
+                        ["in"] = "in", out = "out",
+                }
+                status = doors[long_names[short]]
+        end
+        return tonumber(status)
 end
 
 local function kill_handler(handler_id)
