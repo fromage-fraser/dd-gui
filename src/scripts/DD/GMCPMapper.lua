@@ -284,13 +284,18 @@ function load_dd_mapper()
 
                 local exits = {}
                 local has_exit_status = false
-                if type(source.exits) == "table" then
+                local function merge_legacy_exit(direction, value)
+                        local short = short_direction(direction)
+                        if direction_names[short] then
+                                exits[short] = normalise_exit(value)
+                                has_exit_status = has_exit_status or exits[short].has_status
+                        end
+                end
+                if DD_GUI.walk_gmcp_exit_details then
+                        DD_GUI.walk_gmcp_exit_details(source.exits, merge_legacy_exit)
+                elseif type(source.exits) == "table" then
                         for direction, value in pairs(source.exits) do
-                                local short = short_direction(direction)
-                                if direction_names[short] then
-                                        exits[short] = normalise_exit(value)
-                                        has_exit_status = has_exit_status or exits[short].has_status
-                                end
+                                merge_legacy_exit(direction, value)
                         end
                 end
 
@@ -298,13 +303,19 @@ function load_dd_mapper()
                 -- Merge it rather than replacing exits so older payloads keep
                 -- mapping exactly as before while rich state becomes authoritative.
                 local exit_details = source.exit_details or source.exitDetails or source.exit_detail
-                if type(exit_details) == "table" then
+                local has_rich_exit_payload = exit_details ~= nil
+                local function merge_rich_exit(direction, value)
+                        merge_exit_detail(exits, direction, value)
+                        local detail = exits[short_direction(direction)]
+                        if detail then
+                                has_exit_status = has_exit_status or detail.has_status
+                        end
+                end
+                if DD_GUI.walk_gmcp_exit_details then
+                        DD_GUI.walk_gmcp_exit_details(exit_details, merge_rich_exit)
+                elseif type(exit_details) == "table" then
                         for direction, value in pairs(exit_details) do
-                                merge_exit_detail(exits, direction, value)
-                                local detail = exits[short_direction(direction)]
-                                if detail then
-                                        has_exit_status = has_exit_status or detail.has_status
-                                end
+                                merge_rich_exit(direction, value)
                         end
                 end
 
@@ -359,7 +370,7 @@ function load_dd_mapper()
                         -- suppress the legacy text/native door fallback when
                         -- the ordinary exit list still contains destinations.
                         exit_status_complete = has_exit_status or
-                                (type(exit_details) == "table" and next(exits) == nil),
+                                (has_rich_exit_payload and next(exits) == nil),
                         special_exits = normalise_special_exits(
                                 source.special_exits or source.specialExits or source.special_exit_details
                         ),

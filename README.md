@@ -197,6 +197,11 @@ data. The main panels are:
   Walls are treated as non-routable. The legacy MUD `[Exits: ...]` line is a
   compatibility source as well:
   plain exits are open, `(direction)` is closed, and `[direction]` is locked.
+  The resolver also unwraps DD4's nested `GMCP_OBJECT` representation, so the
+  server's `exit_details` state remains usable on Mudlet profiles where those
+  objects arrive inside anonymous table layers. Compass buttons and keyboard
+  movement refresh the current room state at the moment of the press, rather
+  than relying only on an earlier room event.
   The parser replaces stale directions instead of merging them forever, and
   the native Mudlet door table remains a per-direction fallback for older or
   partial profiles. Explicit closed/locked text markers are retained through
