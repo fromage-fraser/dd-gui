@@ -102,19 +102,41 @@ function update_vitals()
   end
   --GUI.Hitpoints:setValue((100/tonumber(gmcp.Char.Vitals.maxhp))*tonumber(gmcp.Char.Vitals.hp),100,tonumber(gmcp.Char.Vitals.hp))
   DD_GUI.Hitpoints:setValue(normalized_gauge_value(hp, maxhp),1000)
+  if DD_GUI.update_status_gauge_tooltip then
+      DD_GUI.update_status_gauge_tooltip(
+          DD_GUI.Hitpoints, HitpointsLabel, "HITS", hp, maxhp)
+  end
   DD_GUI.Mana:setValue(normalized_gauge_value(mana, maxmana),1000)
+  if DD_GUI.update_status_gauge_tooltip then
+      DD_GUI.update_status_gauge_tooltip(
+          DD_GUI.Mana, ManaLabel, "MANA", mana, maxmana)
+  end
   DD_GUI.Moves:setValue(normalized_gauge_value(move, maxmove),1000)
+  if DD_GUI.update_status_gauge_tooltip then
+      DD_GUI.update_status_gauge_tooltip(
+          DD_GUI.Moves, MovesLabel, "MOVES", move, maxmove)
+  end
   if DD_GUI.update_character_condition_gauges then
       DD_GUI.update_character_condition_gauges()
   end
 
   --DD_GUI.Xp:setValue(((gmcp.Char.Worth.xp * 1000) / gmcp.Char.Worth.maxxp), 1000)
+  local xp = tonumber(gmcp.Char.Worth.xp) or 0
+  local maxxp = tonumber(gmcp.Char.Worth.maxxp) or 0
   local xplvl = tonumber(gmcp.Char.Worth.xplvl) or 0
   local xptnl = tonumber(gmcp.Char.Worth.xptnl) or 0
   if xptnl > 0 then
       DD_GUI.Xp:setValue(normalized_gauge_value(xplvl - xptnl, xplvl),1000)
+      if DD_GUI.update_status_gauge_tooltip then
+          DD_GUI.update_status_gauge_tooltip(
+              DD_GUI.Xp, XpLabel, "XP", xp, maxxp)
+      end
   else
       DD_GUI.Xp:setValue(1000, 1000)
+      if DD_GUI.update_status_gauge_tooltip then
+          DD_GUI.update_status_gauge_tooltip(DD_GUI.Xp, XpLabel,
+              "XP", xp, maxxp)
+      end
   end
 
   -- Vitals arrive frequently. Avoid clearing and repainting the complete

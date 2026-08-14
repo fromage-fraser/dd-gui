@@ -29,6 +29,7 @@ local CONDITION_GAUGE_DEFINITIONS = {
       property = "Blood",
       label_property = "BloodLabel",
       label = "BLOOD",
+      tooltip_label = "BLOOD",
       value_field = "rage",
       maximum_field = "maxrage",
       color_key = "blood",
@@ -37,6 +38,7 @@ local CONDITION_GAUGE_DEFINITIONS = {
       property = "Rage",
       label_property = "RageLabel",
       label = "RAGE",
+      tooltip_label = "RAGE",
       value_field = "rage",
       maximum_field = "maxrage",
       color_key = "rage",
@@ -170,6 +172,14 @@ function DD_GUI.update_character_condition_gauges()
             vitals[definition.value_field],
             vitals[definition.maximum_field]),
           1000)
+        if DD_GUI.update_status_gauge_tooltip then
+          DD_GUI.update_status_gauge_tooltip(
+            gauge,
+            DD_GUI[definition.label_property],
+            definition.tooltip_label,
+            vitals[definition.value_field],
+            vitals[definition.maximum_field])
+        end
       end
     end
 end
@@ -1148,7 +1158,8 @@ local function build_character_condition_gauges()
         colors[definition.color_key],
         vitals[definition.value_field],
         vitals[definition.maximum_field],
-        {x = "0%", y = "0%", width = "100%", height = "100%"})
+        {x = "0%", y = "0%", width = "100%", height = "100%"},
+        definition.tooltip_label)
 
       DD_GUI[definition.property] = gauge
       DD_GUI[definition.label_property] = label

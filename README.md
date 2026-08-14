@@ -205,7 +205,10 @@ data. The main panels are:
   stale door state. If a compass or mapper movement still receives a closed,
   locked, missing-key, or wall response, the attempted direction is corrected
   immediately for the next attempt. If neither source has a state, it sends
-  the normal movement command. Status gauges clamp GMCP current values to their reported maximums
+  the normal movement command. Hovering over the `HITS`, `MANA`, `XP`, or `MOVES`
+  gauge shows its live current/maximum values. Vampire `BLOOD` and Werewolf
+  `RAGE` gauges expose the same tooltip; `THIRST` and `HUNGER` intentionally
+  remain label-only. Status gauges clamp GMCP current values to their reported maximums
   and keep their fills inside their parent panels. Enemy hitpoints are rendered
   in a dedicated overlay below the enemy text, so the red gauge remains visible
   when the enemy console refreshes and disappears outside combat. The compass has the same shared braided
